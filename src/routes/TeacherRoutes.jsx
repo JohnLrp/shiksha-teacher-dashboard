@@ -8,8 +8,12 @@ import AssignmentView from "../pages/AssignmentView";
 import SubmissionView from "../pages/SubmissionView";
 import Quizzes from "../pages/Quizzes";
 import CreateQuiz from "../pages/CreateQuiz";
+import QuizView from "../pages/QuizView";
+import QuizSubmissionView from "../pages/QuizSubmissionView";
+import QuizReviewView from "../pages/QuizReviewView";
 import StudyMaterials from "../pages/StudyMaterials";
 import UploadMaterial from "../pages/UploadMaterial";
+import StudyMaterialView from "../pages/StudyMaterialView";
 import SessionRecordings from "../pages/SessionRecordings";
 import UploadRecording from "../pages/UploadRecording";
 import LiveSessions from "../pages/LiveSessions";
@@ -27,8 +31,12 @@ export default function TeacherRoutes() {
         <Route path="/teacher/classes/assignments/view/submissions" element={<SubmissionView />} />
         <Route path="/teacher/classes/quizzes" element={<Quizzes />} />
         <Route path="/teacher/classes/quizzes/create" element={<CreateQuiz />} />
+        <Route path="/teacher/classes/quizzes/view" element={<QuizView />} />
+        <Route path="/teacher/classes/quizzes/view/submissions" element={<QuizSubmissionView />} />
+        <Route path="/teacher/classes/quizzes/view/submissions/review" element={<QuizReviewView />} />
         <Route path="/teacher/classes/study-materials" element={<StudyMaterials />} />
         <Route path="/teacher/classes/study-materials/upload" element={<UploadMaterial />} />
+        <Route path="/teacher/classes/study-materials/view" element={<StudyMaterialView />} />
         <Route path="/teacher/classes/session-recordings" element={<SessionRecordings />} />
         <Route path="/teacher/classes/session-recordings/upload" element={<UploadRecording />} />
         <Route path="/teacher/classes/live-sessions" element={<LiveSessions />} />

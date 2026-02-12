@@ -175,3 +175,10 @@
 .quiz-view-btn:hover {
   background: #3d9aa8;
 }
+
+.quizzes-empty {
+  text-align: center;
+  color: #6b7b8d;
+  font-size: 14px;
+  padding: 40px 0;
+}

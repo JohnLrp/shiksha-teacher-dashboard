@@ -185,6 +185,44 @@
   border-color: #4ba7b5;
 }
 
+.cq-remove-btn {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.cq-remove-btn:hover {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.cq-add-question-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #4ba7b5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  margin-top: 16px;
+}
+
+.cq-add-question-btn:hover {
+  background: #3d9aa8;
+}
+
 .cq-actions {
   display: flex;
   justify-content: flex-end;

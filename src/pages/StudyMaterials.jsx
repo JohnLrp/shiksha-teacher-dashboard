@@ -1,18 +1,24 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
+import { MdDelete } from "react-icons/md";
 import "../styles/study-materials.css";
-
-const defaultMaterials = [
-  { name: "Chapter 1", date: "21/01/26" },
-  { name: "Chapter 2", date: "22/01/26" },
-  { name: "Chapter 3", date: "23/01/26" },
-  { name: "Chapter 4", date: "26/01/26" },
-  { name: "Chapter 5", date: "26/01/26" },
-];
 
 export default function StudyMaterials() {
   const navigate = useNavigate();
+  const [materials, setMaterials] = useState([]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("studyMaterials") || "[]");
+    setMaterials(saved);
+  }, []);
+
+  const handleDelete = (index) => {
+    const updated = materials.filter((_, i) => i !== index);
+    setMaterials(updated);
+    localStorage.setItem("studyMaterials", JSON.stringify(updated));
+  };
 
   return (
     <div className="study-materials-page">
@@ -36,21 +42,40 @@ export default function StudyMaterials() {
         <div className="sm-table-header">
           <span className="sm-col-name">Name</span>
           <span className="sm-col-date">Date</span>
+          <span className="sm-col-files">Files</span>
           <span className="sm-col-actions"></span>
         </div>
 
-        <div className="sm-list">
-          {defaultMaterials.map((material, index) => (
-            <div className="sm-row" key={index}>
-              <span className="sm-col-name">{material.name}</span>
-              <span className="sm-col-date">{material.date}</span>
-              <div className="sm-col-actions">
-                <button className="sm-view-btn">View</button>
-                <button className="sm-download-btn">Download</button>
+        {materials.length === 0 ? (
+          <p className="sm-empty">No study materials uploaded yet. Click "+ Add Study Material" to get started.</p>
+        ) : (
+          <div className="sm-list">
+            {materials.map((material, index) => (
+              <div className="sm-row" key={index}>
+                <span className="sm-col-name">{material.name}</span>
+                <span className="sm-col-date">{material.date}</span>
+                <span className="sm-col-files">
+                  {material.files?.length || 0} file{(material.files?.length || 0) !== 1 ? "s" : ""}
+                </span>
+                <div className="sm-col-actions">
+                  <button
+                    className="sm-view-btn"
+                    onClick={() =>
+                      navigate("/teacher/classes/study-materials/view", {
+                        state: material,
+                      })
+                    }
+                  >
+                    View
+                  </button>
+                  <button className="sm-delete-btn" onClick={() => handleDelete(index)}>
+                    <MdDelete />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

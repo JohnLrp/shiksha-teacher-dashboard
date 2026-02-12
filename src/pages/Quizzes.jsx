@@ -1,74 +1,22 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
 import "../styles/quizzes.css";
 
-const defaultQuizzes = [
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-  {
-    id: "Assignment - ID",
-    title: "(TITLE) Integration - I",
-    issuedOn: "21 Jan 2026",
-    dueOn: "30 Jan 2026",
-    turnedIn: "17/32",
-  },
-];
-
 export default function Quizzes() {
   const navigate = useNavigate();
+  const [quizzes, setQuizzes] = useState([]);
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("quizzes") || "[]");
+    setQuizzes(stored);
+  }, []);
 
   return (
     <div className="quizzes-page">
 
-      <button className="quizzes-back-btn" onClick={() => navigate(-1)}>
+      <button className="quizzes-back-btn" onClick={() => navigate("/teacher/classes")}>
         <IoChevronBack /> Back
       </button>
 
@@ -86,25 +34,33 @@ export default function Quizzes() {
         </div>
 
         <div className="quizzes-list">
-          {defaultQuizzes.map((quiz, index) => (
-            <div className="quiz-row" key={index}>
+          {quizzes.length === 0 && (
+            <p className="quizzes-empty">No quizzes created yet. Click "Create New Quiz" to get started.</p>
+          )}
+          {quizzes.map((quiz, index) => (
+            <div className="quiz-row" key={quiz.id || index}>
               <div className="quiz-info">
-                <span className="quiz-id">{quiz.id}</span>
+                <span className="quiz-id">Quiz - {quiz.id}</span>
                 <span className="quiz-name">{quiz.title}</span>
               </div>
               <div className="quiz-detail">
-                <span className="quiz-label">Issued on:</span>
-                <span className="quiz-value">{quiz.issuedOn}</span>
+                <span className="quiz-label">Created:</span>
+                <span className="quiz-value">{quiz.dateCreated}</span>
               </div>
               <div className="quiz-detail">
-                <span className="quiz-label">Due on:</span>
-                <span className="quiz-value">{quiz.dueOn}</span>
+                <span className="quiz-label">Questions:</span>
+                <span className="quiz-value bold">{quiz.questions?.length || 0}</span>
               </div>
-              <div className="quiz-detail">
-                <span className="quiz-label">Turned In:</span>
-                <span className="quiz-value bold">{quiz.turnedIn}</span>
-              </div>
-              <button className="quiz-view-btn">View</button>
+              <button
+                className="quiz-view-btn"
+                onClick={() =>
+                  navigate("/teacher/classes/quizzes/view", {
+                    state: quiz,
+                  })
+                }
+              >
+                View
+              </button>
             </div>
           ))}
         </div>

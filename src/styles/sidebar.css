@@ -56,4 +56,9 @@
   margin-left: 32px;
   margin-top: 6px;
   opacity: 0.85;
+  cursor: pointer;
+}
+
+.submenu p:hover {
+  opacity: 1;
 }

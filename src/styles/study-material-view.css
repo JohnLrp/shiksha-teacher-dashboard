@@ -1,0 +1,153 @@
+.smv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.smv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #4ba7b5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: fit-content;
+  flex-shrink: 0;
+}
+
+.smv-back-btn:hover {
+  background: #3d9aa8;
+}
+
+.smv-header {
+  background: #f5fbfc;
+  border-radius: 16px;
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.smv-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2d3d;
+  margin: 0;
+}
+
+.smv-search {
+  position: relative;
+}
+
+.smv-search input {
+  padding: 6px 32px 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  width: 160px;
+  background: #fff;
+}
+
+.smv-search input:focus {
+  border-color: #4ba7b5;
+}
+
+.smv-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 14px;
+}
+
+.smv-content-card {
+  background: #f5fbfc;
+  border-radius: 16px;
+  padding: 32px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.smv-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 40px;
+}
+
+.smv-detail-line {
+  margin: 0;
+  font-size: 15px;
+  color: #1f2d3d;
+}
+
+.smv-label {
+  font-weight: 400;
+  color: #1f2d3d;
+  font-size: 15px;
+}
+
+.smv-value-bold {
+  font-weight: 700;
+  color: #1f2d3d;
+}
+
+.smv-files-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.smv-no-files {
+  color: #6b7b8d;
+  font-size: 14px;
+  margin: 0;
+}
+
+.smv-files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.smv-file-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #e0e0e0;
+  border-radius: 12px;
+  padding: 14px 24px 14px 14px;
+}
+
+.smv-file-icon-box {
+  background: #c5c5c5;
+  border-radius: 10px;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.smv-file-icon {
+  font-size: 26px;
+  color: #666;
+}
+
+.smv-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2d3d;
+}

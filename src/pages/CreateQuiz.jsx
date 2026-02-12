@@ -1,37 +1,27 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
+import { IoMdAdd } from "react-icons/io";
+import { MdDelete } from "react-icons/md";
 import "../styles/create-quiz.css";
 
-const defaultQuestions = [
-  {
-    question: "question ABC",
-    options: ["answer ABC", "answer ABC", "answer ABC", "answer ABC"],
-    answer: "a",
-  },
-  {
-    question: "question ABC",
-    options: ["answer ABC", "answer ABC", "answer ABC", "answer ABC"],
-    answer: "c",
-  },
-  {
-    question: "question ABC",
-    options: ["answer ABC", "answer ABC", "answer ABC", "answer ABC"],
-    answer: "c",
-  },
-  {
-    question: "question ABC",
-    options: ["answer ABC", "answer ABC", "answer ABC", "answer ABC"],
-    answer: "a",
-  },
-];
+const createEmptyQuestion = () => ({
+  question: "",
+  options: ["", "", "", ""],
+  answer: "",
+});
 
 const optionLabels = ["a", "b", "c", "d"];
 
 export default function CreateQuiz() {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState(defaultQuestions);
+  const { state } = useLocation();
+  const isEditing = !!state?.id;
+
+  const [questions, setQuestions] = useState(
+    state?.questions?.length ? state.questions : [createEmptyQuestion()]
+  );
 
   const updateQuestion = (qIndex, field, value) => {
     setQuestions((prev) =>
@@ -47,6 +37,38 @@ export default function CreateQuiz() {
           : q
       )
     );
+  };
+
+  const addQuestion = () => {
+    setQuestions((prev) => [...prev, createEmptyQuestion()]);
+  };
+
+  const removeQuestion = (qIndex) => {
+    if (questions.length <= 1) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== qIndex));
+  };
+
+  const handleCreate = () => {
+    const existing = JSON.parse(localStorage.getItem("quizzes") || "[]");
+
+    if (isEditing) {
+      const updatedQuiz = { ...state, questions };
+      const updated = existing.map((q) =>
+        q.id === state.id ? updatedQuiz : q
+      );
+      localStorage.setItem("quizzes", JSON.stringify(updated));
+      navigate("/teacher/classes/quizzes/view", { state: updatedQuiz });
+    } else {
+      const quiz = {
+        id: Date.now(),
+        title: "Mathematics Quiz",
+        subject: "Mathematics",
+        questions,
+        dateCreated: new Date().toLocaleDateString(),
+      };
+      localStorage.setItem("quizzes", JSON.stringify([...existing, quiz]));
+      navigate("/teacher/classes/quizzes/view", { state: quiz });
+    }
   };
 
   return (
@@ -72,9 +94,19 @@ export default function CreateQuiz() {
                 <input
                   type="text"
                   className="cq-question-input"
+                  placeholder="Enter question"
                   value={q.question}
                   onChange={(e) => updateQuestion(qIndex, "question", e.target.value)}
                 />
+                {questions.length > 1 && (
+                  <button
+                    className="cq-remove-btn"
+                    onClick={() => removeQuestion(qIndex)}
+                    title="Remove question"
+                  >
+                    <MdDelete />
+                  </button>
+                )}
               </div>
 
               <div className="cq-options-grid">
@@ -84,6 +116,7 @@ export default function CreateQuiz() {
                     <input
                       type="text"
                       className="cq-option-input"
+                      placeholder={`Option ${optionLabels[optIndex]}`}
                       value={opt}
                       onChange={(e) => updateOption(qIndex, optIndex, e.target.value)}
                     />
@@ -96,6 +129,7 @@ export default function CreateQuiz() {
                 <input
                   type="text"
                   className="cq-answer-input"
+                  placeholder="a"
                   value={q.answer}
                   onChange={(e) => updateQuestion(qIndex, "answer", e.target.value)}
                 />
@@ -104,9 +138,13 @@ export default function CreateQuiz() {
           ))}
         </div>
 
+        <button className="cq-add-question-btn" onClick={addQuestion}>
+          <IoMdAdd /> Add Question
+        </button>
+
         <div className="cq-actions">
-          <button className="cq-create-btn" onClick={() => navigate(-1)}>
-            Create
+          <button className="cq-create-btn" onClick={handleCreate}>
+            {isEditing ? "Update" : "Create"}
           </button>
         </div>
       </div>

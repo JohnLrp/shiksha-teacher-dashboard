@@ -29,8 +29,8 @@ export default function Sidebar() {
         </div>
 
         <div className="submenu">
-          <p>Math (Class 8) BY23</p>
-          <p>Math (Class 8) BY26</p>
+          <p onClick={() => navigate("/teacher/classes")}>Math (Class 8) BY23</p>
+          <p onClick={() => navigate("/teacher/classes")}>Math (Class 8) BY26</p>
         </div>
       </nav>
     </aside>

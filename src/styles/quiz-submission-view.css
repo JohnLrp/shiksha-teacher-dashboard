@@ -1,0 +1,183 @@
+.qsv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.qsv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #4ba7b5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  width: fit-content;
+  flex-shrink: 0;
+}
+
+.qsv-back-btn:hover {
+  background: #3d9aa8;
+}
+
+.qsv-content-card {
+  background: #f5fbfc;
+  border-radius: 16px;
+  padding: 28px 32px 40px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.qsv-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 16px;
+}
+
+.qsv-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2d3d;
+  margin: 0;
+}
+
+.qsv-count {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.qsv-count-green {
+  color: #38b89a;
+}
+
+.qsv-count-red {
+  color: #e74c3c;
+}
+
+.qsv-tabs-search-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.qsv-tabs {
+  display: flex;
+  background: #e8e8e8;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.qsv-tab {
+  padding: 8px 28px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #555;
+  border-radius: 24px;
+}
+
+.qsv-tab-active-pending {
+  background: #38b89a;
+  color: #fff;
+}
+
+.qsv-tab-active-submitted {
+  background: #2d3748;
+  color: #fff;
+}
+
+.qsv-search {
+  position: relative;
+}
+
+.qsv-search input {
+  padding: 6px 32px 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  width: 160px;
+  background: #fff;
+}
+
+.qsv-search input:focus {
+  border-color: #4ba7b5;
+}
+
+.qsv-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 14px;
+}
+
+.qsv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.qsv-table thead tr {
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.qsv-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2d3d;
+}
+
+.qsv-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #1f2d3d;
+}
+
+.qsv-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.qsv-table tbody tr:hover {
+  background: #eef7f8;
+}
+
+.qsv-status-submitted {
+  color: #38b89a;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.qsv-status-pending {
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.qsv-review-btn {
+  background: #4ba7b5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qsv-review-btn:hover {
+  background: #3d9aa8;
+}

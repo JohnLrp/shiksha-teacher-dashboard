@@ -183,3 +183,38 @@
 .sm-download-btn:hover {
   background: #2e4a58;
 }
+
+.sm-col-files {
+  flex: 0.8;
+  font-size: 13px;
+  color: #6b7b8d;
+}
+
+.sm-table-header .sm-col-files {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2d3d;
+}
+
+.sm-delete-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sm-delete-btn:hover {
+  background: #c0392b;
+}
+
+.sm-empty {
+  text-align: center;
+  color: #6b7b8d;
+  font-size: 14px;
+  padding: 40px 0;
+}
