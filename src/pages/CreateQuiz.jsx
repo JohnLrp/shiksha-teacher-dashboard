@@ -1,153 +1,135 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
-import { IoMdAdd } from "react-icons/io";
-import { MdDelete } from "react-icons/md";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../api/apiClient";
 import "../styles/create-quiz.css";
 
 const createEmptyQuestion = () => ({
   question: "",
   options: ["", "", "", ""],
-  answer: "",
+  answerIndex: null,
 });
-
-const optionLabels = ["a", "b", "c", "d"];
 
 export default function CreateQuiz() {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const isEditing = !!state?.id;
+  const { subjectId } = useParams();
 
-  const [questions, setQuestions] = useState(
-    state?.questions?.length ? state.questions : [createEmptyQuestion()]
-  );
+  const [title, setTitle] = useState("");
+  const [questions, setQuestions] = useState([createEmptyQuestion()]);
+  const [loading, setLoading] = useState(false);
 
-  const updateQuestion = (qIndex, field, value) => {
-    setQuestions((prev) =>
-      prev.map((q, i) => (i === qIndex ? { ...q, [field]: value } : q))
-    );
+  const updateQuestion = (index, value) => {
+    const copy = [...questions];
+    copy[index].question = value;
+    setQuestions(copy);
   };
 
   const updateOption = (qIndex, optIndex, value) => {
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === qIndex
-          ? { ...q, options: q.options.map((o, j) => (j === optIndex ? value : o)) }
-          : q
-      )
-    );
+    const copy = [...questions];
+    copy[qIndex].options[optIndex] = value;
+    setQuestions(copy);
+  };
+
+  const setCorrectAnswer = (qIndex, optIndex) => {
+    const copy = [...questions];
+    copy[qIndex].answerIndex = optIndex;
+    setQuestions(copy);
   };
 
   const addQuestion = () => {
-    setQuestions((prev) => [...prev, createEmptyQuestion()]);
+    setQuestions([...questions, createEmptyQuestion()]);
   };
 
-  const removeQuestion = (qIndex) => {
-    if (questions.length <= 1) return;
-    setQuestions((prev) => prev.filter((_, i) => i !== qIndex));
-  };
+  const handleCreate = async () => {
+    try {
+      setLoading(true);
 
-  const handleCreate = () => {
-    const existing = JSON.parse(localStorage.getItem("quizzes") || "[]");
+      // 1️⃣ Create Quiz
+      const quizRes = await api.post("/quizzes/", {
+        subject: subjectId,
+        title,
+        description: "",
+        due_date: new Date(Date.now() + 86400000).toISOString(),
+        time_limit_minutes: 30,
+      });
 
-    if (isEditing) {
-      const updatedQuiz = { ...state, questions };
-      const updated = existing.map((q) =>
-        q.id === state.id ? updatedQuiz : q
+      const quizId = quizRes.data.id;
+
+      // 2️⃣ Add Questions
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+
+        await api.post(`/quizzes/${quizId}/questions/`, {
+          text: q.question,
+          order: i + 1,
+          marks: 1,
+          choices: q.options.map((opt, index) => ({
+            text: opt,
+            is_correct: index === q.answerIndex,
+          })),
+        });
+      }
+
+      alert("Quiz created successfully");
+
+      navigate(`/teacher/classes/${subjectId}/quizzes`);
+
+    } catch (err) {
+      alert(
+        err.response?.data?.detail || "Quiz creation failed"
       );
-      localStorage.setItem("quizzes", JSON.stringify(updated));
-      navigate("/teacher/classes/quizzes/view", { state: updatedQuiz });
-    } else {
-      const quiz = {
-        id: Date.now(),
-        title: "Mathematics Quiz",
-        subject: "Mathematics",
-        questions,
-        dateCreated: new Date().toLocaleDateString(),
-      };
-      localStorage.setItem("quizzes", JSON.stringify([...existing, quiz]));
-      navigate("/teacher/classes/quizzes/view", { state: quiz });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="create-quiz-page">
-      <button className="cq-back-btn" onClick={() => navigate(-1)}>
-        <IoChevronBack /> Back
-      </button>
+    <div className="createQuizPage">
+      <h2>Create Quiz</h2>
 
-      <div className="cq-title-container">
-        <h2 className="cq-title">Mathematics</h2>
-        <div className="cq-search">
-          <input type="text" placeholder="Search" />
-          <FiSearch className="cq-search-icon" />
-        </div>
-      </div>
+      <input
+        placeholder="Quiz Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
 
-      <div className="cq-form-container">
-        <div className="cq-questions-list">
-          {questions.map((q, qIndex) => (
-            <div className="cq-question-block" key={qIndex}>
-              <div className="cq-question-header">
-                <span className="cq-question-label">Q{qIndex + 1}.</span>
-                <input
-                  type="text"
-                  className="cq-question-input"
-                  placeholder="Enter question"
-                  value={q.question}
-                  onChange={(e) => updateQuestion(qIndex, "question", e.target.value)}
-                />
-                {questions.length > 1 && (
-                  <button
-                    className="cq-remove-btn"
-                    onClick={() => removeQuestion(qIndex)}
-                    title="Remove question"
-                  >
-                    <MdDelete />
-                  </button>
-                )}
-              </div>
+      {questions.map((q, qIndex) => (
+        <div key={qIndex} className="questionBlock">
+          <input
+            placeholder={`Question ${qIndex + 1}`}
+            value={q.question}
+            onChange={(e) => updateQuestion(qIndex, e.target.value)}
+          />
 
-              <div className="cq-options-grid">
-                {q.options.map((opt, optIndex) => (
-                  <div className="cq-option-row" key={optIndex}>
-                    <span className="cq-option-label">{optionLabels[optIndex]})</span>
-                    <input
-                      type="text"
-                      className="cq-option-input"
-                      placeholder={`Option ${optionLabels[optIndex]}`}
-                      value={opt}
-                      onChange={(e) => updateOption(qIndex, optIndex, e.target.value)}
-                    />
-                  </div>
-                ))}
-              </div>
+          {q.options.map((opt, optIndex) => (
+            <div key={optIndex}>
+              <input
+                placeholder={`Option ${optIndex + 1}`}
+                value={opt}
+                onChange={(e) =>
+                  updateOption(qIndex, optIndex, e.target.value)
+                }
+              />
 
-              <div className="cq-answer-row">
-                <span className="cq-answer-label">Answer:</span>
-                <input
-                  type="text"
-                  className="cq-answer-input"
-                  placeholder="a"
-                  value={q.answer}
-                  onChange={(e) => updateQuestion(qIndex, "answer", e.target.value)}
-                />
-              </div>
+              <input
+                type="radio"
+                checked={q.answerIndex === optIndex}
+                onChange={() =>
+                  setCorrectAnswer(qIndex, optIndex)
+                }
+              />
+              Correct
             </div>
           ))}
         </div>
+      ))}
 
-        <button className="cq-add-question-btn" onClick={addQuestion}>
-          <IoMdAdd /> Add Question
-        </button>
+      <button onClick={addQuestion}>
+        Add Question
+      </button>
 
-        <div className="cq-actions">
-          <button className="cq-create-btn" onClick={handleCreate}>
-            {isEditing ? "Update" : "Create"}
-          </button>
-        </div>
-      </div>
+      <button onClick={handleCreate} disabled={loading}>
+        {loading ? "Creating..." : "Create Quiz"}
+      </button>
     </div>
   );
 }
