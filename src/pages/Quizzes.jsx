@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
 import "../styles/quizzes.css";
+import api from "../api/apiClient"; 
 
 export default function Quizzes() {
   const navigate = useNavigate();
@@ -10,10 +11,20 @@ export default function Quizzes() {
 
   const [quizzes, setQuizzes] = useState([]);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("quizzes") || "[]");
-    setQuizzes(stored);
-  }, []);
+
+
+useEffect(() => {
+  async function fetchQuizzes() {
+    try {
+      const res = await api.get(`/quizzes/?subject=${subjectId}`);
+      setQuizzes(res.data);
+    } catch (err) {
+      console.error("Failed to load quizzes", err);
+    }
+  }
+
+  fetchQuizzes();
+}, [subjectId]);
 
   return (
     <div className="quizzes-page">
