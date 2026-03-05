@@ -58,7 +58,7 @@ export default function CreateQuiz() {
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i];
 
-        await api.post(`/quizzes/${quizId}/questions/`, {
+        await api.post(`teacher/quizzes/${quizId}/questions/`, {
           text: q.question,
           order: i + 1,
           marks: 1,
