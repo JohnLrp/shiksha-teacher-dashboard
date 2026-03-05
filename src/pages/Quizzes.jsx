@@ -16,8 +16,11 @@ export default function Quizzes() {
 useEffect(() => {
   async function fetchQuizzes() {
     try {
-      const res = await api.get(`/quizzes/?subject=${subjectId}`);
-      setQuizzes(res.data);
+      const res = await api.get(
+        `/teacher/subjects/${subjectId}/quizzes/`
+      );
+
+      setQuizzes(res.data.results || res.data);
     } catch (err) {
       console.error("Failed to load quizzes", err);
     }
