@@ -3,7 +3,8 @@ import "../styles/profile.css";
 
 export default function Profile() {
   const [editing, setEditing] = useState(false);
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const avatar = localStorage.getItem("avatar");
+const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const [form, setForm] = useState({
     name: "Amy Thing",
@@ -12,7 +13,7 @@ export default function Profile() {
     role:"Teacher",
     rating:"TBA Later",
     about:"A hardworking security guard",
-    avatar: "",
+avatar: avatar || "https://i.pravatar.cc/40?img=3",
   }); 
     
   const [backup, setBackup] = useState(form);
@@ -32,10 +33,11 @@ export default function Profile() {
     setBackup(form);
     setEditing(true);
   }
+function handleSave() {
+  localStorage.setItem("avatar", form.avatar);
+  setEditing(false);
+}
 
-  function handleSave() {
-    setEditing(false);
-  }
 
   function handleCancel() {
     setForm(backup);
