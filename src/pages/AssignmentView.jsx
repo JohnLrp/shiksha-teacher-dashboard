@@ -1,12 +1,17 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
 import { FaRegFolder } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import api from "../api/apiClient";
 import "../styles/assignment-view.css";
 
 export default function AssignmentView() {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { assignmentId, subjectId } = useParams();
+
+  const [assignment, setAssignment] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -17,20 +22,38 @@ export default function AssignmentView() {
     });
   };
 
-  const title = state?.title;
-  const description = state?.description;
-  const dateIssued = state?.dateIssued ? formatDate(state.dateIssued) : null;
-  const dueDate = state?.dueDate ? formatDate(state.dueDate) : null;
-  const fileName = state?.fileName;
+  useEffect(() => {
+    async function fetchAssignment() {
+      try {
+        const res = await api.get(`/assignments/${assignmentId}/`);
+        setAssignment(res.data);
+      } catch (err) {
+        console.error("Failed to load assignment", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAssignment();
+  }, [assignmentId]);
+
+  if (loading) return <div>Loading assignment...</div>;
+  if (!assignment) return <div>Assignment not found</div>;
 
   return (
     <div className="assignment-view-page">
-      <button className="av-back-btn" onClick={() => navigate("/teacher/classes/assignments")}>
+      
+      <button
+        className="av-back-btn"
+        onClick={() =>
+          navigate(`/teacher/classes/${subjectId}/assignments`)
+        }
+      >
         <IoChevronBack /> Back
       </button>
 
       <div className="av-header">
-        <h2 className="av-title">Create New Mathematics Assignment</h2>
+        <h2 className="av-title">{assignment.title}</h2>
         <div className="av-search">
           <input type="text" placeholder="Search" />
           <FiSearch className="av-search-icon" />
@@ -38,18 +61,15 @@ export default function AssignmentView() {
       </div>
 
       <div className="av-content-card">
+
         <div className="av-edit-row">
           <button
             className="av-edit-btn"
             onClick={() =>
-              navigate("/teacher/classes/assignments/create", {
-                state: {
-                  title,
-                  description: state?.description,
-                  dueDate: state?.dueDate,
-                  fileName,
-                },
-              })
+              navigate(
+                `/teacher/classes/${subjectId}/assignments/create`,
+                { state: assignment }
+              )
             }
           >
             Edit
@@ -57,43 +77,38 @@ export default function AssignmentView() {
         </div>
 
         <div className="av-details">
-          {title && (
-            <p className="av-detail-line">
-              <span className="av-label">Title: </span>
-              <span className="av-value-bold">{title}</span>
-            </p>
-          )}
 
-          {(dateIssued || dueDate) && (
-            <div className="av-dates">
-              {dateIssued && (
-                <p className="av-detail-line">
-                  <span className="av-label">Date Issued: </span>
-                  <span className="av-value-bold">{dateIssued}</span>
-                </p>
-              )}
-              {dueDate && (
-                <p className="av-detail-line">
-                  <span className="av-label">Due Date: </span>
-                  <span className="av-value-bold">{dueDate}</span>
-                </p>
-              )}
-            </div>
-          )}
+          <p className="av-detail-line">
+            <span className="av-label">Title: </span>
+            <span className="av-value-bold">{assignment.title}</span>
+          </p>
 
-          {description && (
-            <div className="av-description">
-              <span className="av-label">Description: </span>
-              <span className="av-desc-text">{description}</span>
-            </div>
-          )}
+          <p className="av-detail-line">
+            <span className="av-label">Due Date: </span>
+            <span className="av-value-bold">
+              {formatDate(assignment.due_date)}
+            </span>
+          </p>
 
-          {fileName && (
+          <div className="av-description">
+            <span className="av-label">Description: </span>
+            <span className="av-desc-text">{assignment.description}</span>
+          </div>
+
+          {assignment.attachment && (
             <div className="av-file-card">
               <div className="av-file-icon-box">
                 <FaRegFolder className="av-file-icon" />
               </div>
-              <span className="av-file-name">{fileName}</span>
+
+              <a
+                href={assignment.attachment}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="av-file-name"
+              >
+                Download File
+              </a>
             </div>
           )}
 
@@ -101,14 +116,15 @@ export default function AssignmentView() {
             <button
               className="av-view-submission-btn"
               onClick={() =>
-                navigate("/teacher/classes/assignments/view/submissions", {
-                  state: { title: `${title} - Submissions` },
-                })
+                navigate(
+                  `/teacher/classes/${subjectId}/assignments/${assignmentId}/submissions`
+                )
               }
             >
-              View Submission
+              View Submissions
             </button>
           </div>
+
         </div>
       </div>
     </div>
