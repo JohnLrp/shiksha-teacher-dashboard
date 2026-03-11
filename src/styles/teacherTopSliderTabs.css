@@ -58,3 +58,8 @@
     font-size: 15px;
   }
 }
+@media (min-width: 769px) {
+  .teacherTopSlider {
+    display: none;
+  }
+}

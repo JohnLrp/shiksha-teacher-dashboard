@@ -26,13 +26,22 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
   return (
     <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
-     
-      <div className="sidebar-logo">
-        <img src={logo} alt="ShikshaCom" />
-        <div>
-          <h3>ShikshaCom</h3>
-          <p>Empowerment Through Education</p>
+      <div className="sidebar-top">
+        <div className="sidebar-logo">
+          <img src={logo} alt="ShikshaCom" />
+          <div>
+            <h3>ShikshaCom</h3>
+            <p>Empowerment Through Education</p>
+          </div>
         </div>
+
+        <button
+          className="sidebar-close"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
+        >
+          <IoClose />
+        </button>
       </div>
 
       <nav>
