@@ -181,3 +181,43 @@
 .assignment-view-btn:hover {
   background: #3d9aa8;
 }
+
+@media (max-width: 480px) {
+  .assignments-title-container {
+    padding: 14px;
+  }
+
+  .assignments-title {
+    font-size: 18px;
+  }
+
+  .assignments-list-container {
+    padding: 14px;
+  }
+
+  .assignment-row {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .assignment-detail {
+    grid-template-columns: 80px 1fr;
+    gap: 4px 8px;
+  }
+
+  .assignment-label,
+  .assignment-value {
+    font-size: 12px;
+  }
+
+  .assignment-value.bold {
+    font-size: 13px;
+  }
+
+  .assignment-view-btn {
+    width: 100%;
+    align-self: stretch;
+    border-radius: 10px;
+    text-align: center;
+  }
+}
