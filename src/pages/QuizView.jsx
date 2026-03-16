@@ -50,7 +50,7 @@ export default function QuizView() {
       </button>
 
       <div className="qv-header">
-        <h2 className="qv-title">Subject Name</h2>
+        <h2 className="qv-title">{quiz.subject_name || "Subject"}</h2>
         <div className="qv-search">
           <input type="text" placeholder="Search" />
           <FiSearch className="qv-search-icon" />
@@ -77,10 +77,10 @@ export default function QuizView() {
           </h3>
 
           <p className="qv-teacher-info">
-            Teacher -{" "}
+            {quiz.teacher_name || quiz.created_by_email} -{" "}
             {quiz.created_at
-              ? new Date(quiz.created_at).toLocaleDateString()
-              : "-"}
+             ? new Date(quiz.created_at).toLocaleDateString()
+             : "-"}
           </p>
 
           <div className="qv-dates-row">
