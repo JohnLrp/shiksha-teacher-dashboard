@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import TeacherLayout from "../layout/TeacherLayout";
@@ -25,141 +24,133 @@ import StudyMaterialView from "../pages/StudyMaterialView";
 
 import SessionRecordings from "../pages/SessionRecordings";
 import UploadRecording from "../pages/UploadRecording";
+import RecordingPlayer from "../pages/RecordingPlayer";
 
-/* LIVE SESSION PAGES */
 import LiveSessions from "../pages/LiveSessions";
 import TeacherCreateLiveSession from "../pages/TeacherCreateLiveSession";
 
 import Profile from "../pages/Profile";
 
-function RequireTeacherAuth({ children }) {
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!token) {
-      window.location.replace("https://www.shikshacom.com/login");
-    }
-  }, [token]);
-
-  if (!token) return null;
-
-  return children;
-}
-
 export default function TeacherRoutes() {
   return (
     <Routes>
-      {/* ================= DEFAULT REDIRECT ================= */}
-      <Route
-        path="/"
-        element={
-          <RequireTeacherAuth>
-            <Navigate to="/teacher/dashboard" replace />
-          </RequireTeacherAuth>
-        }
-      />
 
-      {/* ================= TEACHER LAYOUT ================= */}
-      <Route
-        path="/teacher"
-        element={
-          <RequireTeacherAuth>
-            <TeacherLayout />
-          </RequireTeacherAuth>
-        }
-      >
-        {/* ================= PROFILE ================= */}
+      {/* DEFAULT REDIRECT */}
+      <Route path="/" element={<Navigate to="/teacher/dashboard" />} />
+
+      {/* TEACHER LAYOUT */}
+      <Route path="/teacher" element={<TeacherLayout />}>
+
+        {/* PROFILE */}
         <Route path="profile" element={<Profile />} />
 
-        {/* ================= DASHBOARD ================= */}
+        {/* DASHBOARD */}
         <Route path="dashboard" element={<TeacherDashboard />} />
 
-        {/* ================= SUBJECT LIST ================= */}
+        {/* SUBJECT LIST */}
         <Route path="classes" element={<ClassesList />} />
 
-        {/* ================= SUBJECT DASHBOARD ================= */}
+        {/* SUBJECT DASHBOARD */}
         <Route path="classes/:subjectId" element={<Classes />} />
 
-        {/* ================= ASSIGNMENTS ================= */}
+        {/* ASSIGNMENTS */}
         <Route
           path="classes/:subjectId/assignments"
           element={<Assignments />}
         />
+
         <Route
           path="classes/:subjectId/assignments/create"
           element={<CreateAssignment />}
         />
+
         <Route
           path="classes/:subjectId/assignments/:assignmentId"
           element={<AssignmentView />}
         />
+
         <Route
           path="classes/:subjectId/assignments/:assignmentId/submissions"
           element={<SubmissionView />}
         />
 
-        {/* ================= QUIZZES ================= */}
+        {/* QUIZZES */}
         <Route
           path="classes/:subjectId/quizzes"
           element={<Quizzes />}
         />
+
         <Route
           path="classes/:subjectId/quizzes/create"
           element={<CreateQuiz />}
         />
+
         <Route
           path="classes/:subjectId/quizzes/:quizId"
           element={<QuizView />}
         />
+
         <Route
           path="classes/:subjectId/quizzes/:quizId/submissions"
           element={<QuizSubmissionView />}
         />
+
         <Route
-          path="classes/:subjectId/quizzes/:quizId/review"
+          path="classes/:subjectId/quizzes/:quizId/review/:attemptId"
           element={<QuizReviewView />}
         />
 
-        {/* ================= STUDY MATERIALS ================= */}
+        {/* STUDY MATERIALS */}
         <Route
           path="classes/:subjectId/study-materials"
           element={<StudyMaterials />}
         />
+
         <Route
           path="classes/:subjectId/study-materials/upload"
           element={<UploadMaterial />}
         />
+
         <Route
           path="classes/:subjectId/study-materials/:materialId"
           element={<StudyMaterialView />}
         />
 
-        {/* ================= RECORDINGS ================= */}
+        {/* SESSION RECORDINGS */}
         <Route
           path="classes/:subjectId/session-recordings"
           element={<SessionRecordings />}
         />
+
         <Route
           path="classes/:subjectId/session-recordings/upload"
           element={<UploadRecording />}
         />
 
-        {/* ================= LIVE SESSIONS ================= */}
+        <Route
+          path="classes/:subjectId/session-recordings/:recordingId/:videoId"
+          element={<RecordingPlayer />}
+        />
+
+        {/* LIVE SESSIONS */}
         <Route
           path="classes/:subjectId/live-sessions"
           element={<LiveSessions />}
         />
+
         <Route
           path="classes/:subjectId/live-sessions/create"
           element={<TeacherCreateLiveSession />}
         />
 
-        {/* ================= LIVE ROOM ================= */}
+        {/* LIVE ROOM */}
         <Route
           path="live/:id"
           element={<TeacherLiveSession />}
         />
+
       </Route>
+
     </Routes>
   );
 }
