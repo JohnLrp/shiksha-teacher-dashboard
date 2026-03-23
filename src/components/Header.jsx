@@ -62,7 +62,7 @@ export default function Header({ onMenuClick }) {
         {open && (
           <div className="dropdown">
             <div className="dropdown-header">
-              <span className="dropdown-username">teacher-test</span>
+              <span className="dropdown-username">James</span>
 
               <img
                 src={avatar || "https://i.pravatar.cc/40?img=3"}
