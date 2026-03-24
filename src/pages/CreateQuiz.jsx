@@ -7,6 +7,7 @@ const createEmptyQuestion = () => ({
   question: "",
   options: ["", "", "", ""],
   answerIndex: null,
+  explanation: "",
 });
 
 export default function CreateQuiz() {
@@ -29,6 +30,12 @@ export default function CreateQuiz() {
     setQuestions(copy);
   };
 
+  const updateExplanation = (index, value) => {
+    const copy = [...questions];
+    copy[index].explanation = value;
+    setQuestions(copy);
+   };
+
   const setCorrectAnswer = (qIndex, optIndex) => {
     const copy = [...questions];
     copy[qIndex].answerIndex = optIndex;
@@ -41,6 +48,13 @@ export default function CreateQuiz() {
 
   const handleCreate = async () => {
     try {
+
+      for (let q of questions) {
+        if (!q.explanation.trim()) {
+         alert("Explanation is required for all questions");
+         return;
+        }
+      }
       setLoading(true);
 
       const quizRes = await api.post("/teacher/quizzes/", {
@@ -60,6 +74,7 @@ export default function CreateQuiz() {
           text: q.question,
           order: i + 1,
           marks: 1,
+          explanation: q.explanation,
           choices: q.options.map((opt, index) => ({
             text: opt,
             is_correct: index === q.answerIndex,
@@ -88,6 +103,7 @@ export default function CreateQuiz() {
 
       <div className="cq-shell">
         <div className="cq-title-container">
+          <h1 style={{ color: "red" }}>EXPLANATION TEST</h1>
 
   <input
     className="cq-title-input"
@@ -149,6 +165,17 @@ export default function CreateQuiz() {
                     ))}
                   </div>
                 </div>
+
+                <div className="cq-explanation-row">
+                  <span className="cq-answer-label">Explanation:</span>
+                    <textarea
+                      className="cq-explanation-input"
+                      placeholder="Explain why this is the correct answer..."
+                      value={q.explanation}
+                       onChange={(e) => updateExplanation(qIndex, e.target.value)}
+                    />
+                </div>
+
               </div>
             ))}
           </div>
