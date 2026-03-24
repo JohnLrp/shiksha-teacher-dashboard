@@ -29,7 +29,7 @@ export default function Quizzes() {
 
   const handlePublish = async (quizId) => {
   try {
-    await api.patch(`/quizzes/${quizId}/publish/`);
+    await api.patch(`/teacher/quizzes/${quizId}/publish/`);
 
     alert("Quiz published successfully");
 
