@@ -6,7 +6,6 @@ import "../styles/create-quiz.css";
 
 const createEmptyQuestion = () => ({
   question: "",
-
   options: ["", "", "", ""],
   answerIndex: null,
   explanation: "",
@@ -16,10 +15,10 @@ export default function CreateQuiz() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { subjectId } = useParams();
+
   const [title, setTitle] = useState("");
   const [questions, setQuestions] = useState([createEmptyQuestion()]);
   const [loading, setLoading] = useState(false);
-
 
   const updateQuestion = (index, value) => {
     const copy = [...questions];
@@ -37,7 +36,7 @@ export default function CreateQuiz() {
     const copy = [...questions];
     copy[index].explanation = value;
     setQuestions(copy);
-   };
+  };
 
   const setCorrectAnswer = (qIndex, optIndex) => {
     const copy = [...questions];
@@ -51,13 +50,13 @@ export default function CreateQuiz() {
 
   const handleCreate = async () => {
     try {
-
       for (let q of questions) {
         if (!q.explanation.trim()) {
-         alert("Explanation is required for all questions");
-         return;
+          alert("Explanation is required for all questions");
+          return;
         }
       }
+
       setLoading(true);
 
       const quizRes = await api.post("/teacher/quizzes/", {
@@ -106,20 +105,18 @@ export default function CreateQuiz() {
 
       <div className="cq-shell">
         <div className="cq-title-container">
+          <input
+            className="cq-title-input"
+            type="text"
+            placeholder="Quiz Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-  <input
-    className="cq-title-input"
-    type="text"
-    placeholder="Quiz Title"
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-  />
- {/* ✅ Created by */}
-  <p className="cq-created-by">
-    Created by: {user?.name || user?.username || "You"}
-  </p>
-
-</div>
+          <p className="cq-created-by">
+            Created by: {user?.name || user?.username || "You"}
+          </p>
+        </div>
 
         <div className="cq-form-container">
           <div className="cq-questions-list">
@@ -174,38 +171,35 @@ export default function CreateQuiz() {
 
                 <div className="cq-explanation-row">
                   <span className="cq-answer-label">Explanation:</span>
-                    <textarea
-                      className="cq-explanation-input"
-                      placeholder="Explain why this is the correct answer..."
-                      value={q.explanation}
-                       onChange={(e) => updateExplanation(qIndex, e.target.value)}
-                    />
+                  <textarea
+                    className="cq-explanation-input"
+                    placeholder="Explain why this is the correct answer..."
+                    value={q.explanation}
+                    onChange={(e) => updateExplanation(qIndex, e.target.value)}
+                  />
                 </div>
-
               </div>
             ))}
           </div>
 
           <div className="cq-bottom-row">
+            <button
+              type="button"
+              className="cq-add-question-btn"
+              onClick={addQuestion}
+            >
+              Add Question
+            </button>
 
-  <button
-    type="button"
-    className="cq-add-question-btn"
-    onClick={addQuestion}
-  >
-    Add Question
-  </button>
-
-  <button
-    type="button"
-    className="cq-create-btn"
-    onClick={handleCreate}
-    disabled={loading}
-  >
-    {loading ? "Creating..." : "Create"}
-  </button>
-
-</div>
+            <button
+              type="button"
+              className="cq-create-btn"
+              onClick={handleCreate}
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
