@@ -134,7 +134,44 @@
   color: #1f2d3d;
   word-break: break-word;
 }
+.quiz-creator {
+  font-size: 12px;
+  color: #4ba7b5;
+  margin-top: 2px;
+  word-break: break-word;
+}
 
+.quiz-publish-btn {
+  background: #f0a500;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.quiz-publish-btn:hover {
+  background: #d4920a;
+}
+
+.quiz-delete-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.quiz-delete-btn:hover {
+  background: #c0392b;
+}
 .quiz-name {
   font-size: 12px;
   color: #6b7b8d;
