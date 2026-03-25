@@ -42,6 +42,17 @@ export default function Quizzes() {
     alert("Failed to publish quiz");
   }
 };
+const handleDelete = async (quizId) => {
+    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
+    try {
+      await api.delete(`/teacher/quizzes/${quizId}/`);
+      setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete quiz");
+    }
+  };
+
 
   return (
     <div className="quizzes-page">
