@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/apiClient";
+import "../styles/quiz-student-attempts-view.css";
 
 export default function QuizStudentAttemptsView() {
   const { quizId, subjectId, studentId } = useParams();
@@ -24,48 +25,71 @@ export default function QuizStudentAttemptsView() {
   }, [quizId, studentId]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <button onClick={() => navigate(-1)}>← Back</button>
+    <div className="qsav-page">
 
-      <h2>Student Attempts</h2>
+      <button className="qsav-back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Attempt No.</th>
-            <th>Name</th>
-            <th>Submitted</th>
-            <th>Score</th>
-            <th></th>
-          </tr>
-        </thead>
+      {/* ✅ ADDED WRAPPER */}
+      <div className="qsav-content-card">
 
-        <tbody>
-          {attempts.map((a) => (
-            <tr key={a.id}>
-              <td>{a.attempt_number}</td>
-              <td>{a.student_name}</td>
-              <td>
-                {new Date(a.submitted_at).toLocaleString()}
-              </td>
-              <td>
-                {a.score} / {a.total_marks}
-              </td>
-              <td>
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/teacher/classes/${subjectId}/quizzes/${quizId}/review/${a.id}`
-                    )
-                  }
-                >
-                  Review
-                </button>
-              </td>
+        <div className="qsav-title-row">
+          <h2 className="qsav-title">Student Attempts</h2>
+          <span className="qsav-count qsav-count-green">
+            {attempts.length}
+          </span>
+        </div>
+
+        <table className="qsav-table">
+          <thead>
+            <tr>
+              <th>Attempt No.</th>
+              <th>Name</th>
+              <th>Submitted</th>
+              <th>Score</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {attempts.map((a) => (
+              <tr key={a.id}>
+                <td>{a.attempt_number}</td>
+                <td>{a.student_name}</td>
+                <td>
+                  {a.submitted_at
+                    ? new Date(a.submitted_at).toLocaleString()
+                    : "-"}
+                </td>
+                <td>
+                  {a.score} / {a.total_marks}
+                </td>
+                <td>
+                  <button
+                    className="qsav-review-btn"
+                    onClick={() =>
+                      navigate(
+                        `/teacher/classes/${subjectId}/quizzes/${quizId}/review/${a.id}`
+                      )
+                    }
+                  >
+                    Review
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {attempts.length === 0 && (
+          <p style={{ padding: "30px" }}>
+            No attempts found.
+          </p>
+        )}
+
+      </div>
+
     </div>
   );
 }

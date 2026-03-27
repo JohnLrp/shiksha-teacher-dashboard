@@ -1,0 +1,79 @@
+/* Page Layout */
+.qsav-page {
+  padding: 20px;
+  background: #eef5f7;
+  min-height: 100vh;
+}
+
+/* Back Button */
+.qsav-back-btn {
+  background: none;
+  border: none;
+  color: #2c7a7b;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+/* Card */
+.qsav-content-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Title Row */
+.qsav-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.qsav-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.qsav-count {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.qsav-count-green {
+  color: #2f855a;
+}
+
+/* Table */
+.qsav-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.qsav-table th {
+  text-align: left;
+  padding: 10px;
+  color: #555;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+}
+
+.qsav-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Button */
+.qsav-review-btn {
+  background: #4aa3a2;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 16px;
+  color: white;
+  cursor: pointer;
+}
+
+.qsav-review-btn:hover {
+  background: #3c8b8a;
+}
