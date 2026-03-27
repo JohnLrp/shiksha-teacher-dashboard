@@ -81,8 +81,9 @@ export default function QuizSubmissionView() {
             <tr>
               <th>Sl No.</th>
               <th>Name</th>
-              <th>Submitted On</th>
-              <th>Score</th>
+              <th>Latest Attempt</th>
+              <th>Best Score</th>
+              <th>Attempts</th>
               <th></th>
             </tr>
           </thead>
@@ -94,22 +95,24 @@ export default function QuizSubmissionView() {
 
                 <td>{student.student_name}</td>
 
-                <td>{formatDate(student.submitted_at)}</td>
+                <td>{formatDate(student.latest_submitted_at)}</td>
 
                 <td>
-                  {student.score} / {student.total_marks}
+                    {student.best_score} / {student.total_marks}
                 </td>
+
+                <td>{student.attempts_count}</td>
 
                 <td>
                   <button
                     className="qsv-review-btn"
                     onClick={() =>
-                      navigate(
-                       `/teacher/classes/${subjectId}/quizzes/${quizId}/review/${student.id}`
+                       navigate(
+                        `/teacher/classes/${subjectId}/quizzes/${quizId}/student/${student.student_id}`
                       )
                     }
                   >
-                    Review
+                    View
                   </button>
                 </td>
               </tr>

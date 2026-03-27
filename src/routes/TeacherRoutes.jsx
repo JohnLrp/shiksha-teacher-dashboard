@@ -25,6 +25,7 @@ import LiveSessions from "../pages/LiveSessions";
 import TeacherCreateLiveSession from "../pages/TeacherCreateLiveSession";
 import Profile from "../pages/Profile";
 import ProtectedTeacherRoute from "./ProtectedTeacherRoute";
+import QuizStudentAttemptsView from "../pages/QuizStudentAttemptsView";
 
 function RedirectToMainLogin() {
   useEffect(() => {
@@ -82,6 +83,12 @@ export default function TeacherRoutes() {
           path="classes/:subjectId/quizzes/:quizId/submissions"
           element={<QuizSubmissionView />}
         />
+
+        <Route
+          path="classes/:subjectId/quizzes/:quizId/student/:studentId"
+          element={<QuizStudentAttemptsView />}
+        />
+
         <Route
           path="classes/:subjectId/quizzes/:quizId/review/:attemptId"
           element={<QuizReviewView />}
