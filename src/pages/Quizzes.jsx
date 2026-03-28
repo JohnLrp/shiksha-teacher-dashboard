@@ -11,12 +11,12 @@ export default function Quizzes() {
 
   const [quizzes, setQuizzes] = useState([]);
   const [publishingId, setPublishingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchQuizzes() {
       try {
         const res = await api.get(`/teacher/subjects/${subjectId}/quizzes/`);
-        console.log("QUIZ DATA:", res.data);
         setQuizzes(res.data.results || res.data);
       } catch (err) {
         console.error("Failed to load quizzes", err);
@@ -52,6 +52,22 @@ export default function Quizzes() {
 
   return (
     <div className="quizzes-page">
+
+      {/* ── Publish warning modal ── */}
+      {showModal && (
+        <div className="qz-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="qz-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="qz-modal-icon">⚠️</div>
+            <h3 className="qz-modal-title">Quiz Not Published</h3>
+            <p className="qz-modal-msg">
+              This quiz must be published before it can be viewed.
+            </p>
+            <button className="qz-modal-btn" onClick={() => setShowModal(false)}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         className="quizzes-back-btn"
@@ -109,9 +125,13 @@ export default function Quizzes() {
               <div className="quiz-actions">
                 <button
                   className="quiz-view-btn"
-                  onClick={() =>
-                    navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}`)
-                  }
+                  onClick={() => {
+                    if (!quiz.is_published) {
+                      setShowModal(true);
+                      return;
+                    }
+                    navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}`);
+                  }}
                 >
                   View
                 </button>

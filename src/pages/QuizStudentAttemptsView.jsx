@@ -63,8 +63,16 @@ export default function QuizStudentAttemptsView() {
                     : "-"}
                 </td>
                 <td>
-                  {a.score} / {a.total_marks}
-                </td>
+  {(() => {
+    const pct = a.total_marks ? (a.score / a.total_marks) * 100 : 0;
+    const cls = pct >= 70 ? "qsav-score-high" : pct >= 40 ? "qsav-score-mid" : "qsav-score-low";
+    return (
+      <span className={`qsav-score-pill ${cls}`}>
+        {a.score} / {a.total_marks}
+      </span>
+    );
+  })()}
+</td>
                 <td>
                   <button
                     className="qsav-review-btn"
