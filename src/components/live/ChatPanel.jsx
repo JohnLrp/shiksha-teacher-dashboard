@@ -24,12 +24,15 @@ export default function ChatPanel({ role }) {
         if (msg.type === "raise-hand") return;
       } catch {}
 
-      const isTeacher = participant.permissions?.canPublish;
+      const meta = participant.metadata ? JSON.parse(participant.metadata) : null;
+      const isTeacher = meta?.role === "teacher" || participant.permissions?.canPublish;
+
+      const displayName = participant.name || participant.identity;
 
       setMessages((prev) => [
         ...prev,
         {
-          sender: participant.identity,
+          sender: displayName,
           text,
           isTeacher,
           time: new Date(),
@@ -53,7 +56,7 @@ export default function ChatPanel({ role }) {
     setMessages((prev) => [
       ...prev,
       {
-        sender: "Me",
+        sender: "You",
         text: input,
         isMe: true,
         time: new Date(),

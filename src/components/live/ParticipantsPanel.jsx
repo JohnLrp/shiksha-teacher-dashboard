@@ -28,8 +28,11 @@ export default function ParticipantsPanel({ raisedHands = {} }) {
       {open && (
         <div className="participants-row">
           {sortedParticipants.map((p) => {
-            const isTeacher = p.permissions?.canPublish;
+            const meta = p.metadata ? JSON.parse(p.metadata) : null;
+            const isTeacher = meta?.role === "teacher" || p.permissions?.canPublish;
+
             const handRaised = raisedHands[p.identity];
+            const displayName = p.name || p.identity;
 
             return (
               <div
@@ -37,11 +40,11 @@ export default function ParticipantsPanel({ raisedHands = {} }) {
                 className={`participant-card${handRaised ? " hand-raised" : ""}`}
               >
                 <div className="participant-avatar">
-                  {p.identity.charAt(0).toUpperCase()}
+                  {displayName.charAt(0).toUpperCase()}
                 </div>
 
                 <div className="participant-name">
-                  {p.identity}
+                  {displayName}
                   {isTeacher && (
                     <span style={{ fontSize: 10, fontWeight: 600, marginLeft: 6, color: "var(--brand)", opacity: 0.8 }}>
                       TEACHER
