@@ -236,25 +236,81 @@
   background: linear-gradient(180deg, #ffffff, #f6fbfb);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+.chat-empty{
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Row alignment */
+.chat-row{
+  display: flex;
+}
+.chat-row.me{
+  justify-content: flex-end;
+}
+.chat-row.other{
+  justify-content: flex-start;
 }
 
 .chat-bubble{
-  max-width: 86%;
+  max-width: 82%;
   background: #f2f7f7;
   border: 1px solid rgba(0,0,0,.06);
   border-radius: 14px;
-  padding: 10px 12px;
-  box-shadow: 0 8px 16px rgba(0,0,0,.05);
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
   color: var(--text);
+}
+
+/* My messages — teal */
+.chat-bubble.me-bubble{
+  background: var(--brand);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Teacher messages — deep teal/blue */
+.chat-bubble.teacher-bubble{
+  background: #0369a1;
+  color: #fff;
+  border-color: transparent;
 }
 
 .chat-name{
   display: block;
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 800;
   color: var(--muted);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  letter-spacing: 0.2px;
+}
+
+.chat-bubble.me-bubble .chat-name,
+.chat-bubble.teacher-bubble .chat-name{
+  color: rgba(255,255,255,0.75);
+}
+
+.teacher-tag{
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.chat-text{
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-time{
+  font-size: 10px;
+  opacity: 0.55;
+  margin-top: 4px;
+  text-align: right;
 }
 
 .chat-input-area{
@@ -272,6 +328,7 @@
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,.14);
   outline: none;
+  font-size: 13px;
 }
 
 .chat-input-area input:focus{
@@ -286,6 +343,9 @@
   padding: 10px 12px;
   font-weight: 900;
   background: var(--brand-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-input-area button:last-child{
@@ -311,6 +371,7 @@
 
 .raise-hand-btn:hover{
   transform: translateY(-1px);
+  background: #fef3c7;
 }
 
 /* TEACHER / LIVE CONTROLS*/
@@ -337,16 +398,20 @@
 .teacher-controls .control-btn{
   border: none;
   outline: none;
-  min-width: 110px;
+  min-width: 90px;
   height: 44px;
   padding: 0 16px;
   border-radius: 999px;
   background: rgba(255,255,255,0.12);
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .control-bar button:hover,

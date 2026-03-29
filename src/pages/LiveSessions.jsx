@@ -80,11 +80,21 @@ export default function LiveSessions() {
 
         <div className="live-sessions-grid">
 
-          {loading && <p>Loading sessions...</p>}
-          {error && <p style={{ color: "red" }}>{error}</p>}
+          {loading && (
+            <p className="live-sessions-empty">Loading sessions…</p>
+          )}
+          {error && (
+            <p className="live-sessions-empty" style={{ color: "#b91c1c" }}>
+              ⚠ {error}
+            </p>
+          )}
 
           {!loading && !error && sessions.length === 0 && (
-            <p>No sessions scheduled yet.</p>
+            <div className="live-sessions-empty">
+              <p style={{ fontSize: 32, margin: "0 0 8px" }}>📅</p>
+              <p style={{ margin: 0, fontWeight: 600 }}>No sessions scheduled yet.</p>
+              <p style={{ margin: "4px 0 0", fontSize: 12 }}>Click "Schedule Live Session" to create one.</p>
+            </div>
           )}
 
           {!loading &&
