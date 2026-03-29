@@ -2,8 +2,9 @@ import { useTracks, VideoTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import ParticipantsPanel from "./ParticipantsPanel";
 import ChatPanel from "./ChatPanel";
+import TeacherControls from "./TeacherControls";
 import { useState } from "react";
-import "../../styles/classroom.css";
+import "../../styles/live.css";
 
 export default function ClassroomUI({ role }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -13,7 +14,6 @@ export default function ClassroomUI({ role }) {
     { source: Track.Source.ScreenShare, withPlaceholder: false },
   ]);
 
-  // Detect teacher (publisher)
   const teacherTrack = tracks.find(
     (t) => t.participant.permissions?.canPublish
   );
@@ -21,39 +21,38 @@ export default function ClassroomUI({ role }) {
   if (!teacherTrack) {
     return (
       <div className="waiting-screen">
-        <h2>Waiting for teacher to start video…</h2>
+        <h2>
+          {role === "teacher"
+            ? "Enable your camera to start the session"
+            : "Waiting for teacher to start video…"}
+        </h2>
       </div>
     );
   }
 
   return (
-    <div className="classroom-container">
+    <div className="classroom-layout">
 
-      {/* MAIN VIDEO */}
-      <div className={`video-section ${sidebarOpen ? "" : "full"}`}>
-        
-        <div className="video-wrapper">
-          <VideoTrack trackRef={teacherTrack} />
-        </div>
+      {/* MAIN VIDEO STAGE */}
+      <div className={`main-stage${!sidebarOpen ? " full-width" : ""}`}>
+
+        <VideoTrack trackRef={teacherTrack} />
+
+        {role === "teacher" && <TeacherControls />}
 
         <button
-          className="toggle-btn"
+          className="toggle-sidebar-btn"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? "Hide Panel" : "Show Panel"}
         </button>
       </div>
 
-      {/* SIDEBAR */}
+      {/* RIGHT SIDEBAR */}
       {sidebarOpen && (
-        <div className="sidebar">
-          <div className="participants-section">
-            <ParticipantsPanel />
-          </div>
-
-          <div className="chat-section">
-            <ChatPanel role={role} />
-          </div>
+        <div className="right-sidebar">
+          <ParticipantsPanel />
+          <ChatPanel role={role} />
         </div>
       )}
     </div>

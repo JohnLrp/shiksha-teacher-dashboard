@@ -1,6 +1,6 @@
 import { useParticipants, useRoomContext } from "@livekit/components-react";
 import { useEffect, useState } from "react";
-import "../../styles/participants.css";
+import { IoPeople } from "react-icons/io5";
 
 export default function ParticipantsPanel() {
   const participants = useParticipants();
@@ -36,50 +36,53 @@ export default function ParticipantsPanel() {
     return () => room.off("dataReceived", handleData);
   }, [room]);
 
-  // ✅ teacher first (priority)
+  // teacher first
   const sortedParticipants = [...participants].sort((a, b) => {
-    const aIsTeacher = a.permissions?.canPublish;
-    const bIsTeacher = b.permissions?.canPublish;
+    const aIsTeacher = a.permissions?.canPublish ? 1 : 0;
+    const bIsTeacher = b.permissions?.canPublish ? 1 : 0;
     return bIsTeacher - aIsTeacher;
   });
 
   return (
-    <div className="participants-container">
+    <div className="participants-wrapper">
 
       {/* HEADER */}
       <div
         className="participants-header"
         onClick={() => setOpen(!open)}
       >
-        <span>Participants ({participants.length})</span>
-        <span>{open ? "▾" : "▸"}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <IoPeople size={16} />
+          Participants ({participants.length})
+        </span>
+        <span style={{ fontSize: 12 }}>{open ? "▾" : "▸"}</span>
       </div>
 
       {/* LIST */}
       {open && (
-        <div className="participants-list">
+        <div className="participants-row">
           {sortedParticipants.map((p) => {
             const isTeacher = p.permissions?.canPublish;
+            const handRaised = raisedHands[p.identity];
 
             return (
               <div
                 key={p.identity}
-                className={`participant-item ${
-                  isTeacher ? "teacher" : ""
-                }`}
+                className={`participant-card${handRaised ? " hand-raised" : ""}`}
               >
-                <div className="avatar">
+                <div className="participant-avatar">
                   {p.identity.charAt(0).toUpperCase()}
                 </div>
 
-                <div className="participant-info">
-                  <span className="name">
-                    {p.identity}
-                    {isTeacher && " (Teacher)"}
-                  </span>
-
-                  {raisedHands[p.identity] && (
-                    <span className="raise">✋</span>
+                <div className="participant-name">
+                  {p.identity}
+                  {isTeacher && (
+                    <span style={{ fontSize: 10, fontWeight: 600, marginLeft: 6, color: "var(--brand)", opacity: 0.8 }}>
+                      TEACHER
+                    </span>
+                  )}
+                  {handRaised && (
+                    <span className="raised-hand-icon">✋</span>
                   )}
                 </div>
               </div>

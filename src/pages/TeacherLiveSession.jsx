@@ -3,38 +3,10 @@ import { useEffect, useState } from "react";
 import {
   LiveKitRoom,
   RoomAudioRenderer,
-  useRoomContext,
 } from "@livekit/components-react";
 
 import api from "../api/apiClient";
 import ClassroomUI from "../components/live/ClassroomUI";
-import TeacherControls from "../components/live/TeacherControls";
-
-function LeaveButton() {
-  const room = useRoomContext();
-  const navigate = useNavigate();
-
-  const leave = async () => {
-    await room.disconnect();
-    navigate(-1);
-  };
-
-  return (
-    <button
-      style={{
-        position: "absolute",
-        top: 20,
-        right: 20,
-        background: "red",
-        color: "white",
-        padding: "10px",
-      }}
-      onClick={leave}
-    >
-      Leave Session
-    </button>
-  );
-}
 
 export default function TeacherLiveSession() {
   const { id } = useParams();
@@ -100,9 +72,7 @@ export default function TeacherLiveSession() {
         navigate(-1);
       }}
     >
-      <LeaveButton />
       <ClassroomUI role="teacher" />
-      <TeacherControls />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );

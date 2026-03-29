@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { IoChevronBack } from "react-icons/io5";
 import api from "../api/apiClient";
 import "../styles/live-session-create.css";
 
@@ -67,39 +68,45 @@ export default function TeacherCreateLiveSession() {
   return (
     <div className="lsc-page">
 
-      {/* Back */}
       <button className="lsc-back-btn" onClick={() => navigate(-1)}>
-        ← Back
+        <IoChevronBack /> Back
       </button>
 
       <div className="lsc-card">
-        <h2 className="lsc-title">Create Live Session</h2>
+        <h2 className="lsc-title">Schedule Live Session</h2>
+        <p className="lsc-subtitle">Fill in the details to create a new live class for your students.</p>
 
-        {error && <p className="lsc-error">{error}</p>}
+        {error && <div className="lsc-error">⚠ {error}</div>}
 
         <div className="lsc-form">
 
-          <input
-            className="lsc-input"
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) =>
-              setForm({ ...form, title: e.target.value })
-            }
-          />
+          <div className="lsc-field">
+            <label className="lsc-label">Session Title *</label>
+            <input
+              className="lsc-input"
+              placeholder="e.g. Chapter 5 — Introduction to Algebra"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+            />
+          </div>
 
-          <textarea
-            className="lsc-textarea"
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) =>
-              setForm({ ...form, description: e.target.value })
-            }
-          />
+          <div className="lsc-field">
+            <label className="lsc-label">Description</label>
+            <textarea
+              className="lsc-textarea"
+              placeholder="What will you cover in this session? (optional)"
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+            />
+          </div>
+
+          <hr className="lsc-divider" />
 
           <div className="lsc-row">
-            <div>
-              <label>Start Time</label>
+            <div className="lsc-field">
+              <label className="lsc-label">Start Time *</label>
               <input
                 type="datetime-local"
                 className="lsc-input"
@@ -111,8 +118,8 @@ export default function TeacherCreateLiveSession() {
               />
             </div>
 
-            <div>
-              <label>End Time</label>
+            <div className="lsc-field">
+              <label className="lsc-label">End Time *</label>
               <input
                 type="datetime-local"
                 className="lsc-input"
@@ -130,7 +137,7 @@ export default function TeacherCreateLiveSession() {
             onClick={handleSubmit}
             disabled={loading}
           >
-            {loading ? "Creating..." : "Create Session"}
+            {loading ? "Creating Session…" : "Create Live Session"}
           </button>
 
         </div>

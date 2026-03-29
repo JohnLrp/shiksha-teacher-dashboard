@@ -1,6 +1,6 @@
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useEffect, useState, useRef } from "react";
-import "../../styles/chat.css";
+import { IoSend } from "react-icons/io5";
 
 export default function ChatPanel({ role }) {
   const { localParticipant } = useLocalParticipant();
@@ -11,7 +11,6 @@ export default function ChatPanel({ role }) {
 
   const messagesEndRef = useRef(null);
 
-  // ✅ auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -66,7 +65,6 @@ export default function ChatPanel({ role }) {
 
   const raiseHand = async () => {
     const message = { type: "raise-hand" };
-
     const encoder = new TextEncoder();
     await localParticipant.publishData(
       encoder.encode(JSON.stringify(message)),
@@ -81,31 +79,29 @@ export default function ChatPanel({ role }) {
     });
 
   return (
-    <div className="chat-container">
+    <div className="chat-panel">
 
       {/* MESSAGES */}
       <div className="chat-messages">
+        {messages.length === 0 && (
+          <p className="chat-empty">No messages yet. Say hello!</p>
+        )}
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`chat-row ${msg.isMe ? "me" : "other"}`}
           >
             <div
-              className={`chat-bubble 
-                ${msg.isMe ? "me-bubble" : ""}
-                ${msg.isTeacher ? "teacher-bubble" : ""}
-              `}
+              className={`chat-bubble ${msg.isMe ? "me-bubble" : ""} ${msg.isTeacher ? "teacher-bubble" : ""}`}
             >
-              <div className="chat-header">
-                <span className="chat-name">
-                  {msg.isMe ? "You" : msg.sender}
-                </span>
-                <span className="chat-time">
-                  {formatTime(msg.time)}
-                </span>
-              </div>
-
+              <span className="chat-name">
+                {msg.isMe ? "You" : msg.sender}
+                {msg.isTeacher && !msg.isMe && (
+                  <span className="teacher-tag"> • Teacher</span>
+                )}
+              </span>
               <div className="chat-text">{msg.text}</div>
+              <div className="chat-time">{formatTime(msg.time)}</div>
             </div>
           </div>
         ))}
@@ -115,7 +111,11 @@ export default function ChatPanel({ role }) {
       {/* INPUT */}
       <div className="chat-input-area">
         {role === "student" && (
-          <button onClick={raiseHand} className="raise-btn">
+          <button
+            onClick={raiseHand}
+            className="raise-hand-btn"
+            title="Raise hand"
+          >
             ✋
           </button>
         )}
@@ -123,11 +123,13 @@ export default function ChatPanel({ role }) {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type message..."
+          placeholder="Type a message…"
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
-        <button onClick={sendMessage}>➤</button>
+        <button onClick={sendMessage} title="Send">
+          <IoSend size={16} />
+        </button>
       </div>
     </div>
   );
