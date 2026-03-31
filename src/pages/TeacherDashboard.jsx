@@ -171,10 +171,15 @@ export default function TeacherDashboard() {
   // ---------------- DESKTOP ----------------
   return (
     <div className="dashboard">
-
       <div className="dash-top">
         <div className="dash-live-section">
-          <h3>Upcoming Live Sessions</h3>
+          <div className="dash-live-header">
+            <h3 className="dash-section-title">Upcoming Live Sessions</h3>
+            <div className="dash-remaining">
+              {sessions.length} Classes (Remaining classes)
+            </div>
+          </div>
+
           <div className="dash-live-row">
             {sessions.length === 0 && <p>No sessions</p>}
             {sessions.map((s) => (
@@ -182,7 +187,8 @@ export default function TeacherDashboard() {
                 key={s.id}
                 subject={s.subject}
                 topic={s.topic}
-                timing={new Date(s.dateTime).toLocaleString()}
+                startsIn={s.startsIn}
+                timing={s.timing || new Date(s.dateTime).toLocaleString()}
               />
             ))}
           </div>
@@ -192,46 +198,96 @@ export default function TeacherDashboard() {
       </div>
 
       <div className="dash-bottom">
-
         <div className="dash-card">
-          <h4>Assignments</h4>
-          {filteredAssignments.length === 0 && <p>No assignments</p>}
-          {filteredAssignments.map((a) => (
-            <AssignmentItem
-              key={a.id}
-              id={a.title}
-              subject={a.teacher}
-              dueDate={new Date(a.due).toLocaleDateString()}
-            />
-          ))}
+          <div className="dash-card-header">
+            <h4>Assignments</h4>
+
+            <div className="dash-pills">
+              <button
+                type="button"
+                className={`dash-pill pill-due ${assignFilter === "due" ? "pill-active" : ""}`}
+                onClick={() => toggleFilter(assignFilter, "due", setAssignFilter)}
+              >
+                Due
+              </button>
+
+              <button
+                type="button"
+                className={`dash-pill pill-overdue ${assignFilter === "overdue" ? "pill-active" : ""}`}
+                onClick={() => toggleFilter(assignFilter, "overdue", setAssignFilter)}
+              >
+                Over Due
+              </button>
+            </div>
+          </div>
+
+          <div className="dash-card-body">
+            {filteredAssignments.length === 0 && <p>No assignments</p>}
+            {filteredAssignments.map((a) => (
+              <AssignmentItem
+                key={a.id}
+                id={a.title}
+                subject={a.teacher}
+                dueDate={new Date(a.due).toLocaleDateString()}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="dash-card">
-          <h4>Quiz</h4>
-          {filteredQuizzes.length === 0 && <p>No quizzes</p>}
-          {filteredQuizzes.map((q) => (
-            <QuizItem
-              key={q.id}
-              id={q.title}
-              subject={q.teacher}
-              dueDate={new Date(q.due).toLocaleDateString()}
-            />
-          ))}
+          <div className="dash-card-header">
+            <h4>Notification</h4>
+
+            <select
+              className="dash-filter"
+              value={activityFilter}
+              onChange={(e) => setActivityFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="assignment">Assignment</option>
+              <option value="live-session">Live Session</option>
+              <option value="quiz">Quiz</option>
+            </select>
+          </div>
+
+          <div className="dash-card-body">
+            {filteredActivities.length === 0 && <p>No notifications</p>}
+            {filteredActivities.map((item) => (
+              <ActivityItem
+                key={item.id}
+                date={new Date(item.created_at).toLocaleDateString()}
+                label={item.type}
+                lines={[item.title]}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="dash-card">
-          <h4>Notifications</h4>
-          {filteredActivities.length === 0 && <p>No notifications</p>}
-          {filteredActivities.map((item) => (
-            <ActivityItem
-              key={item.id}
-              date={new Date(item.created_at).toLocaleDateString()}
-              label={item.type}
-              lines={[item.title]}
-            />
-          ))}
-        </div>
+          <div className="dash-card-header">
+            <h4>Schedule</h4>
 
+            <select className="dash-filter" defaultValue="all">
+              <option value="all">All</option>
+              <option value="assignment">Assignment</option>
+              <option value="live-session">Live Session</option>
+              <option value="quiz">Quiz</option>
+            </select>
+          </div>
+
+          <div className="dash-card-body">
+            {filteredQuizzes.length === 0 && filteredActivities.length === 0 && <p>No schedule</p>}
+
+            {filteredActivities.map((item) => (
+              <ActivityItem
+                key={`schedule-${item.id}`}
+                date={new Date(item.created_at).toLocaleDateString()}
+                label={item.type}
+                lines={[item.title]}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
