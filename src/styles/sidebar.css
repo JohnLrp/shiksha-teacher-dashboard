@@ -56,6 +56,16 @@
   font-weight: 600;
   opacity: 1;
 }
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  opacity: 1;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 
 .menu-icon {
   font-size: 18px;
