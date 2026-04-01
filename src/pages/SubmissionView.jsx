@@ -11,11 +11,8 @@ export default function SubmissionView() {
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // NEW STATES
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all | submitted | pending
-  const [sortSubmittedFirst, setSortSubmittedFirst] = useState(true);
 
   const backPath = `/teacher/classes/${subjectId}/assignments`;
 
@@ -35,7 +32,6 @@ export default function SubmissionView() {
         const res = await api.get(
           `/assignments/teacher/${assignmentId}/submissions/`
         );
-
         const formatted = res.data.map((s) => ({
           id: s.id,
           name: s.student_name,
@@ -43,7 +39,6 @@ export default function SubmissionView() {
           status: s.submitted_file ? "Submitted" : "Pending",
           file: s.submitted_file,
         }));
-
         setStudents(formatted);
       } catch (err) {
         console.error("Failed to load submissions", err);
@@ -55,54 +50,33 @@ export default function SubmissionView() {
     if (assignmentId) fetchSubmissions();
   }, [assignmentId]);
 
-  // COUNTS
   const total = students.length;
-  const submittedCount = students.filter(
-    (s) => s.status === "Submitted"
-  ).length;
+  const submittedCount = students.filter((s) => s.status === "Submitted").length;
   const pendingCount = total - submittedCount;
 
-  // FILTER + SEARCH + SORT
   const filteredStudents = students
-    .filter((s) =>
-      s.name.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
     .filter((s) => {
       if (filter === "submitted") return s.status === "Submitted";
       if (filter === "pending") return s.status === "Pending";
       return true;
     })
-    .sort((a, b) => {
-      if (sortSubmittedFirst) {
-        return a.status === b.status
-          ? 0
-          : a.status === "Submitted"
-          ? -1
-          : 1;
-      } else {
-        return a.status === b.status
-          ? 0
-          : a.status === "Pending"
-          ? -1
-          : 1;
-      }
-    });
+    // submitted always first
+    .sort((a, b) =>
+      a.status === b.status ? 0 : a.status === "Submitted" ? -1 : 1
+    );
 
-  if (loading) return <div>Loading submissions...</div>;
+  if (loading) return <div className="sv-loading">Loading submissions...</div>;
 
   return (
     <div className="sv-page">
 
-      <button
-        className="sv-back-btn"
-        onClick={() => navigate(backPath)}
-      >
+      <button className="sv-back-btn" onClick={() => navigate(backPath)}>
         <IoChevronBack /> Back
       </button>
 
       <div className="sv-header">
         <h2 className="sv-title">Assignment Submissions</h2>
-
         <div className="sv-search">
           <input
             type="text"
@@ -116,42 +90,49 @@ export default function SubmissionView() {
 
       <div className="sv-content-card">
 
-        {/* SUMMARY (NOW CLICKABLE) */}
+        {/* Summary */}
         <div className="sv-summary">
-
-          <span
-            className={`sv-submitted-count ${filter === "submitted" ? "active" : ""}`}
-            onClick={() => setFilter("submitted")}
+          <div
+            className={`sv-stat-chip submitted ${filter === "submitted" ? "active" : ""}`}
+            onClick={() => setFilter(filter === "submitted" ? "all" : "submitted")}
+            title="Click to filter submitted"
           >
-            {submittedCount}/{total} Submitted
-          </span>
+            <span className="sv-stat-number">{submittedCount}</span>
+            <span className="sv-stat-slash">/</span>
+            <span className="sv-stat-total">{total}</span>
+            <span className="sv-stat-label">Submitted</span>
+          </div>
 
-          <span
-            className={`sv-pending-count ${filter === "pending" ? "active" : ""}`}
-            onClick={() => setFilter("pending")}
+          <div
+            className={`sv-stat-chip pending ${filter === "pending" ? "active" : ""}`}
+            onClick={() => setFilter(filter === "pending" ? "all" : "pending")}
+            title="Click to filter pending"
           >
-            {pendingCount}/{total} Pending
-          </span>
+            <span className="sv-stat-number">{pendingCount}</span>
+            <span className="sv-stat-slash">/</span>
+            <span className="sv-stat-total">{total}</span>
+            <span className="sv-stat-label">Pending</span>
+          </div>
 
-          <button
-            className="sv-clear-filter"
-            onClick={() => setFilter("all")}
-          >
-            Reset
-          </button>
-
+          {filter !== "all" && (
+            <button className="sv-clear-filter" onClick={() => setFilter("all")}>
+              Reset
+            </button>
+          )}
         </div>
 
-        {/* SORT BUTTON */}
-        <div className="sv-sort-row">
-          <button
-            className="sv-sort-btn"
-            onClick={() => setSortSubmittedFirst((prev) => !prev)}
-          >
-            Sort: {sortSubmittedFirst ? "Submitted First" : "Pending First"}
-          </button>
+        {/* Progress bar */}
+        <div className="sv-progress-bar-track">
+          <div
+            className="sv-progress-bar-fill"
+            style={{ width: total ? `${(submittedCount / total) * 100}%` : "0%" }}
+          />
         </div>
+        <p className="sv-progress-label">
+          {total ? Math.round((submittedCount / total) * 100) : 0}% submitted
+        </p>
 
+        {/* Table */}
         <table className="sv-table">
           <thead>
             <tr>
@@ -162,38 +143,30 @@ export default function SubmissionView() {
               <th></th>
             </tr>
           </thead>
-
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
+                <td colSpan="5" className="sv-empty">
                   No matching results
                 </td>
               </tr>
             ) : (
               filteredStudents.map((student, index) => (
-                <tr key={student.id}>
-
+                <tr key={student.id} className="sv-table-row">
                   <td>{index + 1}</td>
-
-                  <td>{student.name}</td>
-
+                  <td className="sv-name-cell">{student.name}</td>
                   <td>{formatDate(student.submittedOn)}</td>
-
                   <td>
                     <span
-                      className={
-                        student.status === "Submitted"
-                          ? "sv-status-submitted"
-                          : "sv-status-pending"
-                      }
+                      className={`sv-status-badge ${
+                        student.status === "Submitted" ? "submitted" : "pending"
+                      }`}
                     >
                       {student.status}
                     </span>
                   </td>
-
                   <td>
-                    {student.file && (
+                    {student.file ? (
                       <a
                         href={student.file}
                         target="_blank"
@@ -202,9 +175,10 @@ export default function SubmissionView() {
                       >
                         Review
                       </a>
+                    ) : (
+                      <span className="sv-no-file">—</span>
                     )}
                   </td>
-
                 </tr>
               ))
             )}
