@@ -38,6 +38,9 @@ export default function SubmissionView() {
           submittedOn: s.submitted_at,
           status: s.submitted_file ? "Submitted" : "Pending",
           file: s.submitted_file,
+
+          // ✅ already correct
+          submissionStatus: s.submission_status || "",
         }));
         setStudents(formatted);
       } catch (err) {
@@ -61,7 +64,6 @@ export default function SubmissionView() {
       if (filter === "pending") return s.status === "Pending";
       return true;
     })
-    // submitted always first
     .sort((a, b) =>
       a.status === b.status ? 0 : a.status === "Submitted" ? -1 : 1
     );
@@ -77,6 +79,20 @@ export default function SubmissionView() {
 
       <div className="sv-header">
         <h2 className="sv-title">Assignment Submissions</h2>
+
+        {/* ✅ NEW: DOWNLOAD ALL BUTTON */}
+        <button
+          className="sv-review-btn"
+          style={{ marginLeft: "10px" }}
+          onClick={() =>
+            window.open(
+              `/assignments/teacher/${assignmentId}/download-all/`
+            )
+          }
+        >
+          Download All
+        </button>
+
         <div className="sv-search">
           <input
             type="text"
@@ -95,7 +111,6 @@ export default function SubmissionView() {
           <div
             className={`sv-stat-chip submitted ${filter === "submitted" ? "active" : ""}`}
             onClick={() => setFilter(filter === "submitted" ? "all" : "submitted")}
-            title="Click to filter submitted"
           >
             <span className="sv-stat-number">{submittedCount}</span>
             <span className="sv-stat-slash">/</span>
@@ -106,7 +121,6 @@ export default function SubmissionView() {
           <div
             className={`sv-stat-chip pending ${filter === "pending" ? "active" : ""}`}
             onClick={() => setFilter(filter === "pending" ? "all" : "pending")}
-            title="Click to filter pending"
           >
             <span className="sv-stat-number">{pendingCount}</span>
             <span className="sv-stat-slash">/</span>
@@ -157,13 +171,28 @@ export default function SubmissionView() {
                   <td className="sv-name-cell">{student.name}</td>
                   <td>{formatDate(student.submittedOn)}</td>
                   <td>
-                    <span
-                      className={`sv-status-badge ${
-                        student.status === "Submitted" ? "submitted" : "pending"
-                      }`}
-                    >
-                      {student.status}
-                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span
+                        className={`sv-status-badge ${
+                          student.status === "Submitted" ? "submitted" : "pending"
+                        }`}
+                      >
+                        {student.status}
+                      </span>
+
+                      {/* ✅ Late / On time */}
+                      {student.status === "Submitted" && (
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: student.submissionStatus === "Late" ? "red" : "green",
+                          }}
+                        >
+                          {student.submissionStatus}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td>
                     {student.file ? (

@@ -82,16 +82,24 @@
   min-height: 0;
 }
 
+/* ✅ MAIN CARD NOW SPLIT */
 .um-form-card {
   background: #f0ece4;
   border-radius: 12px;
   padding: 36px 48px;
   width: 100%;
-  max-width: 420px;
+  max-width: 900px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* LEFT FORM */
+.um-form-left {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .um-form-heading {
@@ -99,7 +107,6 @@
   font-weight: 700;
   color: #1f2d3d;
   margin: 0 0 8px 0;
-  text-align: center;
 }
 
 .um-field {
@@ -125,51 +132,106 @@
   background: transparent;
   color: #333;
   outline: none;
-  text-align: center;
+  text-align: left;
 }
 
 .um-input:focus {
   border-bottom-color: #4ba7b5;
 }
 
-.um-file-list {
+/* ✅ RIGHT UPLOAD PANEL */
+.um-upload-panel {
+  width: 320px;
+  background: #4b6482;
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.um-file-name {
-  font-size: 12px;
-  color: #555;
-  background: #e0dbd2;
-  padding: 4px 10px;
-  border-radius: 4px;
+.um-upload-title {
+  text-align: center;
+  font-weight: 600;
 }
 
+/* DASHED DROP BOX */
 .um-add-attachment-btn {
   background: transparent;
-  color: #4ba7b5;
-  border: 2px solid #4ba7b5;
-  border-radius: 20px;
-  padding: 8px 24px;
+  color: white;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  padding: 20px;
   font-size: 13px;
-  font-weight: 600;
   cursor: pointer;
+  text-align: center;
 }
 
 .um-add-attachment-btn:hover {
-  background: #4ba7b5;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
+/* FILE LIST */
+.um-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* FILE CARD */
+.um-file-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.um-file-card span {
+  display: block;
+  font-weight: 500;
+}
+
+.um-file-card small {
+  opacity: 0.7;
+}
+
+/* PROGRESS BAR */
+.um-progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  margin: 6px 0;
+  overflow: hidden;
+}
+
+.um-progress-fill {
+  height: 100%;
+  background: #6fcf97;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* UPLOADED */
+.um-uploaded {
+  color: #6fcf97;
+  font-weight: bold;
+}
+
+/* TEXT BELOW BOX */
+.um-upload-info {
+  font-size: 11px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* UPLOAD BUTTON */
 .um-upload-btn {
   background: #38b89a;
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 36px;
+  padding: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

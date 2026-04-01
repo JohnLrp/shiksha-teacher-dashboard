@@ -1,8 +1,9 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
 import { FaRegFolder } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../api/apiClient";
 import "../styles/study-material-view.css";
 
 const getFileExt = (name = "") => {
@@ -21,13 +22,33 @@ const extColor = (ext) => {
 
 export default function StudyMaterialView() {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { materialId } = useParams();
 
-  const material = state || {};
-  const files = material.files || [];
+  const [material, setMaterial] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(null);
+
+  useEffect(() => {
+    loadMaterial();
+  }, [materialId]);
+
+  const loadMaterial = async () => {
+    try {
+      const res = await api.get(`/materials/materials/${materialId}/`);
+      setMaterial(res.data);
+    } catch (err) {
+      console.error("Failed to load material", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (!material) return <div>Material not found</div>;
+
+  const files = material.files || [];
 
   const filtered = files.filter((f) =>
     f.file_name?.toLowerCase().includes(search.toLowerCase())
@@ -90,7 +111,7 @@ export default function StudyMaterialView() {
             ) : (
               <div className="smv-files-list">
                 {filtered.map((file) => {
-                  const url = `https://api.shikshacom.com${file.file}`;
+                  const url = file.file_url || `https://api.shikshacom.com${file.file}`;
                   const ext = getFileExt(file.file_name);
                   const color = extColor(ext);
                   return (

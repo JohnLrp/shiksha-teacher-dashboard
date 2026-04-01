@@ -6,6 +6,7 @@ import { MdDelete } from "react-icons/md";
 import api from "../api/apiClient";
 import "../styles/study-materials.css";
 
+
 export default function StudyMaterials() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
@@ -14,7 +15,7 @@ export default function StudyMaterials() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);
-  const [confirmId, setConfirmId] = useState(null); // inline confirm
+  const [confirmId, setConfirmId] = useState(null);
 
   useEffect(() => {
     if (!subjectId) return;
@@ -35,7 +36,7 @@ export default function StudyMaterials() {
   const handleDelete = async (id) => {
     setDeletingId(id);
     try {
-      await api.delete(`/materials/materials/${id}/`);
+      await api.delete(`/materials/materials/${id}/delete/`);
       setMaterials((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
       console.error("Delete failed:", err);
@@ -78,7 +79,12 @@ export default function StudyMaterials() {
       <div className="sm-list-container">
 
         <div className="sm-actions">
-          <button className="sm-add-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/study-materials/upload`)}>
+          <button
+            className="sm-add-btn"
+            onClick={() =>
+              navigate(`/teacher/classes/${subjectId}/study-materials/upload`)
+            }
+          >
             + Add Study Material
           </button>
         </div>
@@ -115,9 +121,9 @@ export default function StudyMaterials() {
                   <button
                     className="sm-view-btn"
                     onClick={() =>
-                      navigate(`/teacher/classes/${subjectId}/study-materials/${material.id}`, {
-                        state: material,
-                      })
+                      navigate(
+                        `/teacher/classes/${subjectId}/study-materials/${material.id}`
+                      )
                     }
                   >
                     View

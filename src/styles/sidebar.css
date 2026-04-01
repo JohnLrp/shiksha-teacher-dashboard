@@ -7,6 +7,8 @@
   position: relative;
   z-index: 110;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-logo {
@@ -87,6 +89,28 @@
 .sidebar-close {
   display: none;
 }
+.sidebar__bottom {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.sidebar__homeBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: white;
+  text-decoration: none;
+  opacity: 0.9;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar__homeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 
 @media (max-width: 768px) {
   .sidebar {

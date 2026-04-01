@@ -32,15 +32,11 @@ export default function CreateAssignment() {
 
     async function fetchChapters() {
       try {
-
         const res = await api.get(`/courses/subject/${subjectId}/`);
         setChapters(res.data?.chapters || []);
-
       } catch (err) {
-
         console.error(err);
         toast.error("Failed to load chapters.");
-
       }
     }
 
@@ -82,21 +78,25 @@ export default function CreateAssignment() {
 
       if (isEditing) {
 
-        await api.patch(
+        const res = await api.patch(
           `/assignments/teacher/${editData.id}/edit/`,
           formData
         );
 
-        toast.success("Assignment updated successfully");
+        toast.success(
+          res?.data?.message || "Assignment updated successfully"
+        );
 
       } else {
 
-        await api.post(
+        const res = await api.post(
           "/assignments/teacher/create/",
           formData
         );
 
-        toast.success("Assignment created successfully");
+        toast.success(
+          res?.data?.message || "Assignment created successfully"
+        );
 
       }
 
@@ -109,7 +109,8 @@ export default function CreateAssignment() {
       console.error(err);
 
       toast.error(
-        err.response?.data?.detail ||
+        err?.response?.data?.detail ||
+        err?.message ||
         "Operation failed."
       );
     }
@@ -141,7 +142,6 @@ export default function CreateAssignment() {
               onChange={(e) => setChapterId(e.target.value)}
               className={`ca-input ${errors.chapter ? "ca-input-error" : ""}`}
             >
-
               <option value="">Select Chapter</option>
 
               {chapters.map((ch) => (
@@ -149,18 +149,15 @@ export default function CreateAssignment() {
                   {ch.title}
                 </option>
               ))}
-
             </select>
 
             {errors.chapter && (
               <span className="ca-error">{errors.chapter}</span>
             )}
-
           </div>
 
           {/* Title */}
           <div className="ca-field">
-
             <label>Title</label>
 
             <input
@@ -173,12 +170,10 @@ export default function CreateAssignment() {
             {errors.title && (
               <span className="ca-error">{errors.title}</span>
             )}
-
           </div>
 
           {/* Description */}
           <div className="ca-field">
-
             <label>Description</label>
 
             <textarea
@@ -191,12 +186,10 @@ export default function CreateAssignment() {
             {errors.description && (
               <span className="ca-error">{errors.description}</span>
             )}
-
           </div>
 
           {/* Due Date */}
           <div className="ca-field">
-
             <label>Due Date</label>
 
             <input
@@ -209,87 +202,82 @@ export default function CreateAssignment() {
             {errors.dueDate && (
               <span className="ca-error">{errors.dueDate}</span>
             )}
-
           </div>
 
           {/* File Upload */}
-<div className="ca-field">
+          <div className="ca-field">
 
-  <label>Attach File</label>
+            <label>Attach File</label>
 
-  <input
-    type="file"
-    ref={fileInputRef}
-    hidden
-    onChange={(e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+            <input
+              type="file"
+              ref={fileInputRef}
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
 
-      const allowedExtensions = [".pdf", ".doc", ".docx"];
-      const name = file.name.toLowerCase();
+                const allowedExtensions = [".pdf", ".doc", ".docx"];
+                const name = file.name.toLowerCase();
 
-      if (!allowedExtensions.some(ext => name.endsWith(ext))) {
-        toast.error("Only PDF, DOC, DOCX allowed");
-        return;
-      }
+                if (!allowedExtensions.some(ext => name.endsWith(ext))) {
+                  toast.error("Only PDF, DOC, DOCX allowed");
+                  return;
+                }
 
-      setFile(file);
-    }}
-  />
+                setFile(file);
+              }}
+            />
 
-  <button
-    type="button"
-    onClick={() => fileInputRef.current?.click()}
-    className="ca-add-file-btn"
-  >
-    + Add File
-  </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="ca-add-file-btn"
+            >
+              + Add File
+            </button>
 
-  {/* ✅ NEW: Selected file + remove */}
-  {file && (
-    <div style={{ marginTop: "6px" }}>
-      <span>{file.name}</span>
-      <button
-        type="button"
-        onClick={() => setFile(null)}
-        style={{ marginLeft: "10px" }}
-      >
-        Remove
-      </button>
-    </div>
-  )}
+            {file && (
+              <div style={{ marginTop: "6px" }}>
+                <span>{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setFile(null)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
 
-  {/* ✅ NEW: Show existing file in edit mode */}
-  {isEditing && editData?.attachment && !file && (
-    <div style={{ marginTop: "6px" }}>
-      Existing file:
-      <a
-        href={editData.attachment}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ marginLeft: "6px" }}
-      >
-        View
-      </a>
-    </div>
-  )}
+            {isEditing && editData?.attachment && !file && (
+              <div style={{ marginTop: "6px" }}>
+                Existing file:
+                <a
+                  href={editData.attachment}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ marginLeft: "6px" }}
+                >
+                  View
+                </a>
+              </div>
+            )}
 
-  {errors.file && (
-    <span className="ca-error">{errors.file}</span>
-  )}
+            {errors.file && (
+              <span className="ca-error">{errors.file}</span>
+            )}
 
-</div>
+          </div>
 
           {/* Submit */}
           <div className="ca-actions">
-
             <button
               className="ca-create-btn"
               onClick={handleSubmit}
             >
               {isEditing ? "Update" : "Create"}
             </button>
-
           </div>
 
         </div>
