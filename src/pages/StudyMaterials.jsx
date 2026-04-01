@@ -7,11 +7,14 @@ import api from "../api/apiClient";
 import "../styles/study-materials.css";
 
 export default function StudyMaterials() {
-
   const navigate = useNavigate();
   const { subjectId } = useParams();
 
   const [materials, setMaterials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [confirmId, setConfirmId] = useState(null); // inline confirm
 
   useEffect(() => {
     if (!subjectId) return;
@@ -19,160 +22,140 @@ export default function StudyMaterials() {
   }, [subjectId]);
 
   const loadMaterials = async () => {
-
     try {
-
-      const res = await api.get(
-        `/materials/subjects/${subjectId}/materials/`
-      );
-
+      const res = await api.get(`/materials/subjects/${subjectId}/materials/`);
       setMaterials(res.data);
-
     } catch (err) {
-
       console.error("Failed to load materials:", err);
-
+    } finally {
+      setLoading(false);
     }
-
   };
 
   const handleDelete = async (id) => {
-
-    if (!window.confirm("Delete this material?")) return;
-
+    setDeletingId(id);
     try {
-
-      await api.delete(
-        `/materials/materials/${id}/`
-      );
-
-      setMaterials((prev) =>
-        prev.filter((m) => m.id !== id)
-      );
-
+      await api.delete(`/materials/materials/${id}/`);
+      setMaterials((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
-
       console.error("Delete failed:", err);
-
+    } finally {
+      setDeletingId(null);
+      setConfirmId(null);
     }
-
   };
 
-  const handleAddMaterial = () => {
+  const filtered = materials.filter((m) =>
+    m.title.toLowerCase().includes(search.toLowerCase())
+  );
 
-    navigate(
-      `/teacher/classes/${subjectId}/study-materials/upload`
-    );
-
-  };
+  if (loading) return <div className="sm-loading">Loading study materials...</div>;
 
   return (
-
     <div className="study-materials-page">
 
-      <button
-        className="sm-back-btn"
-        onClick={() => navigate(-1)}
-      >
+      <button className="sm-back-btn" onClick={() => navigate(-1)}>
         <IoChevronBack /> Back
       </button>
 
       <div className="sm-title-container">
-
-        <h2 className="sm-title">
-          Study Materials
-        </h2>
-
-        <div className="sm-search">
-          <input type="text" placeholder="Search" />
-          <FiSearch className="sm-search-icon" />
+        <div className="sm-title-left">
+          <h2 className="sm-title">Study Materials</h2>
+          <span className="sm-count-badge">{materials.length}</span>
         </div>
 
+        <div className="sm-search">
+          <input
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <FiSearch className="sm-search-icon" />
+        </div>
       </div>
 
       <div className="sm-list-container">
 
         <div className="sm-actions">
-
-          <button
-            className="sm-add-btn"
-            onClick={handleAddMaterial}
-          >
+          <button className="sm-add-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/study-materials/upload`)}>
             + Add Study Material
           </button>
-
         </div>
 
         <div className="sm-table-header">
-
           <span className="sm-col-name">Name</span>
           <span className="sm-col-date">Date</span>
           <span className="sm-col-files">Files</span>
           <span className="sm-col-actions"></span>
-
         </div>
 
-        {materials.length === 0 ? (
-
+        {filtered.length === 0 ? (
           <p className="sm-empty">
-            No study materials uploaded yet.
+            {search ? "No materials match your search." : "No study materials uploaded yet."}
           </p>
-
         ) : (
-
           <div className="sm-list">
-
-            {materials.map((material) => (
-
+            {filtered.map((material) => (
               <div className="sm-row" key={material.id}>
 
-                <span className="sm-col-name">
-                  {material.title}
-                </span>
+                <span className="sm-col-name">{material.title}</span>
 
                 <span className="sm-col-date">
                   {new Date(material.created_at).toLocaleDateString()}
                 </span>
 
                 <span className="sm-col-files">
-                  {material.files?.length || 0} files
+                  <span className="sm-files-badge">
+                    {material.files?.length || 0} files
+                  </span>
                 </span>
 
                 <div className="sm-col-actions">
-
                   <button
                     className="sm-view-btn"
                     onClick={() =>
-                      navigate(
-                        `/teacher/classes/${subjectId}/study-materials/${material.id}`,
-                        { state: material }
-                      )
+                      navigate(`/teacher/classes/${subjectId}/study-materials/${material.id}`, {
+                        state: material,
+                      })
                     }
                   >
                     View
                   </button>
 
-                  <button
-                    className="sm-delete-btn"
-                    onClick={() => handleDelete(material.id)}
-                  >
-                    <MdDelete />
-                  </button>
-
+                  {confirmId === material.id ? (
+                    <div className="sm-confirm-row">
+                      <span className="sm-confirm-label">Delete?</span>
+                      <button
+                        className="sm-confirm-yes"
+                        disabled={deletingId === material.id}
+                        onClick={() => handleDelete(material.id)}
+                      >
+                        {deletingId === material.id ? "..." : "Yes"}
+                      </button>
+                      <button
+                        className="sm-confirm-no"
+                        onClick={() => setConfirmId(null)}
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="sm-delete-btn"
+                      onClick={() => setConfirmId(material.id)}
+                    >
+                      <MdDelete />
+                    </button>
+                  )}
                 </div>
 
               </div>
-
             ))}
-
           </div>
-
         )}
 
       </div>
-
     </div>
-
   );
-
 }

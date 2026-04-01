@@ -5,6 +5,7 @@
   height: 100%;
 }
 
+/* Back button */
 .smv-back-btn {
   display: inline-flex;
   align-items: center;
@@ -19,12 +20,12 @@
   cursor: pointer;
   width: fit-content;
   flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
+.smv-back-btn:hover  { background: #3d9aa8; }
+.smv-back-btn:active { transform: scale(0.97); }
 
-.smv-back-btn:hover {
-  background: #3d9aa8;
-}
-
+/* Header */
 .smv-header {
   background: #f5fbfc;
   border-radius: 16px;
@@ -42,9 +43,8 @@
   margin: 0;
 }
 
-.smv-search {
-  position: relative;
-}
+/* Search */
+.smv-search { position: relative; }
 
 .smv-search input {
   padding: 6px 32px 6px 12px;
@@ -54,10 +54,11 @@
   outline: none;
   width: 160px;
   background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
 .smv-search input:focus {
   border-color: #4ba7b5;
+  box-shadow: 0 0 0 3px rgba(75, 167, 181, 0.12);
 }
 
 .smv-search-icon {
@@ -69,6 +70,7 @@
   font-size: 14px;
 }
 
+/* Content card */
 .smv-content-card {
   background: #f5fbfc;
   border-radius: 16px;
@@ -81,8 +83,19 @@
 .smv-details {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   padding: 0 40px;
+}
+
+/* Meta card */
+.smv-meta-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .smv-detail-line {
@@ -102,11 +115,27 @@
   color: #1f2d3d;
 }
 
+/* Files section */
 .smv-files-section {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 8px;
+}
+
+.smv-files-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smv-files-count-badge {
+  background: #4ba7b5;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  line-height: 1.6;
 }
 
 .smv-no-files {
@@ -121,33 +150,91 @@
   gap: 16px;
 }
 
+/* File card */
 .smv-file-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: #e0e0e0;
+  gap: 0;
+  background: #fff;
   border-radius: 12px;
-  padding: 14px 24px 14px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  max-width: 380px;
+}
+.smv-file-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.11);
+  transform: translateY(-2px);
+}
+
+.smv-file-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  flex: 1;
+  text-decoration: none;
+  min-width: 0;
 }
 
 .smv-file-icon-box {
-  background: #c5c5c5;
   border-radius: 10px;
-  width: 54px;
-  height: 54px;
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.smv-file-card:hover .smv-file-icon-box {
+  transform: scale(1.08);
 }
 
 .smv-file-icon {
-  font-size: 26px;
-  color: #666;
+  font-size: 24px;
+}
+
+.smv-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .smv-file-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #1f2d3d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
+
+.smv-file-ext {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Copy link button */
+.smv-copy-btn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid #eee;
+  color: #4ba7b5;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 14px;
+  height: 100%;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+.smv-copy-btn:hover  { background: #eef6f8; }
+.smv-copy-btn.copied { color: #38b89a; }
