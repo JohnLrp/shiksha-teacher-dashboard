@@ -217,13 +217,17 @@
   border-bottom: 1px solid #f0f0f0;
   transition: background 0.2s ease, transform 0.1s ease;
 }
+.sv-table tbody tr {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
 
 .sv-table tbody tr:hover {
   background: #f9fafb;
-  transform: scale(1.002);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-.sv-review-btn:active,
-.sv-sort-btn:active,
-.sv-back-btn:active {
-  transform: scale(0.97);
+
+.sv-review-btn,
+.sv-sort-btn,
+.sv-back-btn {
+  transition: transform 0.1s ease;
 }
