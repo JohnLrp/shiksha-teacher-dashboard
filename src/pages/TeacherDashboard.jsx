@@ -213,7 +213,7 @@ export default function TeacherDashboard() {
                 key={s.id}
                 subject={s.subject}
                 topic={s.topic}
-                timing={new Date(s.dateTime).toLocaleString()}
+                timing={new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
               />
             ))}
           </div>
@@ -286,7 +286,7 @@ export default function TeacherDashboard() {
                 subject={s.subject}
                 topic={s.topic}
                 startsIn={s.startsIn}
-                timing={s.timing || new Date(s.dateTime).toLocaleString()}
+                timing={s.timing || new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
               />
             ))}
           </div>
