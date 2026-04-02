@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { MdDelete } from "react-icons/md";
 import api from "../api/apiClient";
 import "../styles/upload-material.css";
@@ -11,13 +10,15 @@ export default function UploadMaterial() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
 
-  const [title, setTitle] = useState("");
+  // ✅ renamed visually (still sent as title)
+  const [topic, setTopic] = useState("");
+  const [note, setNote] = useState("");
+
   const [files, setFiles] = useState([]);
   const [fileItems, setFileItems] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [chapterId, setChapterId] = useState("");
 
-  // ✅ NEW
   const [useCustomChapter, setUseCustomChapter] = useState(false);
   const [customChapter, setCustomChapter] = useState("");
 
@@ -36,7 +37,6 @@ export default function UploadMaterial() {
       const res = await api.get(`/courses/subjects/${subjectId}/chapters/`);
       setChapters(res.data);
     } catch (err) {
-      console.error("Failed to load chapters", err);
       alert("Failed to load chapters");
     }
   };
@@ -47,71 +47,41 @@ export default function UploadMaterial() {
 
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files || []);
-    const allowedTypes = ["pdf", "doc", "docx"];
-    const newItems = [];
+    const newItems = selected.map(file => ({
+      file,
+      name: file.name,
+      progress: 0,
+      size: file.size,
+    }));
 
-    selected.forEach((file) => {
-      const ext = file.name.split(".").pop().toLowerCase();
-
-      if (!allowedTypes.includes(ext)) {
-        alert(`${file.name} not allowed`);
-        return;
-      }
-
-      if (file.size > 50 * 1024 * 1024) {
-        alert(`${file.name} exceeds 50MB`);
-        return;
-      }
-
-      const item = {
-        file,
-        name: file.name,
-        progress: 0,
-        size: file.size,
-      };
-
-      newItems.push(item);
-    });
-
-    setFileItems((prev) => [...prev, ...newItems]);
-    setFiles((prev) => [...prev, ...selected]);
-
-    e.target.value = "";
+    setFileItems(prev => [...prev, ...newItems]);
+    setFiles(prev => [...prev, ...selected]);
   };
 
   const handleRemoveFile = (name) => {
-    setFileItems((prev) => prev.filter((f) => f.name !== name));
-    setFiles((prev) => prev.filter((f) => f.name !== name));
+    setFileItems(prev => prev.filter(f => f.name !== name));
+    setFiles(prev => prev.filter(f => f.name !== name));
   };
 
-  // ✅ FIXED UPLOAD (ONE REQUEST)
   const handleUpload = async () => {
 
-    if (!title.trim()) {
-      alert("Enter title");
-      return;
-    }
+    if (!topic.trim()) return alert("Enter topic");
 
-    if (!useCustomChapter && !chapterId) {
-      alert("Select chapter");
-      return;
-    }
+    if (!useCustomChapter && !chapterId)
+      return alert("Select chapter");
 
-    if (useCustomChapter && !customChapter.trim()) {
-      alert("Enter custom chapter");
-      return;
-    }
+    if (useCustomChapter && !customChapter.trim())
+      return alert("Enter custom chapter");
 
-    if (files.length === 0) {
-      alert("Add files");
-      return;
-    }
+    if (files.length === 0)
+      return alert("Add files");
 
     try {
       setUploading(true);
 
       const formData = new FormData();
-      formData.append("title", title);
+      formData.append("title", topic); // backend still expects title
+      formData.append("description", note);
 
       if (useCustomChapter) {
         formData.append("custom_chapter", customChapter);
@@ -120,28 +90,14 @@ export default function UploadMaterial() {
         formData.append("chapter_id", chapterId);
       }
 
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
+      files.forEach(file => formData.append("files", file));
 
-      await api.post(`/materials/materials/upload/`, formData, {
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-
-          setFileItems((prev) =>
-            prev.map((f) => ({ ...f, progress: percent }))
-          );
-        },
-      });
+      await api.post(`/materials/materials/upload/`, formData);
 
       alert("Saved successfully");
-
       navigate(`/teacher/classes/${subjectId}/study-materials`);
 
     } catch (err) {
-      console.error("Upload failed:", err);
       alert("Upload failed");
     } finally {
       setUploading(false);
@@ -152,20 +108,21 @@ export default function UploadMaterial() {
 
     <div className="upload-material-page">
 
-      <button
-        className="um-back-btn"
-        onClick={() => navigate(-1)}
-      >
+      <button className="um-back-btn" onClick={() => navigate(-1)}>
         <IoChevronBack /> Back
       </button>
 
-      <div className="um-title-container">
-        <h2 className="um-title">Study Materials</h2>
+      {/* ✅ HEADER WITH SAVE BUTTON */}
+      <div className="um-header">
+        <h2 className="um-title">Mathematics</h2>
 
-        <div className="um-search">
-          <input type="text" placeholder="Search" />
-          <FiSearch className="um-search-icon" />
-        </div>
+        <button
+          className="um-save-btn"
+          onClick={handleUpload}
+          disabled={uploading}
+        >
+          {uploading ? "Saving..." : "Save"}
+        </button>
       </div>
 
       <div className="um-form-container">
@@ -175,21 +132,6 @@ export default function UploadMaterial() {
           {/* LEFT */}
           <div className="um-form-left">
 
-            <h3 className="um-form-heading">
-              Create New Study Material
-            </h3>
-
-            <div className="um-field">
-              <label className="um-label">Title</label>
-              <input
-                type="text"
-                className="um-input"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-
-            {/* ✅ UPDATED CHAPTER FIELD */}
             <div className="um-field">
               <label className="um-label">Chapter</label>
 
@@ -219,7 +161,6 @@ export default function UploadMaterial() {
               ) : (
                 <>
                   <input
-                    type="text"
                     className="um-input"
                     placeholder="Enter new chapter"
                     value={customChapter}
@@ -234,6 +175,27 @@ export default function UploadMaterial() {
                   </button>
                 </>
               )}
+            </div>
+
+            {/* ✅ TOPIC */}
+            <div className="um-field">
+              <label className="um-label">Topic</label>
+              <input
+                className="um-input"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              />
+            </div>
+
+            {/* ✅ NOTE */}
+            <div className="um-field">
+              <label className="um-label">Note</label>
+              <textarea
+                className="um-input"
+                placeholder='Optional: Add helpful context...'
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
             </div>
 
           </div>
@@ -293,14 +255,6 @@ export default function UploadMaterial() {
                 ))}
               </div>
             )}
-
-            <button
-              className="um-upload-btn"
-              onClick={handleUpload}
-              disabled={uploading}
-            >
-              {uploading ? "Saving..." : "Save"}
-            </button>
 
           </div>
 

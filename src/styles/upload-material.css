@@ -5,6 +5,7 @@
   height: 100%;
 }
 
+/* BACK */
 .um-back-btn {
   display: inline-flex;
   align-items: center;
@@ -18,22 +19,16 @@
   font-weight: 500;
   cursor: pointer;
   width: fit-content;
-  flex-shrink: 0;
 }
 
-.um-back-btn:hover {
-  background: #3d9aa8;
-}
-
-.um-title-container {
-  background: #f5fbfc;
+/* ✅ NEW HEADER (IMPORTANT) */
+.um-header {
+  background: #eef3f7;
   border-radius: 16px;
-  padding: 20px 32px;
+  padding: 18px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
-  border-bottom: 1px solid #dde6ea;
 }
 
 .um-title {
@@ -43,112 +38,114 @@
   margin: 0;
 }
 
-.um-search {
-  position: relative;
-}
-
-.um-search input {
-  padding: 6px 32px 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 13px;
-  outline: none;
-  width: 160px;
-  background: #fff;
-}
-
-.um-search input:focus {
-  border-color: #4ba7b5;
-}
-
-.um-search-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
+/* ✅ SAVE BUTTON TOP RIGHT */
+.um-save-btn {
+  background: #4b6482;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
   font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
+.um-save-btn:hover {
+  background: #3f5670;
+}
+
+/* CONTAINER */
 .um-form-container {
-  background: #f5fbfc;
+  background: #eef3f7;
   border-radius: 16px;
   padding: 40px 32px;
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* ✅ FIX alignment */
   align-items: flex-start;
-  overflow-y: auto;
-  min-height: 0;
 }
 
-/* ✅ MAIN CARD NOW SPLIT */
+/* CARD */
 .um-form-card {
   background: #f0ece4;
   border-radius: 12px;
-  padding: 36px 48px;
+  padding: 40px 50px;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px; /* ✅ wider like figma */
   display: flex;
-  gap: 40px;
+  gap: 60px; /* ✅ spacing */
   align-items: flex-start;
 }
 
-/* LEFT FORM */
+/* LEFT */
 .um-form-left {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.um-form-heading {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2d3d;
-  margin: 0 0 8px 0;
+  gap: 20px;
 }
 
 .um-field {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
+  gap: 16px;
 }
 
 .um-label {
   font-size: 14px;
   font-weight: 600;
   color: #1f2d3d;
-  white-space: nowrap;
+  width: 80px; /* ✅ align labels */
 }
 
 .um-input {
   flex: 1;
-  padding: 8px 14px;
+  padding: 8px 10px;
   border: none;
   border-bottom: 1px solid #999;
   font-size: 14px;
   background: transparent;
-  color: #333;
   outline: none;
-  text-align: left;
 }
 
 .um-input:focus {
   border-bottom-color: #4ba7b5;
 }
 
-/* ✅ RIGHT UPLOAD PANEL */
+/* TEXTAREA */
+textarea.um-input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  height: 70px;
+  resize: none;
+}
+
+/* CUSTOM BUTTON */
+.um-custom-btn {
+  background: #4b6482;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.um-custom-btn:hover {
+  background: #3f5670;
+}
+
+/* RIGHT PANEL */
 .um-upload-panel {
-  width: 320px;
+  width: 340px;
   background: #4b6482;
   border-radius: 12px;
   padding: 20px;
   color: white;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .um-upload-title {
@@ -156,13 +153,13 @@
   font-weight: 600;
 }
 
-/* DASHED DROP BOX */
+/* DROP BOX */
 .um-add-attachment-btn {
   background: transparent;
   color: white;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 10px;
-  padding: 20px;
+  padding: 28px;
   font-size: 13px;
   cursor: pointer;
   text-align: center;
@@ -179,7 +176,6 @@
   gap: 8px;
 }
 
-/* FILE CARD */
 .um-file-card {
   background: rgba(255, 255, 255, 0.1);
   padding: 10px;
@@ -187,16 +183,7 @@
   font-size: 12px;
 }
 
-.um-file-card span {
-  display: block;
-  font-weight: 500;
-}
-
-.um-file-card small {
-  opacity: 0.7;
-}
-
-/* PROGRESS BAR */
+/* PROGRESS */
 .um-progress-bar {
   height: 6px;
   background: rgba(255, 255, 255, 0.2);
@@ -212,31 +199,11 @@
   transition: width 0.3s ease;
 }
 
-/* UPLOADED */
-.um-uploaded {
-  color: #6fcf97;
-  font-weight: bold;
-}
-
-/* TEXT BELOW BOX */
+/* INFO */
 .um-upload-info {
   font-size: 11px;
   text-align: center;
   opacity: 0.8;
 }
 
-/* UPLOAD BUTTON */
-.um-upload-btn {
-  background: #38b89a;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
 
-.um-upload-btn:hover {
-  background: #2ea88a;
-}
