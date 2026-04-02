@@ -66,6 +66,7 @@ export default function TeacherDashboard() {
   }, []);
 
   const sessions = data?.sessions ?? [];
+  const allSessions = data?.all_sessions ?? sessions;
   const assignments = data?.assignments ?? [];
   const quizzes = data?.quizzes ?? [];
   const notifications = data?.notifications ?? [];
@@ -79,16 +80,16 @@ export default function TeacherDashboard() {
       if (!map[key]) map[key] = [];
       if (!map[key].includes(type)) map[key].push(type);
     };
-    sessions.forEach((s) => addEvent(s.dateTime, "live-session"));
+    allSessions.forEach((s) => addEvent(s.dateTime, "live-session"));
     assignments.forEach((a) => addEvent(a.due, "assignment"));
     quizzes.forEach((q) => addEvent(q.due, "quiz"));
     return map;
-  }, [sessions, assignments, quizzes]);
+  }, [allSessions, assignments, quizzes]);
 
   // --- Combined schedule items (sessions + assignments + quizzes) ---
   const scheduleItems = useMemo(() => {
     const items = [];
-    sessions.forEach((s) =>
+    allSessions.forEach((s) =>
       items.push({
         id: `session-${s.id}`,
         type: "live-session",
@@ -120,7 +121,7 @@ export default function TeacherDashboard() {
     );
     items.sort((a, b) => new Date(a.date) - new Date(b.date));
     return items;
-  }, [sessions, assignments, quizzes]);
+  }, [allSessions, assignments, quizzes]);
 
   // All hooks are above this point — safe to do early returns now
 
