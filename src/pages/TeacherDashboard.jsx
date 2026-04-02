@@ -49,6 +49,7 @@ export default function TeacherDashboard() {
   const fetchDashboard = async () => {
     try {
       const res = await api.get("/dashboard/");
+      console.log("Dashboard data:", res.data);
       setData(res.data);
     } catch (err) {
       console.error("Dashboard error:", err);
