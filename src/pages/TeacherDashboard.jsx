@@ -5,7 +5,6 @@ import "../styles/dashboard.css";
 import LiveSessionCard from "../components/LiveSessionCard";
 import CalendarWidget from "../components/CalendarWidget";
 import AssignmentItem from "../components/AssignmentItem";
-import QuizItem from "../components/QuizItem";
 import ActivityItem from "../components/ActivityItem";
 
 import api from "../api/apiClient";
@@ -64,34 +63,10 @@ export default function TeacherDashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  if (loading) return <div className="dashboard">Loading...</div>;
-
   const sessions = data?.sessions ?? [];
   const assignments = data?.assignments ?? [];
   const quizzes = data?.quizzes ?? [];
   const notifications = data?.notifications ?? [];
-
-  const isAllEmpty =
-    sessions.length === 0 &&
-    assignments.length === 0 &&
-    quizzes.length === 0 &&
-    notifications.length === 0;
-
-  const toggleFilter = (current, value, setter) => {
-    setter(current === value ? null : value);
-  };
-
-  const filteredAssignments = assignFilter
-    ? assignments.filter((a) =>
-        assignFilter === "overdue"
-          ? new Date(a.due) < new Date()
-          : new Date(a.due) >= new Date()
-      )
-    : assignments;
-
-  const filteredActivities = notifications.filter(
-    (item) => activityFilter === "all" || item.type === activityFilter
-  );
 
   // --- Calendar events map (from real API data) ---
   const calendarEvents = useMemo(() => {
@@ -142,7 +117,32 @@ export default function TeacherDashboard() {
     return items;
   }, [sessions, assignments, quizzes]);
 
-  // --- Filter schedule by selected date + type ---
+  // All hooks are above this point — safe to do early returns now
+
+  if (loading) return <div className="dashboard">Loading...</div>;
+
+  const isAllEmpty =
+    sessions.length === 0 &&
+    assignments.length === 0 &&
+    quizzes.length === 0 &&
+    notifications.length === 0;
+
+  const toggleFilter = (current, value, setter) => {
+    setter(current === value ? null : value);
+  };
+
+  const filteredAssignments = assignFilter
+    ? assignments.filter((a) =>
+        assignFilter === "overdue"
+          ? new Date(a.due) < new Date()
+          : new Date(a.due) >= new Date()
+      )
+    : assignments;
+
+  const filteredActivities = notifications.filter(
+    (item) => activityFilter === "all" || item.type === activityFilter
+  );
+
   const filteredSchedule = scheduleItems.filter((item) => {
     if (selectedDate && !isSameDay(new Date(item.date), selectedDate)) return false;
     if (scheduleTypeFilter !== "all" && item.type !== scheduleTypeFilter) return false;
