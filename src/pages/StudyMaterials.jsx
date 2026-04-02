@@ -89,8 +89,10 @@ export default function StudyMaterials() {
           </button>
         </div>
 
+        {/* ✅ HEADER UPDATED */}
         <div className="sm-table-header">
-          <span className="sm-col-name">Name</span>
+          <span className="sm-col-chapter">Chapter</span>
+          <span className="sm-col-topic">Topic</span>
           <span className="sm-col-date">Date</span>
           <span className="sm-col-files">Files</span>
           <span className="sm-col-actions"></span>
@@ -105,7 +107,15 @@ export default function StudyMaterials() {
             {filtered.map((material) => (
               <div className="sm-row" key={material.id}>
 
-                <span className="sm-col-name">{material.title}</span>
+                {/* ✅ NEW: CHAPTER */}
+                <span className="sm-col-chapter">
+                  {material.chapter_title || material.custom_chapter || "—"}
+                </span>
+
+                {/* ✅ TOPIC */}
+                <span className="sm-col-topic">
+                  {material.title}
+                </span>
 
                 <span className="sm-col-date">
                   {new Date(material.created_at).toLocaleDateString()}
