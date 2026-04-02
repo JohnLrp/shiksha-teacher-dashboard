@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import * as privateSessionService from "../api/privateSessionService";
 import "../styles/privateSessions.css";
 
@@ -81,7 +81,8 @@ function norm(s) {
 
 export default function PrivateSessionsDashboard() {
   const nav = useNavigate();
-  const [tab, setTab] = useState("scheduled");
+  const loc = useLocation();
+  const [tab, setTab] = useState(loc.state?.tab || "scheduled");
   const [scheduled, setScheduled] = useState([]);
   const [requests, setRequests] = useState([]);
   const [history, setHistory] = useState([]);

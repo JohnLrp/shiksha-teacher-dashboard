@@ -10,10 +10,19 @@ import ActivityItem from "../components/ActivityItem";
 import api from "../api/apiClient";
 
 const NOTIFICATION_COLORS = {
+  ASSIGNMENT: "green",
+  SESSION: "yellow",
+  QUIZ: "purple",
   assignment: "green",
   "live-session": "yellow",
   "private-session": "orange",
   quiz: "purple",
+};
+
+const NOTIFICATION_LABELS = {
+  ASSIGNMENT: "Assignment",
+  SESSION: "Live Session",
+  QUIZ: "Quiz",
 };
 
 const DATE_FORMAT = { day: "2-digit", month: "short", year: "numeric" };
@@ -183,11 +192,11 @@ export default function TeacherDashboard() {
   };
 
   const getNotificationLink = (item) => {
-    if (item.type === "assignment" && item.subject_id)
+    if (item.type === "ASSIGNMENT" && item.subject_id)
       return `/teacher/classes/${item.subject_id}/assignments`;
-    if (item.type === "live-session")
+    if (item.type === "SESSION")
       return `/teacher/classes/${item.subject_id}/live-sessions`;
-    if (item.type === "quiz" && item.subject_id)
+    if (item.type === "QUIZ" && item.subject_id)
       return `/teacher/classes/${item.subject_id}/quizzes`;
     return null;
   };
@@ -244,7 +253,7 @@ export default function TeacherDashboard() {
               <ActivityItem
                 key={item.id}
                 date={formatDate(item.created_at)}
-                label={item.type}
+                label={NOTIFICATION_LABELS[item.type] || item.type}
                 labelColor={NOTIFICATION_COLORS[item.type] || "green"}
                 lines={[item.title]}
                 onClick={() => {
@@ -346,10 +355,9 @@ export default function TeacherDashboard() {
               onChange={(e) => setActivityFilter(e.target.value)}
             >
               <option value="all">All</option>
-              <option value="assignment">Assignment</option>
-              <option value="live-session">Live Session</option>
-              <option value="private-session">Private Session</option>
-              <option value="quiz">Quiz</option>
+              <option value="ASSIGNMENT">Assignment</option>
+              <option value="SESSION">Live Session</option>
+              <option value="QUIZ">Quiz</option>
             </select>
           </div>
           <div className="dash-card-body">
@@ -358,7 +366,7 @@ export default function TeacherDashboard() {
               <ActivityItem
                 key={item.id}
                 date={formatDate(item.created_at)}
-                label={item.type}
+                label={NOTIFICATION_LABELS[item.type] || item.type}
                 labelColor={NOTIFICATION_COLORS[item.type] || "green"}
                 lines={[item.title]}
                 onClick={() => {

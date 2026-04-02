@@ -92,6 +92,7 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId/students/:studentId" element={<StudentDetail />} />
 
         {/* Live Sessions */}
+        <Route path="live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions/create" element={<TeacherCreateLiveSession />} />
         <Route path="live/:id" element={<TeacherLiveSession />} />
