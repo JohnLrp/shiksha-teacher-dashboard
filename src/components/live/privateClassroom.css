@@ -1,15 +1,466 @@
 /* =====================================================
-   TEACHER_UI/src/components/live/privateClassroom.css
-   
-   Copy the EXACT same file from:
-   STUDENT_DASHBOARD/src/components/live/privateClassroom.css
-   
-   Then ADD the teacher-specific styles below at the bottom.
+   privateClassroom.css — Teacher UI
+   Dark theme for private session room UI.
+   Base styles identical to Student + teacher-specific additions.
+   Scoped with pvt- prefix to avoid conflicts.
    ===================================================== */
 
+.pvt-room {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: #0d1117;
+  color: #e8eaf2;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ── Top Bar ── */
+.pvt-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #161b27;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.pvt-topbar-left { display: flex; flex-direction: column; }
+.pvt-session-name { font-size: 14px; font-weight: 700; color: #e8eaf2; }
+.pvt-session-sub { font-size: 11px; color: #6b7591; margin-top: 1px; }
+
+.pvt-topbar-right { display: flex; align-items: center; gap: 10px; }
+.pvt-timer {
+  font-size: 13px; font-weight: 600; color: #a0aec0;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255,255,255,0.06);
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.pvt-count {
+  font-size: 12px; color: #e8eaf2; font-weight: 600;
+  background: rgba(255,255,255,0.12);
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+/* ── Main Layout ── */
+.pvt-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pvt-video-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  gap: 10px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Video Grid ── */
+.pvt-video-grid {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pvt-grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.pvt-grid-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+.pvt-grid-3 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr; }
+.pvt-grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pvt-grid-many { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); grid-auto-rows: 1fr; }
+
+/* ── Video Tile ── */
+.pvt-tile {
+  background: #1a2035;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.pvt-tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pvt-tile-sm {
+  width: 100%;
+  height: 130px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.pvt-tile-speaking {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+}
+
+.pvt-tile-pinned {
+  border-color: #4f7ef7;
+  box-shadow: 0 0 0 2px rgba(79,126,247,0.3);
+}
+
+.pvt-tile-label {
+  position: absolute;
+  bottom: 10px; left: 10px;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px; font-weight: 500; color: #e8eaf2;
+}
+
+.pvt-host-badge {
+  font-size: 10px;
+  background: #4f7ef7;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.pvt-speaking-dot {
+  color: #22c55e;
+  font-size: 8px;
+  animation: pvt-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pvt-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Pin button ── */
+.pvt-pin-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 10;
+}
+.pvt-tile:hover .pvt-pin-btn { opacity: 1; }
+.pvt-pin-active { opacity: 1; background: rgba(79,126,247,0.3); color: #4f7ef7; }
+
+/* ── Muted bar ── */
+.pvt-muted-bar {
+  position: absolute;
+  top: 10px; left: 10px;
+  background: rgba(245,101,101,0.85);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 600;
+  z-index: 5;
+}
+
+/* ── Raised hand indicator ── */
+.pvt-hand-indicator {
+  position: absolute;
+  top: 10px; right: 42px;
+  font-size: 22px;
+  animation: pvt-hand-wave 0.6s ease-in-out infinite alternate;
+  z-index: 5;
+}
+
+@keyframes pvt-hand-wave {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(12deg); }
+}
+
+/* ── Raised hand banner ── */
+.pvt-hand-banner {
+  background: rgba(234,179,8,0.15);
+  color: #eab308;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid rgba(234,179,8,0.2);
+  flex-shrink: 0;
+}
+
+/* ── Placeholder (cam off) ── */
+.pvt-placeholder {
+  width: 100%; height: 100%;
+  background: #111827;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+}
+
+.pvt-placeholder-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: #2a9da8;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; color: white;
+}
+
+.pvt-placeholder-name {
+  font-size: 12px; color: #6b7591;
+}
+
+/* ── Screen Share Layout ── */
+.pvt-screen-layout {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.pvt-screen-main {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #4f7ef7;
+  background: #0d1117;
+}
+
+.pvt-screen-main video {
+  width: 100%; height: 100%;
+  object-fit: contain;
+}
+
+.pvt-screen-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 180px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* ── Control Bar ── */
+.pvt-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #161b27;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.pvt-ctrl-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pvt-ctrl-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pvt-ctrl-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pvt-ctrl-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: all 0.15s;
+  background: rgba(255,255,255,0.1);
+  color: #e8eaf2;
+  flex-shrink: 0;
+}
+
+.pvt-ctrl-btn:hover { background: rgba(255,255,255,0.16); }
+
+.pvt-ctrl-off {
+  background: #f56565;
+  color: white;
+}
+.pvt-ctrl-off:hover { background: #e04040; }
+
+.pvt-ctrl-active {
+  background: rgba(79,126,247,0.2);
+  color: #4f7ef7;
+  border: 1px solid rgba(79,126,247,0.3);
+}
+.pvt-ctrl-active:hover { background: rgba(79,126,247,0.3); }
+
+.pvt-leave-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 20px; height: 48px;
+  border-radius: 24px; border: none; cursor: pointer;
+  background: rgba(245,101,101,0.15);
+  color: #f56565;
+  border: 1px solid rgba(245,101,101,0.3);
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.pvt-leave-btn:hover { background: #f56565; color: white; }
+
+.pvt-end-btn {
+  background: rgba(245,101,101,0.2);
+}
+
+/* ── Sidebar ── */
+.pvt-sidebar {
+  width: 300px;
+  background: #161b27;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pvt-sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.pvt-sidebar-tab {
+  flex: 1; padding: 12px 8px;
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: #6b7591;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.pvt-sidebar-tab.active { color: #4f7ef7; border-bottom-color: #4f7ef7; }
+
+.pvt-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.pvt-sidebar-body::-webkit-scrollbar { width: 4px; }
+.pvt-sidebar-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* ── Participants List ── */
+.pvt-participants-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pvt-participant-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.pvt-participant-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #2a9da8;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 13px; flex-shrink: 0;
+}
+
+.pvt-participant-info { flex: 1; min-width: 0; }
+.pvt-participant-name {
+  font-size: 13px; font-weight: 500; color: #e8eaf2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pvt-participant-role { font-size: 11px; color: #6b7591; margin-top: 1px; }
+.pvt-participant-icons { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+
+/* ── Toast Notifications ── */
+.pvt-toast-wrap {
+  position: fixed;
+  top: 70px; right: 20px;
+  display: flex; flex-direction: column;
+  gap: 8px;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.pvt-toast {
+  background: #1e2435;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  color: #e8eaf2;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: pvt-toast-in 0.25s ease;
+}
+
+.pvt-toast-warn {
+  border-color: rgba(245,101,101,0.3);
+  color: #f56565;
+}
+
+@keyframes pvt-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pvt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .pvt-sidebar { display: none; }
+  .pvt-ctrl-btn { width: 42px; height: 42px; font-size: 16px; }
+  .pvt-controls { padding: 10px 12px; gap: 6px; }
+  .pvt-topbar { padding: 10px 14px; }
+  .pvt-video-area { padding: 10px; gap: 8px; }
+  .pvt-leave-btn { padding: 0 14px; font-size: 12px; }
+}
+
+@media (max-width: 480px) {
+  .pvt-ctrl-btn { width: 38px; height: 38px; font-size: 15px; }
+  .pvt-grid-2 { grid-template-columns: 1fr; }
+  .pvt-timer { display: none; }
+}
+
 /* ══════════════════════════════════════════════════════
-   PASTE ALL OF STUDENT privateClassroom.css HERE FIRST
-   Then add these ADDITIONAL teacher-specific styles:
+   TEACHER-SPECIFIC ADDITIONS
    ══════════════════════════════════════════════════════ */
 
 /* ── Tile host actions (hover to show on student tiles) ── */

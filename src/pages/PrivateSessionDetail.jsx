@@ -136,21 +136,26 @@ export default function PrivateSessionDetail() {
     load();
   }, [id]);
 
-  if (loading) return <div className="tps__page"><p className="tps__loading">Loading session details...</p></div>;
+  if (loading) return (
+    <div className="tps__detail-wrapper">
+      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__page"><p className="tps__loading">Loading session details...</p></div>
+    </div>
+  );
   if (error) return (
-    <div className="tps__page">
-      <div style={{ padding: "12px 24px 0" }}>
-        <button className="tps__back" onClick={goBack}>‹ Back</button>
+    <div className="tps__detail-wrapper">
+      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__page">
+        <p className="tps__empty" style={{ color: "#ef4444" }}>{error}</p>
       </div>
-      <p className="tps__empty" style={{ color: "#ef4444" }}>{error}</p>
     </div>
   );
   if (!session) return (
-    <div className="tps__page">
-      <div style={{ padding: "12px 24px 0" }}>
-        <button className="tps__back" onClick={goBack}>‹ Back</button>
+    <div className="tps__detail-wrapper">
+      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__page">
+        <p className="tps__empty">Session not found.</p>
       </div>
-      <p className="tps__empty">Session not found.</p>
     </div>
   );
 
@@ -180,10 +185,8 @@ export default function PrivateSessionDetail() {
   });
 
   return (
-    <div className="tps__page">
-      <div style={{ padding: "12px 24px 0" }}>
-        <button className="tps__back" onClick={goBack}>‹ Back</button>
-      </div>
+    <div className="tps__detail-wrapper">
+      <button className="tps__back" onClick={goBack}>‹ Back</button>
 
       <div className="tps__tabs" style={{ marginBottom: 20 }}>
         <button className={`tps__tab ${pathTab === "scheduled" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "scheduled" } })}>Scheduled</button>
@@ -191,6 +194,7 @@ export default function PrivateSessionDetail() {
         <button className={`tps__tab ${pathTab === "history" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "history" } })}>History</button>
       </div>
 
+      <div className="tps__page">
       <div className="tps__dheader">
         <h2 className="tps__dstatus">
           STATUS: {statusTitle(s.status)}
@@ -266,6 +270,7 @@ export default function PrivateSessionDetail() {
           </div>
         </div>
       </div>
+      </div>{/* end tps__page */}
 
       {/* ══ MODALS ══ */}
 
