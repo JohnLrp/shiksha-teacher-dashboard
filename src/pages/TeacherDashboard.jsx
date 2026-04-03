@@ -279,143 +279,141 @@ export default function TeacherDashboard() {
   // ---------------- DESKTOP ----------------
   return (
     <div className="dashboard">
-      <div className="dash-top">
-        <div className="dash-live-section">
-          <div className="dash-live-header">
-            <h3 className="dash-section-title">Upcoming Live Sessions</h3>
-            <div className="dash-remaining">
-              {sessions.length} Classes (Remaining classes)
-            </div>
-          </div>
-          <div className="dash-live-row">
-            {sessions.length === 0 && <p>No sessions</p>}
-            {sessions.map((s) => (
-              <LiveSessionCard
-                key={s.id}
-                subject={s.subject}
-                topic={s.topic}
-                startsIn={s.startsIn}
-                timing={s.timing || new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}
-              />
-            ))}
+      {/* Row 1, Col 1-2: Upcoming Live Sessions */}
+      <div className="dash-live-section">
+        <div className="dash-live-header">
+          <h3 className="dash-section-title">Upcoming Live Sessions</h3>
+          <div className="dash-remaining">
+            {sessions.length} Classes (Remaining classes)
           </div>
         </div>
-
-        <CalendarWidget
-          events={calendarEvents}
-          selectedDate={selectedDate}
-          onDateSelect={handleDateSelect}
-        />
+        <div className="dash-live-row">
+          {sessions.length === 0 && <p>No sessions</p>}
+          {sessions.map((s) => (
+            <LiveSessionCard
+              key={s.id}
+              subject={s.subject}
+              topic={s.topic}
+              startsIn={s.startsIn}
+              timing={s.timing || new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="dash-bottom">
-        {/* --- Assignments --- */}
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h4>Assignments</h4>
-            <div className="dash-pills">
-              <button
-                type="button"
-                className={`dash-pill pill-due ${assignFilter === "due" ? "pill-active" : ""}`}
-                onClick={() => toggleFilter(assignFilter, "due", setAssignFilter)}
-              >
-                Due
-              </button>
-              <button
-                type="button"
-                className={`dash-pill pill-overdue ${assignFilter === "overdue" ? "pill-active" : ""}`}
-                onClick={() => toggleFilter(assignFilter, "overdue", setAssignFilter)}
-              >
-                Over Due
-              </button>
-            </div>
-          </div>
-          <div className="dash-card-body">
-            {filteredAssignments.length === 0 && <p>No assignments</p>}
-            {filteredAssignments.map((a) => (
-              <AssignmentItem
-                key={a.id}
-                id={a.id}
-                title={a.title}
-                subject={a.subject_name || a.teacher}
-                dueDate={formatDate(a.due)}
-                subjectId={a.subject_id}
-              />
-            ))}
+      {/* Row 1, Col 3: Calendar */}
+      <CalendarWidget
+        events={calendarEvents}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+      />
+
+      {/* Row 2, Col 1: Assignments */}
+      <div className="dash-card">
+        <div className="dash-card-header">
+          <h4>Assignments</h4>
+          <div className="dash-pills">
+            <button
+              type="button"
+              className={`dash-pill pill-due ${assignFilter === "due" ? "pill-active" : ""}`}
+              onClick={() => toggleFilter(assignFilter, "due", setAssignFilter)}
+            >
+              Due
+            </button>
+            <button
+              type="button"
+              className={`dash-pill pill-overdue ${assignFilter === "overdue" ? "pill-active" : ""}`}
+              onClick={() => toggleFilter(assignFilter, "overdue", setAssignFilter)}
+            >
+              Over Due
+            </button>
           </div>
         </div>
-
-        {/* --- Notifications --- */}
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h4>Notification</h4>
-            <select
-              className="dash-filter"
-              value={activityFilter}
-              onChange={(e) => setActivityFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="ASSIGNMENT">Assignment</option>
-              <option value="SESSION">Live Session</option>
-              <option value="QUIZ">Quiz</option>
-            </select>
-          </div>
-          <div className="dash-card-body">
-            {filteredActivities.length === 0 && <p>No notifications</p>}
-            {filteredActivities.map((item) => (
-              <ActivityItem
-                key={item.id}
-                date={formatDate(item.created_at)}
-                label={NOTIFICATION_LABELS[item.type] || item.type}
-                labelColor={NOTIFICATION_COLORS[item.type] || "green"}
-                lines={[item.title]}
-                onClick={() => {
-                  const link = getNotificationLink(item);
-                  if (link) navigate(link);
-                }}
-              />
-            ))}
-          </div>
+        <div className="dash-card-body">
+          {filteredAssignments.length === 0 && <p>No assignments</p>}
+          {filteredAssignments.map((a) => (
+            <AssignmentItem
+              key={a.id}
+              id={a.id}
+              title={a.title}
+              subject={a.subject_name || a.teacher}
+              dueDate={formatDate(a.due)}
+              subjectId={a.subject_id}
+            />
+          ))}
         </div>
+      </div>
 
-        {/* --- Schedule (filtered by calendar date) --- */}
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h4>
-              Schedule
-              {selectedDate && (
-                <span style={{ fontWeight: 400, fontSize: "0.8rem", marginLeft: 8 }}>
-                  — {selectedDate.toLocaleDateString("en-GB", DATE_FORMAT)}
-                </span>
-              )}
-            </h4>
-            <select
-              className="dash-filter"
-              value={scheduleTypeFilter}
-              onChange={(e) => setScheduleTypeFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="assignment">Assignment</option>
-              <option value="live-session">Live Session</option>
-              <option value="private-session">Private Session</option>
-              <option value="quiz">Quiz</option>
-            </select>
-          </div>
-          <div className="dash-card-body">
-            {filteredSchedule.length === 0 && <p>No schedule</p>}
-            {filteredSchedule.map((item) => (
-              <ActivityItem
-                key={item.id}
-                date={formatDate(item.date)}
-                label={item.type}
-                labelColor={item.labelColor}
-                lines={[item.title]}
-                onClick={() => {
-                  if (item.link) navigate(item.link);
-                }}
-              />
-            ))}
-          </div>
+      {/* Row 2, Col 2: Notifications */}
+      <div className="dash-card">
+        <div className="dash-card-header">
+          <h4>Notification</h4>
+          <select
+            className="dash-filter"
+            value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="ASSIGNMENT">Assignment</option>
+            <option value="SESSION">Live Session</option>
+            <option value="QUIZ">Quiz</option>
+          </select>
+        </div>
+        <div className="dash-card-body">
+          {filteredActivities.length === 0 && <p>No notifications</p>}
+          {filteredActivities.map((item) => (
+            <ActivityItem
+              key={item.id}
+              date={formatDate(item.created_at)}
+              label={NOTIFICATION_LABELS[item.type] || item.type}
+              labelColor={NOTIFICATION_COLORS[item.type] || "green"}
+              lines={[item.title]}
+              onClick={() => {
+                const link = getNotificationLink(item);
+                if (link) navigate(link);
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Row 2, Col 3: Schedule */}
+      <div className="dash-card">
+        <div className="dash-card-header">
+          <h4>
+            Schedule
+            {selectedDate && (
+              <span style={{ fontWeight: 400, fontSize: "0.8rem", marginLeft: 8 }}>
+                — {selectedDate.toLocaleDateString("en-GB", DATE_FORMAT)}
+              </span>
+            )}
+          </h4>
+          <select
+            className="dash-filter"
+            value={scheduleTypeFilter}
+            onChange={(e) => setScheduleTypeFilter(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="assignment">Assignment</option>
+            <option value="live-session">Live Session</option>
+            <option value="private-session">Private Session</option>
+            <option value="quiz">Quiz</option>
+          </select>
+        </div>
+        <div className="dash-card-body">
+          {filteredSchedule.length === 0 && <p>No schedule</p>}
+          {filteredSchedule.map((item) => (
+            <ActivityItem
+              key={item.id}
+              date={formatDate(item.date)}
+              label={item.type}
+              labelColor={item.labelColor}
+              lines={[item.title]}
+              onClick={() => {
+                if (item.link) navigate(item.link);
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>

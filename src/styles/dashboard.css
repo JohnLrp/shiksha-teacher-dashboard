@@ -1,8 +1,9 @@
-/* ===== DASHBOARD LAYOUT ===== */
+/* ===== DASHBOARD — single 3×3 grid ===== */
 
 .dashboard {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 2fr 3fr;
   gap: 14px;
   height: 100vh;
   padding: 16px;
@@ -12,33 +13,20 @@
 }
 
 
-/* --- TOP ROW: Live Sessions + Calendar --- */
-
-.dash-top {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 14px;
-  align-items: stretch;
-  flex-shrink: 0;
-  height: 230px;
-  min-height: 230px;
-  max-height: 230px;
-}
-
-
-/* Live Sessions section */
+/* ── UPCOMING LIVE SESSIONS  (col 1-2, row 1) ── */
 
 .dash-live-section {
+  grid-column: 1 / 3;
+  grid-row: 1;
   background: #f4f7f8;
   border-radius: 18px;
   padding: 14px 16px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   min-height: 0;
 }
-
 
 .dash-live-header {
   display: flex;
@@ -60,18 +48,21 @@
   color: #5a6a72;
 }
 
+/* 6-col grid inside, scrollable both ways */
 .dash-live-row {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
   flex: 1;
   min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(200px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 12px;
   padding-bottom: 4px;
-  align-items: stretch;
+  padding-right: 4px;
 }
 
 .dash-live-row::-webkit-scrollbar {
+  width: 4px;
   height: 4px;
 }
 
@@ -80,22 +71,18 @@
   border-radius: 10px;
 }
 
-.dash-live-row > * {
-  min-width: 200px;
-  flex: 0 0 calc((100% - 24px) / 3);
-}
 
+/* ── LIVE SESSION CARDS ── */
 
-/* Live Session Cards */
 .live-card {
   background: #13899b;
   border-radius: 14px;
   overflow: hidden;
-  min-width: 0;
   color: white;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .live-card-body {
@@ -135,9 +122,11 @@
 }
 
 
-/* --- CALENDAR --- */
+/* ── CALENDAR  (col 3, row 1) ── */
 
 .calendar {
+  grid-column: 3;
+  grid-row: 1;
   background: #f4f7f8;
   border-radius: 18px;
   padding: 14px;
@@ -147,7 +136,6 @@
   overflow: hidden;
   min-height: 0;
 }
-
 
 .calendar-header {
   display: flex;
@@ -225,8 +213,6 @@
   font-weight: 700;
 }
 
-
-
 /* Calendar Legend */
 .cal-legend {
   display: flex;
@@ -245,7 +231,6 @@
   color: #5a5a5a;
 }
 
-
 .cal-legend-dot {
   width: 7px;
   height: 7px;
@@ -254,21 +239,11 @@
   flex-shrink: 0;
 }
 
-/* --- BOTTOM ROW: 3 equal columns --- */
 
-.dash-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
-  align-items: stretch;
-  flex: 1;
-  min-height: 0;
-}
-
-
-/* --- SHARED CARD STYLES --- */
+/* ── BOTTOM 3 CARDS  (row 2, one per column) ── */
 
 .dash-card {
+  grid-row: 2;
   background: #f4f7f8;
   border-radius: 18px;
   padding: 16px;
@@ -279,6 +254,10 @@
   overflow: hidden;
 }
 
+/* Children: 1=live-section, 2=calendar, 3=assignments, 4=notifications, 5=schedule */
+.dashboard > .dash-card:nth-of-type(1) { grid-column: 1; }
+.dashboard > .dash-card:nth-of-type(2) { grid-column: 2; }
+.dashboard > .dash-card:nth-of-type(3) { grid-column: 3; }
 
 .dash-card-header {
   display: flex;
@@ -308,7 +287,6 @@
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
-
 /* Filter pills (Due / Over Due) */
 .dash-pills {
   display: flex;
@@ -328,23 +306,10 @@
   cursor: pointer;
 }
 
-.pill-due {
-  color: #4c5f86;
-}
-
-.pill-due.pill-active {
-  background: #6c88b7;
-  color: white;
-}
-
-.pill-overdue {
-  color: #8394b2;
-}
-
-.pill-overdue.pill-active {
-  background: #8ba0c4;
-  color: white;
-}
+.pill-due { color: #4c5f86; }
+.pill-due.pill-active { background: #6c88b7; color: white; }
+.pill-overdue { color: #8394b2; }
+.pill-overdue.pill-active { background: #8ba0c4; color: white; }
 
 .dash-empty {
   font-size: 11px;
@@ -359,16 +324,14 @@
   min-height: 0;
 }
 
-.dash-card-body::-webkit-scrollbar {
-  width: 4px;
-}
-
+.dash-card-body::-webkit-scrollbar { width: 4px; }
 .dash-card-body::-webkit-scrollbar-thumb {
   background: rgba(0,0,0,.12);
   border-radius: 10px;
 }
 
-/* --- ACCORDION ITEMS (Assignment / Quiz) --- */
+
+/* ── ACCORDION ITEMS (Assignment) ── */
 
 .acc-item {
   background: #f7f4f4;
@@ -388,9 +351,7 @@
   user-select: none;
 }
 
-.acc-header:hover {
-  background: rgba(89, 217, 127, 0.04);
-}
+.acc-header:hover { background: rgba(89, 217, 127, 0.04); }
 
 .acc-id {
   font-size: 1rem;
@@ -415,9 +376,7 @@
   margin: 6px 0;
 }
 
-.acc-line strong {
-  color: #151515;
-}
+.acc-line strong { color: #151515; }
 
 .btn-view-sub {
   margin-top: 14px;
@@ -431,12 +390,10 @@
   cursor: pointer;
 }
 
-.btn-view-sub:hover {
-  background: #3f89b4;
-}
+.btn-view-sub:hover { background: #3f89b4; }
 
 
-/* --- ACTIVITY / TIMELINE ITEMS --- */
+/* ── ACTIVITY / TIMELINE ITEMS ── */
 
 .act-item {
   position: relative;
@@ -507,49 +464,68 @@
   line-height: 1.4;
 }
 
-/* --- RESPONSIVE --- */
+
+/* ── RESPONSIVE ── */
 
 @media (max-width: 1200px) {
-  .dash-top {
-    grid-template-columns: 1fr;
-    height: auto;
-    max-height: none;
-    min-height: auto;
-  }
-
-  .dash-bottom {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .dash-live-row > * {
-    flex: 0 0 calc((100% - 12px) / 2);
-  }
-
   .dashboard {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
     overflow-y: auto;
   }
+
+  .dash-live-section {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    max-height: 280px;
+  }
+
+  .calendar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .dash-card {
+    grid-row: auto;
+    grid-column: auto;
+  }
+
+  .dashboard > .dash-card:nth-of-type(1) { grid-column: 1; }
+  .dashboard > .dash-card:nth-of-type(2) { grid-column: 2; }
+  .dashboard > .dash-card:nth-of-type(3) { grid-column: 1 / -1; }
 }
 
 @media (max-width: 768px) {
   .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
     padding: 16px;
     gap: 16px;
     overflow-y: auto;
   }
 
-  .dash-top,
-  .dash-bottom {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    height: auto;
-    max-height: none;
-    min-height: auto;
+  .dash-live-section {
+    grid-column: 1;
+    max-height: 260px;
   }
 
-  .dash-live-row > * {
-    flex: 0 0 100%;
+  .dash-live-row {
+    grid-template-columns: repeat(6, minmax(180px, 1fr));
   }
+
+  .calendar {
+    grid-column: 1;
+  }
+
+  .dash-card {
+    grid-column: 1;
+    grid-row: auto;
+    max-height: 400px;
+  }
+
+  .dashboard > .dash-card:nth-of-type(1),
+  .dashboard > .dash-card:nth-of-type(2),
+  .dashboard > .dash-card:nth-of-type(3) { grid-column: 1; }
 
   .dash-live-section,
   .dash-card,
@@ -558,13 +534,7 @@
     border-radius: 18px;
   }
 
-  .live-card {
-    min-height: 180px;
-  }
-
-  .calendar-grid {
-    gap: 6px;
-  }
+  .calendar-grid { gap: 6px; }
 
   .cal-date {
     width: 36px;
