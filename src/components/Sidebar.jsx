@@ -14,10 +14,34 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [classes, setClasses] = useState([]);
 
   useEffect(() => {
+    const pickFirstText = (...values) => {
+      const found = values.find(
+        (value) => typeof value === "string" && value.trim().length > 0
+      );
+      return found || "";
+    };
+
     async function fetchClasses() {
       try {
         const res = await api.get("/courses/teacher/my-classes/");
-        setClasses(res.data);
+        const normalized = res.data.map((cls) => ({
+          subject_id: cls.subject_id || cls.id,
+          subject_name: pickFirstText(cls.subject_name, cls.name),
+          course_title: pickFirstText(cls.course_title, cls.class_name, cls.course),
+          board: pickFirstText(
+            cls.board,
+            cls.board_name,
+            cls.board_title,
+            cls.board?.name
+          ),
+          stream: pickFirstText(
+            cls.stream,
+            cls.stream_name,
+            cls.stream_title,
+            cls.stream?.name
+          ),
+        }));
+        setClasses(normalized);
       } catch (err) {
         console.error("Failed to load teacher classes", err);
       }
@@ -25,6 +49,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
     fetchClasses();
   }, []);
+
+  const getClassMeta = (cls) => {
+    const meta = [cls.course_title, cls.board, cls.stream]
+      .filter(Boolean)
+      .join(" • ");
+
+    return meta ? ` (${meta})` : "";
+  };
 
   return (
     <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
@@ -88,7 +120,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 setSidebarOpen(false);
               }}
             >
-              {cls.subject_name} ({cls.course_title})
+              {cls.subject_name}
+              {getClassMeta(cls)}
             </p>
           ))}
         </div>

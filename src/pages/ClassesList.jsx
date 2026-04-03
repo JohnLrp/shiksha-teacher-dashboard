@@ -12,6 +12,13 @@ export default function ClassesList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const pickFirstText = (...values) => {
+      const found = values.find(
+        (value) => typeof value === "string" && value.trim().length > 0
+      );
+      return found || "";
+    };
+
     async function fetchSubjects() {
       try {
         const res = await api.get(
@@ -21,8 +28,20 @@ export default function ClassesList() {
         // Normalize API response so subjectId is always available
         const normalized = res.data.map((s) => ({
           subjectId: s.subject_id || s.id,
-          subjectName: s.subject_name || s.name,
-          courseTitle: s.course_title || "",
+          subjectName: pickFirstText(s.subject_name, s.name),
+          courseTitle: pickFirstText(s.course_title, s.class_name, s.course),
+          board: pickFirstText(
+            s.board,
+            s.board_name,
+            s.board_title,
+            s.board?.name
+          ),
+          stream: pickFirstText(
+            s.stream,
+            s.stream_name,
+            s.stream_title,
+            s.stream?.name
+          ),
         }));
 
         setSubjects(normalized);
@@ -39,6 +58,11 @@ export default function ClassesList() {
   }, []);
 
   if (loading) return <div>Loading classes...</div>;
+
+  const getClassMeta = (subject) =>
+    [subject.courseTitle, subject.board, subject.stream]
+      .filter(Boolean)
+      .join(" • ");
 
   return (
     <div className="cl-wrapper">
@@ -66,7 +90,6 @@ export default function ClassesList() {
           )}
 
           {subjects.map((subject) => (
-
             <div
               className="cl-card"
               key={subject.subjectId}
@@ -84,7 +107,7 @@ export default function ClassesList() {
               <div className="cl-card-right">
 
                 <span className="cl-card-label">
-                  {subject.courseTitle}
+                  {getClassMeta(subject)}
                 </span>
 
               </div>
