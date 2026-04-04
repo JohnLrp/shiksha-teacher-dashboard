@@ -114,7 +114,7 @@ export default function PrivateSessionDetail() {
   const pathTab = loc.pathname.includes("/request/") ? "requests"
     : loc.pathname.includes("/history/") ? "history" : "scheduled";
 
-  const goBack = () => nav("/teacher/private-sessions", { state: { tab: pathTab } });
+  const goBack = () => nav("/teacher/private-sessions", { state: { tab: pathTab, refresh: true } });
 
   // Tick for start button timer
   const [, setTick] = useState(0);
@@ -141,13 +141,17 @@ export default function PrivateSessionDetail() {
 
   if (loading) return (
     <div className="tps__detail-wrapper">
-      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__sidebar-back">
+        <button className="tps__back" onClick={goBack}>‹ Back to Sessions</button>
+      </div>
       <div className="tps__page"><p className="tps__loading">Loading session details...</p></div>
     </div>
   );
   if (error) return (
     <div className="tps__detail-wrapper">
-      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__sidebar-back">
+        <button className="tps__back" onClick={goBack}>‹ Back to Sessions</button>
+      </div>
       <div className="tps__page">
         <p className="tps__empty" style={{ color: "#ef4444" }}>{error}</p>
       </div>
@@ -155,7 +159,9 @@ export default function PrivateSessionDetail() {
   );
   if (!session) return (
     <div className="tps__detail-wrapper">
-      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__sidebar-back">
+        <button className="tps__back" onClick={goBack}>‹ Back to Sessions</button>
+      </div>
       <div className="tps__page">
         <p className="tps__empty">Session not found.</p>
       </div>
@@ -189,12 +195,14 @@ export default function PrivateSessionDetail() {
 
   return (
     <div className="tps__detail-wrapper">
-      <button className="tps__back" onClick={goBack}>‹ Back</button>
+      <div className="tps__sidebar-back">
+        <button className="tps__back" onClick={goBack}>‹ Back to Sessions</button>
+      </div>
 
       <div className="tps__tabs" style={{ marginBottom: 20 }}>
-        <button className={`tps__tab ${pathTab === "scheduled" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "scheduled" } })}>Scheduled</button>
-        <button className={`tps__tab ${pathTab === "requests" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "requests" } })}>Requests</button>
-        <button className={`tps__tab ${pathTab === "history" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "history" } })}>History</button>
+        <button className={`tps__tab ${pathTab === "scheduled" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "scheduled", refresh: true } })}>Scheduled</button>
+        <button className={`tps__tab ${pathTab === "requests" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "requests", refresh: true } })}>Requests</button>
+        <button className={`tps__tab ${pathTab === "history" ? "tps__tab--active" : ""}`} onClick={() => nav("/teacher/private-sessions", { state: { tab: "history", refresh: true } })}>History</button>
       </div>
 
       <div className="tps__page">
@@ -221,6 +229,7 @@ export default function PrivateSessionDetail() {
           )}
           {isPending && (
             <>
+              <button className="tps__abtn tps__abtn--accept" onClick={() => setModal("accept-session")}>Accept Session</button>
               <button className="tps__abtn tps__abtn--primary" onClick={() => setModal("timing")}>Set Timing</button>
               <button className="tps__abtn tps__abtn--outline" onClick={() => setModal("decline")}>Decline</button>
             </>
@@ -259,6 +268,17 @@ export default function PrivateSessionDetail() {
                 onClick={() => setModal("start")}
               >
                 ▶ Start Session
+              </button>
+            </div>
+          )}
+
+          {isPending && (
+            <div className="tps__accept-wrap">
+              <button
+                className="tps__accept-btn"
+                onClick={() => setModal("accept-session")}
+              >
+                ✓ Accept Session
               </button>
             </div>
           )}
@@ -406,6 +426,30 @@ export default function PrivateSessionDetail() {
           </div>
         </div>
       )}
+      {modal === "accept-session" && (
+        <div className="tps__overlay" onClick={() => setModal(null)}>
+          <div className="tps__modal" onClick={e => e.stopPropagation()}>
+            <h3>Accept Session Request</h3>
+            <table className="tps__minfo"><tbody>
+              <tr><td>Student:</td><td>{s._student}</td></tr>
+              <tr><td>Subject:</td><td>{s.subject}</td></tr>
+              <tr><td>Date:</td><td>{fmtDate(s._date)}</td></tr>
+              <tr><td>Time:</td><td>{fmtTime(s._time)}{calcEnd(s._time, s._duration) ? ` – ${calcEnd(s._time, s._duration)}` : ""}</td></tr>
+              <tr><td>Duration:</td><td>{s._durationLabel || `${s._duration} minutes`}</td></tr>
+              <tr><td>Group Size:</td><td>{s._groupSize} student{s._groupSize !== 1 ? "s" : ""}</td></tr>
+            </tbody></table>
+            <p className="tps__mwarn"><strong>Note:</strong> The session will be approved and scheduled. The student will be notified immediately.</p>
+            <div className="tps__mbtns">
+              <button className="tps__mbtn tps__mbtn--sec" onClick={() => setModal(null)}>Back</button>
+              <button className="tps__mbtn tps__mbtn--accept" disabled={busy} onClick={() => doAction(async () => {
+                await privateSessionService.acceptRequest(s.id);
+                nav("/teacher/private-sessions", { state: { tab: "scheduled", refresh: true } });
+              })}>{busy ? "Accepting..." : "Confirm"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {modal === "end" && (
         <div className="tps__overlay" onClick={() => setModal(null)}>
           <div className="tps__modal" onClick={e => e.stopPropagation()}>

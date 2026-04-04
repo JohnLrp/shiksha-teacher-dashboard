@@ -2,16 +2,14 @@ import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useEffect, useState, useRef } from "react";
 import { IoSend } from "react-icons/io5";
 
-export default function ChatPanel({ role }) {
+export default function ChatPanel({ role, messages = [], onSendMessage }) {
   const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
 
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
   const messagesEndRef = useRef(null);
 
-  const isPresenter = role === "PRESENTER"; // 🔥 FIX
+  const isPresenter = role === "PRESENTER";
 
   /* =====================================
      🔥 AUTO SCROLL
@@ -21,9 +19,12 @@ export default function ChatPanel({ role }) {
   }, [messages]);
 
   /* =====================================
-     🔥 RECEIVE MESSAGES
+     🔥 RECEIVE MESSAGES (REAL-TIME)
+     NOTE: No local state mutation here
   ===================================== */
   useEffect(() => {
+    if (!room) return;
+
     const handleData = (payload, participant) => {
       const text = new TextDecoder().decode(payload);
 
@@ -32,23 +33,11 @@ export default function ChatPanel({ role }) {
         if (msg.type === "raise-hand") return;
       } catch {}
 
-      const meta = participant.metadata ? JSON.parse(participant.metadata) : null;
+      // ⚠️ IMPORTANT:
+      // Do NOT call setMessages here anymore
+      // Let backend / parent handle persistence + state
 
-      // 🔥 FIX: new role system
-      const isSenderPresenter =
-        meta?.role === "presenter" || participant.permissions?.canPublish;
-
-      const displayName = participant.name || participant.identity;
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: displayName,
-          text,
-          isTeacher: isSenderPresenter, // keep name for styling
-          time: new Date(),
-        },
-      ]);
+      console.log("📩 Incoming message:", text);
     };
 
     room.on("dataReceived", handleData);
@@ -56,29 +45,26 @@ export default function ChatPanel({ role }) {
   }, [room]);
 
   /* =====================================
-     🔥 SEND MESSAGE
+     🔥 SEND MESSAGE (PERSISTENT)
   ===================================== */
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const encoder = new TextEncoder();
+    try {
+      // ✅ Send to backend (persistent)
+      await onSendMessage(input);
 
-    await localParticipant.publishData(
-      encoder.encode(input),
-      { reliable: true }
-    );
+      // ✅ Also broadcast via LiveKit (real-time)
+      const encoder = new TextEncoder();
+      await localParticipant.publishData(
+        encoder.encode(input),
+        { reliable: true }
+      );
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        sender: "You",
-        text: input,
-        isMe: true,
-        time: new Date(),
-      },
-    ]);
-
-    setInput("");
+      setInput("");
+    } catch (e) {
+      console.error("❌ sendMessage failed", e);
+    }
   };
 
   /* =====================================
@@ -126,14 +112,13 @@ export default function ChatPanel({ role }) {
               <span className="chat-name">
                 {msg.isMe ? "You" : msg.sender}
 
-                {/* 🔥 FIX: LABEL */}
                 {msg.isTeacher && !msg.isMe && (
                   <span className="teacher-tag"> • Presenter</span>
                 )}
               </span>
 
               <div className="chat-text">{msg.text}</div>
-              <div className="chat-time">{formatTime(msg.time)}</div>
+              {msg.time && <div className="chat-time">{formatTime(msg.time)}</div>}
             </div>
           </div>
         ))}
@@ -144,7 +129,6 @@ export default function ChatPanel({ role }) {
       {/* INPUT */}
       <div className="chat-input-area">
 
-        {/* 🔥 ONLY VIEWERS CAN RAISE HAND */}
         {!isPresenter && (
           <button
             onClick={raiseHand}

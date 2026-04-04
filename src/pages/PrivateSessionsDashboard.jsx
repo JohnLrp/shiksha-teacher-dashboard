@@ -14,6 +14,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as privateSessionService from "../api/privateSessionService";
 import "../styles/privateSessions.css";
 
+/* ── Search debounce hook ── */
+function useDebounce(value, delay) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
 /* ── Helpers ── */
 
 function fmtDate(d) {
@@ -90,11 +100,24 @@ export default function PrivateSessionsDashboard() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Search
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Filters
   const [historyFilter, setHistoryFilter] = useState("all");
   const [reqStatusFilter, setReqStatusFilter] = useState("all");
   const [reqSubjectFilter, setReqSubjectFilter] = useState("all");
+
+  // Auto-refresh when navigated back with refresh flag (e.g. after accepting a request)
+  useEffect(() => {
+    if (loc.state?.refresh) {
+      setRefreshKey((k) => k + 1);
+      // Clear the refresh flag from location state so it doesn't re-trigger
+      nav(loc.pathname, { replace: true, state: { ...loc.state, refresh: false } });
+    }
+  }, [loc.state, nav, loc.pathname]);
 
   useEffect(() => {
     async function load() {
@@ -121,7 +144,7 @@ export default function PrivateSessionsDashboard() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [refreshKey]);
 
   const pendingCount = requests.filter(r => r.status === "pending" || r.status === "proposed_changes" || r.status === "needs_reconfirmation").length;
 
@@ -134,12 +157,30 @@ export default function PrivateSessionsDashboard() {
     let f = requests;
     if (reqStatusFilter !== "all") f = f.filter(r => r.status === reqStatusFilter);
     if (reqSubjectFilter !== "all") f = f.filter(r => r.subject === reqSubjectFilter);
-    return f;
-  }, [requests, reqStatusFilter, reqSubjectFilter]);
+    return searchFilter(f);
+  }, [requests, reqStatusFilter, reqSubjectFilter, searchTerm]);
 
-  const filteredHistory = historyFilter === "all"
-    ? history
-    : history.filter(h => h.status === historyFilter);
+  // Client-side search filter
+  const searchFilter = (items) => {
+    if (!searchTerm.trim()) return items;
+    const q = searchTerm.toLowerCase();
+    return items.filter((s) => {
+      const n = norm(s);
+      return (
+        (n.subject || "").toLowerCase().includes(q) ||
+        (n._student || "").toLowerCase().includes(q) ||
+        (n._teacher || "").toLowerCase().includes(q) ||
+        (n.topic || "").toLowerCase().includes(q) ||
+        (n.course || "").toLowerCase().includes(q)
+      );
+    });
+  };
+
+  const filteredHistory = searchFilter(
+    historyFilter === "all" ? history : history.filter(h => h.status === historyFilter)
+  );
+
+  const filteredScheduled = searchFilter(scheduled);
 
   return (
     <div className="tps">
@@ -158,14 +199,26 @@ export default function PrivateSessionsDashboard() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="tps__search-wrap">
+        <span className="tps__search-icon">🔍</span>
+        <input
+          type="text"
+          className="tps__search"
+          placeholder="Search by subject, student, or teacher..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {loading && <div className="tps__loading">Loading...</div>}
       {error && <div className="tps__empty" style={{ color: "#ef4444" }}>{error}</div>}
 
       {/* ═══ SCHEDULED ═══ */}
       {!loading && tab === "scheduled" && (
         <div className="tps__grid">
-          {scheduled.length === 0 && <p className="tps__empty">No scheduled sessions yet.</p>}
-          {scheduled.map((raw) => {
+          {filteredScheduled.length === 0 && <p className="tps__empty">{searchTerm ? "No sessions match your search." : "No scheduled sessions yet."}</p>}
+          {filteredScheduled.map((raw) => {
             const s = norm(raw);
             return (
               <div key={s.id} className="tps__scard" onClick={() => nav(`/teacher/private-sessions/scheduled/${s.id}`)}>
@@ -254,13 +307,13 @@ export default function PrivateSessionsDashboard() {
             </div>
           </div>
           <div className="tps__hlist">
-            {filteredHistory.length === 0 && <p className="tps__empty">No history found.{history.length === 0 ? " History endpoint may not be set up yet." : ""}</p>}
+            {filteredHistory.length === 0 && <p className="tps__empty">{searchTerm ? "No history matches your search." : "No history found."}{!searchTerm && history.length === 0 ? " History endpoint may not be set up yet." : ""}</p>}
             {filteredHistory.map((raw) => {
               const h = norm(raw);
               return (
                 <div key={h.id} className="tps__hrow" onClick={() => nav(`/teacher/private-sessions/history/${h.id}`)}>
                   <div className="tps__hrow-avatar">
-                    <div className="tps__hrow-ph">{h._student?.[0] || "?"}</div>
+                    <div className="tps__hrow-ph">{(h._student || "?")[0].toUpperCase()}</div>
                   </div>
                   <div className="tps__hrow-info">
                     <p className="tps__hrow-name">{h._student}{h._studentId ? ` [${h._studentId}]` : ""}</p>
