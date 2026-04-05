@@ -79,12 +79,13 @@ export default function TeacherCreateLiveSession() {
         subject_id: subjectId,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
+        force_live: true
       });
 
       toast.success("✅ Live session created!");
 
       setTimeout(() => {
-        navigate(-1);
+        navigate(`/teacher/classes/${subjectId}/live-sessions`);
       }, 800);
 
     } catch (err) {
