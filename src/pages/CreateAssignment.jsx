@@ -6,6 +6,7 @@ import api from "../api/apiClient";
 import "../styles/create-assignment.css";
 
 export default function CreateAssignment() {
+
   const navigate = useNavigate();
   const { subjectId } = useParams();
   const { state: editData } = useLocation();
@@ -28,6 +29,7 @@ export default function CreateAssignment() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+
     async function fetchChapters() {
       try {
         const res = await api.get(`/courses/subject/${subjectId}/`);
@@ -39,9 +41,11 @@ export default function CreateAssignment() {
     }
 
     if (subjectId) fetchChapters();
+
   }, [subjectId]);
 
   const validate = () => {
+
     const newErrors = {};
 
     if (!chapterId) newErrors.chapter = "Chapter required";
@@ -51,14 +55,18 @@ export default function CreateAssignment() {
     if (!file && !isEditing) newErrors.file = "File required";
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
+
     if (!validate()) return;
 
     try {
+
       const formData = new FormData();
+
       formData.append("chapter_id", chapterId);
       formData.append("title", title);
       formData.append("description", description);
@@ -69,21 +77,37 @@ export default function CreateAssignment() {
       }
 
       if (isEditing) {
+
         const res = await api.patch(
           `/assignments/teacher/${editData.id}/edit/`,
           formData
         );
-        toast.success(res?.data?.message || "Assignment updated successfully");
+
+        toast.success(
+          res?.data?.message || "Assignment updated successfully"
+        );
+
       } else {
-        const res = await api.post("/assignments/teacher/create/", formData);
-        toast.success(res?.data?.message || "Assignment created successfully");
+
+        const res = await api.post(
+          "/assignments/teacher/create/",
+          formData
+        );
+
+        toast.success(
+          res?.data?.message || "Assignment created successfully"
+        );
+
       }
 
       setTimeout(() => {
         navigate(`/teacher/classes/${subjectId}/assignments`);
       }, 600);
+
     } catch (err) {
+
       console.error(err);
+
       toast.error(
         err?.response?.data?.detail ||
         err?.message ||
@@ -94,41 +118,39 @@ export default function CreateAssignment() {
 
   return (
     <div className="create-assignment-page">
-      {/* Back Button */}
-      <button className="ca-back-btn" onClick={() => navigate(-1)}>
+
+      <button
+        className="ca-back-btn"
+        onClick={() => navigate(-1)}
+      >
         <IoChevronBack /> Back
       </button>
 
-      {/* Title Container */}
       <div className="ca-title-container">
-        <h2>
-          {isEditing ? "Edit" : "Create"}{" "}
-          <span style={{ color: '#ffc107' }}>Assignment</span>
-        </h2>
+        <h2>{isEditing ? "Edit Assignment" : "Create Assignment"}</h2>
       </div>
 
-      {/* Form Container */}
       <div className="ca-form-container">
         <div className="ca-form">
 
           {/* Chapter */}
           <div className="ca-field">
             <label>Chapter</label>
+
             <select
               value={chapterId}
-              onChange={(e) => {
-                setChapterId(e.target.value);
-                setErrors(prev => ({ ...prev, chapter: null }));
-              }}
+              onChange={(e) => setChapterId(e.target.value)}
               className={`ca-input ${errors.chapter ? "ca-input-error" : ""}`}
             >
               <option value="">Select Chapter</option>
+
               {chapters.map((ch) => (
                 <option key={ch.id} value={ch.id}>
                   {ch.title}
                 </option>
               ))}
             </select>
+
             {errors.chapter && (
               <span className="ca-error">{errors.chapter}</span>
             )}
@@ -137,16 +159,14 @@ export default function CreateAssignment() {
           {/* Title */}
           <div className="ca-field">
             <label>Title</label>
+
             <input
               type="text"
-              placeholder="Enter assignment title"
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                setErrors(prev => ({ ...prev, title: null }));
-              }}
+              onChange={(e) => setTitle(e.target.value)}
               className={`ca-input ${errors.title ? "ca-input-error" : ""}`}
             />
+
             {errors.title && (
               <span className="ca-error">{errors.title}</span>
             )}
@@ -155,16 +175,14 @@ export default function CreateAssignment() {
           {/* Description */}
           <div className="ca-field">
             <label>Description</label>
+
             <textarea
               rows={5}
-              placeholder="Enter assignment description"
               value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setErrors(prev => ({ ...prev, description: null }));
-              }}
+              onChange={(e) => setDescription(e.target.value)}
               className={`ca-textarea ${errors.description ? "ca-input-error" : ""}`}
             />
+
             {errors.description && (
               <span className="ca-error">{errors.description}</span>
             )}
@@ -173,15 +191,14 @@ export default function CreateAssignment() {
           {/* Due Date */}
           <div className="ca-field">
             <label>Due Date</label>
+
             <input
               type="date"
               value={dueDate}
-              onChange={(e) => {
-                setDueDate(e.target.value);
-                setErrors(prev => ({ ...prev, dueDate: null }));
-              }}
+              onChange={(e) => setDueDate(e.target.value)}
               className={`ca-input ${errors.dueDate ? "ca-input-error" : ""}`}
             />
+
             {errors.dueDate && (
               <span className="ca-error">{errors.dueDate}</span>
             )}
@@ -189,6 +206,7 @@ export default function CreateAssignment() {
 
           {/* File Upload */}
           <div className="ca-field">
+
             <label>Attach File</label>
 
             <input
@@ -196,19 +214,18 @@ export default function CreateAssignment() {
               ref={fileInputRef}
               hidden
               onChange={(e) => {
-                const selectedFile = e.target.files?.[0];
-                if (!selectedFile) return;
+                const file = e.target.files?.[0];
+                if (!file) return;
 
                 const allowedExtensions = [".pdf", ".doc", ".docx"];
-                const name = selectedFile.name.toLowerCase();
+                const name = file.name.toLowerCase();
 
                 if (!allowedExtensions.some(ext => name.endsWith(ext))) {
                   toast.error("Only PDF, DOC, DOCX allowed");
                   return;
                 }
 
-                setFile(selectedFile);
-                setErrors(prev => ({ ...prev, file: null }));
+                setFile(file);
               }}
             />
 
@@ -221,7 +238,7 @@ export default function CreateAssignment() {
             </button>
 
             {file && (
-              <div style={{ marginTop: "10px" }}>
+              <div style={{ marginTop: "6px" }}>
                 <span>{file.name}</span>
                 <button
                   type="button"
@@ -234,9 +251,9 @@ export default function CreateAssignment() {
             )}
 
             {isEditing && editData?.attachment && !file && (
-              <div style={{ marginTop: "10px" }}>
+              <div style={{ marginTop: "6px" }}>
                 Existing file:
-                
+                <a
                   href={editData.attachment}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -250,11 +267,15 @@ export default function CreateAssignment() {
             {errors.file && (
               <span className="ca-error">{errors.file}</span>
             )}
+
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <div className="ca-actions">
-            <button className="ca-create-btn" onClick={handleSubmit}>
+            <button
+              className="ca-create-btn"
+              onClick={handleSubmit}
+            >
               {isEditing ? "Update" : "Create"}
             </button>
           </div>
