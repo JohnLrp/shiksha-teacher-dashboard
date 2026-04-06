@@ -24,6 +24,7 @@ import { useState, useEffect, useCallback } from "react";
 import "./privateClassroom.css";
 import ChatPanel from "./ChatPanel";
 import api from "../../api/apiClient";
+import soundManager from "../../utils/soundManager";
 
 /* ═══════════════════════════════════════════════════════════
    HOOKS
@@ -248,6 +249,23 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   const [removeTarget, setRemoveTarget] = useState(null);
   const [recording, setRecording] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const [soundMuted, setSoundMuted] = useState(soundManager.isMuted());
+  const prevParticipantCountRef = useState({ current: null })[0];
+
+  // ── Participant join/leave sound detection ──
+  useEffect(() => {
+    const count = participants.length;
+    if (prevParticipantCountRef.current === null) {
+      prevParticipantCountRef.current = count;
+      return;
+    }
+    if (count > prevParticipantCountRef.current) {
+      soundManager.participantJoin();
+    } else if (count < prevParticipantCountRef.current) {
+      soundManager.participantLeave();
+    }
+    prevParticipantCountRef.current = count;
+  }, [participants.length]);
 
   // ── Load persisted chat messages on mount ──
   useEffect(() => {
@@ -278,8 +296,8 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
           const { data } = JSON.parse(event.data);
           if (data) {
             setChatMessages((prev) => {
-              // Avoid duplicates
               if (prev.some((m) => m.id === data.id)) return prev;
+              soundManager.messageReceive();
               return [...prev, {
                 id: data.id,
                 sender: data.sender_name,
@@ -304,6 +322,15 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   const screenTracks = tracks.filter((t) => t.source === Track.Source.ScreenShare);
   const cameraTracks = tracks.filter((t) => t.source === Track.Source.Camera);
 
+  // ── Screen share detection sound (when others share) ──
+  const prevScreenCountRef = useState({ current: 0 })[0];
+  useEffect(() => {
+    const count = screenTracks.length;
+    if (count > prevScreenCountRef.current) soundManager.screenShareStart();
+    else if (count < prevScreenCountRef.current && prevScreenCountRef.current > 0) soundManager.screenShareStop();
+    prevScreenCountRef.current = count;
+  }, [screenTracks.length]);
+
   // Listen for raise/lower hand + chat messages
   useEffect(() => {
     const decoder = new TextDecoder();
@@ -322,6 +349,7 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
         if (!id) return;
         if (msg.type === "RAISE_HAND") {
           setRaisedHands((prev) => ({ ...prev, [id]: true }));
+          soundManager.handRaise();
           show(`${participant?.name || id} raised their hand 🖐`, "info");
         }
         if (msg.type === "LOWER_HAND") {
@@ -329,48 +357,40 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
         }
       } catch {}
 
-      // Chat message — not a control message, store it
-      if (!isControl) {
-        const displayName = participant?.name || participant?.identity || "Unknown";
-        let meta = {};
-        try { meta = JSON.parse(participant?.metadata || "{}"); } catch {}
-        const isTeacher = meta.role === "teacher" || participant?.permissions?.canPublish;
-        setChatMessages((prev) => [...prev, { sender: displayName, text, isTeacher, time: new Date() }]);
-      }
+      // Chat messages are now handled via REST API + WebSocket — no longer via LiveKit data channel
     };
     room.on("dataReceived", handleData);
     return () => room.off("dataReceived", handleData);
   }, [room, show]);
 
-  // ── Chat send — persists to backend + broadcasts via LiveKit data channel ──
+  // ── Chat send — persists to backend, WebSocket broadcasts to others ──
   const sendChatMessage = async (text) => {
-    // Persist to backend
+    soundManager.messageSend();
     try {
       const res = await api.post(`/sessions/${session.id}/chat/send/`, { message: text });
       const msg = res.data;
-      setChatMessages((prev) => [...prev, {
-        id: msg.id,
-        sender: "You",
-        text: msg.message,
-        isMe: true,
-        isTeacher: true,
-        time: new Date(msg.created_at),
-      }]);
+      setChatMessages((prev) => {
+        // Avoid duplicate if WebSocket already delivered it
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, {
+          id: msg.id,
+          sender: "You",
+          text: msg.message,
+          isMe: true,
+          isTeacher: true,
+          time: new Date(msg.created_at),
+        }];
+      });
     } catch (e) {
       console.error("Failed to send message:", e);
-      // Fallback: still show locally
       setChatMessages((prev) => [...prev, { sender: "You", text, isMe: true, isTeacher: true, time: new Date() }]);
     }
-    // Also broadcast via LiveKit for instant delivery
-    try {
-      const encoder = new TextEncoder();
-      await localParticipant.publishData(encoder.encode(text), { reliable: true });
-    } catch {}
   };
 
   // ── Controls ──
 
   const toggleMic = async () => {
+    soundManager.buttonClick();
     const next = !micOn;
     await localParticipant.setMicrophoneEnabled(next);
     setMicOn(next);
@@ -378,6 +398,7 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   };
 
   const toggleCam = async () => {
+    soundManager.buttonClick();
     const next = !camOn;
     await localParticipant.setCameraEnabled(next);
     setCamOn(next);
@@ -385,9 +406,12 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   };
 
   const toggleScreen = async () => {
+    soundManager.buttonClick();
     const next = !screenSharing;
     await localParticipant.setScreenShareEnabled(next);
     setScreenSharing(next);
+    if (next) soundManager.screenShareStart();
+    else soundManager.screenShareStop();
     show(next ? "Screen sharing started" : "Screen share stopped", "info");
   };
 
@@ -608,6 +632,11 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
                 title="Chat">💬</button>
             </div>
             <div className="pvt-ctrl-right">
+              <button
+                className={`pvt-ctrl-btn ${soundMuted ? "pvt-ctrl-off" : ""}`}
+                onClick={() => { const m = soundManager.toggleMute(); setSoundMuted(m); }}
+                title={soundMuted ? "Unmute Sounds" : "Mute Sounds"}
+              >{soundMuted ? "🔇" : "🔊"}</button>
               <button className="pvt-leave-btn pvt-end-btn" onClick={handleEnd}>⛔ End for All</button>
             </div>
           </div>
