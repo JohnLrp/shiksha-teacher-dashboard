@@ -87,6 +87,9 @@ export default function LiveSessions() {
     }
   };
 
+  /* =====================================
+     🔥 FILTER & CATEGORIZE
+  ===================================== */
   const filtered = sessions.filter((s) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -97,6 +100,91 @@ export default function LiveSessions() {
       s.teacher?.toLowerCase().includes(q)
     );
   });
+
+  const ongoing = filtered.filter(
+    (s) => s.computed_status === "LIVE" || s.computed_status === "PAUSED" ||
+      s.computed_status === "RECONNECTING" || s.computed_status === "WAITING_FOR_TEACHER" ||
+      s.computed_status === "SCHEDULED"
+  );
+  const completed = filtered.filter((s) => s.computed_status === "COMPLETED");
+  const history = filtered.filter((s) => s.computed_status === "CANCELLED");
+
+  /* =====================================
+     🔥 RENDER SESSION CARD
+  ===================================== */
+  const renderCard = (session) => {
+    const startDate = new Date(session.start_time);
+    const endDate = new Date(session.end_time);
+
+    return (
+      <div
+        key={session.id}
+        className={`session-card ${!session.can_join ? "disabled" : ""}`}
+        onClick={() => handleJoin(session)}
+      >
+        <div className="session-card-info">
+          <h4 className="session-card-subject">{session.subject_name}</h4>
+          <p className="session-card-course">{session.course_name}</p>
+          <p className="session-card-topic">{session.title}</p>
+          <p className="session-card-teacher">👨‍🏫 {session.teacher || "You"}</p>
+        </div>
+
+        <div className="session-card-meta">
+          <span className={`status ${session.computed_status}`}>
+            {session.computed_status}
+          </span>
+
+          {session.computed_status === "LIVE" && (
+            <span className="live-badge">🔴 LIVE</span>
+          )}
+
+          {session.computed_status === "SCHEDULED" && (
+            <button
+              className="session-cancel-btn"
+              onClick={(e) => handleCancel(e, session.id)}
+              title="Cancel session"
+            >
+              <MdCancel /> Cancel
+            </button>
+          )}
+        </div>
+
+        <div className="session-card-bottom">
+          <span>
+            {startDate.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+          <span>
+            {startDate.toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </span>
+          <span>
+            Ends:{" "}
+            {endDate.toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </span>
+          {(session.computed_status === "SCHEDULED" || session.computed_status === "LIVE") && (
+            <span className="starts-in">{getCountdown(session.start_time)}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmpty = (message) => (
+    <div className="live-sessions-empty">
+      <p style={{ margin: 0, fontSize: 13, color: "rgba(11,42,42,.4)" }}>{message}</p>
+    </div>
+  );
 
   return (
     <div className="live-sessions-page">
@@ -137,121 +225,54 @@ export default function LiveSessions() {
           </div>
         )}
 
-        <div className="live-sessions-grid">
-          {loading && (
-            <p className="live-sessions-empty">Loading sessions…</p>
-          )}
-          {error && (
-            <p className="live-sessions-empty" style={{ color: "#b91c1c" }}>
-              {error}
-            </p>
-          )}
+        {loading && (
+          <p className="live-sessions-empty">Loading sessions…</p>
+        )}
+        {error && (
+          <p className="live-sessions-empty" style={{ color: "#b91c1c" }}>
+            {error}
+          </p>
+        )}
 
-          {!loading && !error && filtered.length === 0 && (
-            <div className="live-sessions-empty">
-              <p style={{ fontSize: 32, margin: "0 0 8px" }}>📅</p>
-              <p style={{ margin: 0, fontWeight: 600 }}>
-                {search
-                  ? "No sessions match your search."
-                  : "No sessions scheduled yet."}
-              </p>
-              {!search && subjectId && (
-                <p style={{ margin: "4px 0 0", fontSize: 12 }}>
-                  Click "Schedule Live Session" to create one.
-                </p>
-              )}
+        {!loading && !error && (
+          <div className="live-sessions-columns">
+            {/* Column 1: Ongoing & Upcoming */}
+            <div className="live-sessions-column">
+              <h3 className="live-sessions-column-title ongoing">
+                🟢 Ongoing & Upcoming
+              </h3>
+              <div className="live-sessions-column-cards">
+                {ongoing.length > 0
+                  ? ongoing.map(renderCard)
+                  : renderEmpty("No upcoming sessions")}
+              </div>
             </div>
-          )}
 
-          {!loading &&
-            !error &&
-            filtered.map((session) => {
-              const startDate = new Date(session.start_time);
-              const endDate = new Date(session.end_time);
+            {/* Column 2: Completed */}
+            <div className="live-sessions-column">
+              <h3 className="live-sessions-column-title completed">
+                ✅ Completed
+              </h3>
+              <div className="live-sessions-column-cards">
+                {completed.length > 0
+                  ? completed.map(renderCard)
+                  : renderEmpty("No completed sessions")}
+              </div>
+            </div>
 
-              return (
-                <div
-                  key={session.id}
-                  className={`session-card ${
-                    !session.can_join ? "disabled" : ""
-                  }`}
-                  onClick={() => handleJoin(session)}
-                >
-                  <div className="session-card-info">
-                    <h4 className="session-card-subject">
-                      {session.subject_name}
-                    </h4>
-
-                    <p className="session-card-course">
-                      {session.course_name}
-                    </p>
-
-                    <p className="session-card-topic">
-                      {session.title}
-                    </p>
-
-                    {/* 🔥 NEW: TEACHER */}
-                    <p className="session-card-teacher">
-                      👨‍🏫 {session.teacher || "You"}
-                    </p>
-                  </div>
-
-                  <div className="session-card-meta">
-                    <span className={`status ${session.computed_status}`}>
-                      {session.computed_status}
-                    </span>
-
-                    {session.computed_status === "LIVE" && (
-                      <span className="live-badge">🔴 LIVE</span>
-                    )}
-
-                    {session.computed_status === "SCHEDULED" && (
-                      <button
-                        className="session-cancel-btn"
-                        onClick={(e) => handleCancel(e, session.id)}
-                        title="Cancel session"
-                      >
-                        <MdCancel /> Cancel
-                      </button>
-                    )}
-                  </div>
-
-                  {/* 🔥 IMPROVED BOTTOM */}
-                  <div className="session-card-bottom">
-                    <span>
-                      {startDate.toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-
-                    <span>
-                      {startDate.toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </span>
-
-                    {/* 🔥 NEW: END TIME */}
-                    <span>
-                      Ends: {endDate.toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </span>
-
-                    {/* 🔥 COUNTDOWN */}
-                    <span className="starts-in">
-                      {getCountdown(session.start_time)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+            {/* Column 3: History (Cancelled) */}
+            <div className="live-sessions-column">
+              <h3 className="live-sessions-column-title history">
+                📋 History
+              </h3>
+              <div className="live-sessions-column-cards">
+                {history.length > 0
+                  ? history.map(renderCard)
+                  : renderEmpty("No cancelled sessions")}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -271,3 +271,55 @@
   color: rgba(11,42,42,.45);
   font-size: 14px;
 }
+
+/* =====================================
+   3-COLUMN LAYOUT
+===================================== */
+.live-sessions-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.live-sessions-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 200px;
+}
+
+.live-sessions-column-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid;
+}
+
+.live-sessions-column-title.ongoing {
+  color: #0b5b5b;
+  border-color: #0b5b5b;
+}
+
+.live-sessions-column-title.completed {
+  color: #15803d;
+  border-color: #15803d;
+}
+
+.live-sessions-column-title.history {
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.live-sessions-column-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .live-sessions-columns {
+    grid-template-columns: 1fr;
+  }
+}
