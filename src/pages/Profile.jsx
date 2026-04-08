@@ -1,158 +1,201 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../api/apiClient";
 import "../styles/profile.css";
 
 export default function Profile() {
-  const [editing, setEditing] = useState(false);
-  const avatar = localStorage.getItem("avatar");
-const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [form, setForm] = useState({
-    name: "Amy Thing",
-    subjects: "Maths & Science",
-    qualifications: "M.Sc",
-    role:"Teacher",
-    rating:"TBA Later",
-    about:"A hardworking security guard",
-avatar: avatar || "https://i.pravatar.cc/40?img=3",
-  }); 
-    
-  const [backup, setBackup] = useState(form);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/accounts/teacher/profile/");
+        setProfile(res.data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
-  const emojis = [
-    "😀","😁","😎","🤓","🐮","🐷",
-    "😍","😊","🐶","🐱","🐻","🐯",
-    "🦊","🐰","🐸","🐨","🐵","🦁",
-    "🧛","💻","👩‍🔬","👨‍🏫","👩‍⚕️","👨‍🍳"
-  ];
-
-  function handleChange(field, value) {
-    setForm({ ...form, [field]: value });
+  if (loading) {
+    return (
+      <div className="tp-page">
+        <p className="tp-loading">Loading profile...</p>
+      </div>
+    );
   }
 
-  function handleEdit() {
-    setBackup(form);
-    setEditing(true);
-  }
-function handleSave() {
-  localStorage.setItem("avatar", form.avatar);
-  setEditing(false);
-}
-
-
-  function handleCancel() {
-    setForm(backup);
-    setEditing(false);
+  if (error || !profile) {
+    return (
+      <div className="tp-page">
+        <p className="tp-error">{error || "Profile not found."}</p>
+      </div>
+    );
   }
 
-  function handleAvatarSelect(emoji) {
-    setForm({ ...form, avatar: emoji });
-  }
+  const prefix =
+    profile.gender === "female" ? "Miss" :
+    profile.gender === "male" ? "Mr." : "";
 
-  function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setForm({ ...form, avatar: url });
-    }
-  }
+  const displayName = prefix ? `${prefix} ${profile.name}` : profile.name;
 
   return (
-    <div className="profile-page">
+    <div className="tp-page">
 
       {/* ===== TOP CARD ===== */}
-      <div className="profile-card">
-        <div className="profile-left" onClick={() => setShowAvatarModal(true)}>
-          {form.avatar ? (
-            typeof form.avatar === "string" && form.avatar.startsWith("blob:") ? (
-              <img src={form.avatar} alt="avatar" className="avatar-img" />
+      <div className="tp-top-card">
+        <div className="tp-top-left">
+          <div className="tp-avatar">
+            {profile.photo ? (
+              <img src={profile.photo} alt={profile.name} />
             ) : (
-              <span className="avatar-emoji">{form.avatar}</span>
-            )
-          ) : (
-            <>
-              <span className="avatar-plus">+</span>
-              <span className="avatar-text">Add Image</span>
-            </>
-          )}
-        </div>
-
-        <div className="profile-info">
-          {editing ? (
-            <input
-              className="profile-name-input"
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-            />
-          ) : (
-            <h2 className="profile-name">{form.name}</h2>
-          )}
-
-          <div className="profile-detail">
-            <div className="profile-col">
-              <p><strong>Subjects:</strong> {form.subjects}</p>
-              <p><strong>Qualifications:</strong> {form.qualifications}</p>
-              <p><strong>Role:</strong> {form.role}</p>
-            </div>
-            <div className="profile-col">
-              <p><strong>Rating:</strong> {form.rating}</p>
-              <p><strong>About:</strong> {editing ? (
-                <textarea
-                  value={form.about}
-                  onChange={(e) => handleChange("about", e.target.value)}
-                  placeholder="Write about yourself..."
-                />
-              ) : (
-                form.about || ""
-              )}</p>
-            </div>
+              <span className="tp-avatar-placeholder">
+                {profile.name?.charAt(0) || "T"}
+              </span>
+            )}
           </div>
-        </div>
-      </div>
 
-      {/* ===== AVATAR MODAL ===== */}
-      {showAvatarModal && (
-        <div className="modal-overlay" onClick={() => setShowAvatarModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Choose Avatar</h3>
-              <button className="modal-close" onClick={() => setShowAvatarModal(false)}>✕</button>
-            </div>
+          <div className="tp-info">
+            <h1 className="tp-name">{displayName || "Teacher"}</h1>
 
-            <div className="modal-preview">
-              {form.avatar ? (
-                typeof form.avatar === "string" && form.avatar.startsWith("blob:") ? (
-                  <img src={form.avatar} alt="preview" className="preview-img" />
-                ) : (
-                  <span className="preview-emoji">{form.avatar}</span>
-                )
-              ) : (
-                <span className="preview-text">Preview</span>
-              )}
-            </div>
-
-            <p className="modal-label">Upload Image</p>
-            <label className="file-btn">
-              Choose File
-              <input type="file" accept="image/*" hidden onChange={handleFileUpload} />
-            </label>
-
-            <p className="modal-label">Or Select Emoji</p>
-            <div className="emoji-grid">
-              {emojis.map((emoji, i) => (
-                <span
-                  key={i}
-                  className="emoji-item"
-                  onClick={() => handleAvatarSelect(emoji)}
-                >
-                  {emoji}
+            <div className="tp-badges">
+              {profile.highest_degree && profile.field_of_study && (
+                <span className="tp-badge-item">
+                  {profile.highest_degree} in {profile.field_of_study}
                 </span>
+              )}
+              {profile.teaching_certifications?.map((cert, i) => (
+                <span key={i} className="tp-badge-item">{cert}</span>
               ))}
             </div>
 
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowAvatarModal(false)}>Cancel</button>
-              <button className="btn-save" onClick={() => setShowAvatarModal(false)}>Save</button>
+            {profile.experience_range && (
+              <p className="tp-experience">
+                {profile.experience_range} experience
+              </p>
+            )}
+
+            <div className="tp-tags">
+              {profile.is_approved && (
+                <span className="tp-tag approved">Approved</span>
+              )}
+              {profile.employment_status && (
+                <span className="tp-tag employment">{profile.employment_status}</span>
+              )}
             </div>
+          </div>
+        </div>
+
+        <div className="tp-top-right">
+          <button
+            className="tp-edit-btn"
+            onClick={() => window.location.href = "https://www.shikshacom.com/form-fillup"}
+          >
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+      {/* ===== RATING SECTION ===== */}
+      <div className="tp-ratings-row">
+        <div className="tp-rating-card">
+          <h3>Overall Rating</h3>
+          <div className="tp-rating-value">
+            <span className="tp-star">&#9733;</span>
+            <span className="tp-rating-number">
+              {profile.rating ? profile.rating.toFixed(1) : "N/A"}
+            </span>
+            {profile.rating && <span className="tp-rating-max">/5.0</span>}
+          </div>
+          <p className="tp-rating-sub">Based on all student reviews</p>
+        </div>
+
+        <div className="tp-rating-card">
+          <h3>Private Session Rating</h3>
+          <div className="tp-rating-value">
+            <span className="tp-star">&#9733;</span>
+            <span className="tp-rating-number">N/A</span>
+          </div>
+          <p className="tp-rating-sub">Coming soon</p>
+        </div>
+      </div>
+
+      {/* ===== ABOUT ===== */}
+      {profile.bio && (
+        <div className="tp-section">
+          <h2>About</h2>
+          <p className="tp-about-text">{profile.bio}</p>
+        </div>
+      )}
+
+      {/* ===== COURSES & SUBJECTS ===== */}
+      <div className="tp-two-col">
+        <div className="tp-section">
+          <h2>Active Courses</h2>
+          {profile.active_courses?.length > 0 ? (
+            <div className="tp-list">
+              {profile.active_courses.map((course, i) => (
+                <div key={i} className="tp-list-item">
+                  <span className="tp-list-num">{i + 1})</span>
+                  <div>
+                    <strong>{course.title}</strong>
+                    <ul className="tp-sub-list">
+                      {course.subjects.map((s, j) => (
+                        <li key={j}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="tp-empty">No active courses assigned.</p>
+          )}
+        </div>
+
+        <div className="tp-section">
+          <h2>Subjects</h2>
+          {profile.course_applications?.length > 0 ? (
+            <div className="tp-list">
+              {profile.course_applications.map((ca, i) => (
+                <div key={i} className="tp-list-item">
+                  <span className="tp-list-num">{i + 1})</span>
+                  <div>
+                    <strong>{ca.subject} ({ca.boards?.join(", ")})</strong>
+                    <ul className="tp-sub-list">
+                      {ca.classes?.map((c, j) => (
+                        <li key={j}>Class {c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="tp-empty">No subjects applied for.</p>
+          )}
+        </div>
+      </div>
+
+      {/* ===== SKILL APPLICATIONS ===== */}
+      {profile.skill_applications?.length > 0 && (
+        <div className="tp-section">
+          <h2>Specialized Skills</h2>
+          <div className="tp-skills-grid">
+            {profile.skill_applications.map((sk, i) => (
+              <div key={i} className="tp-skill-card">
+                <h4>{sk.skill_name}</h4>
+                <p>{sk.skill_description}</p>
+                <span className="tp-tag employment">{sk.skill_related_subject}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
