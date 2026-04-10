@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import api from "../api/apiClient";
 import "../styles/header.css";
+import NotificationBell from "./NotificationBell";
 
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
@@ -34,13 +35,13 @@ export default function Header({ onMenuClick }) {
       sessionStorage.clear();
 
       setOpen(false);
-      window.location.href = "https://www.shikshacom.com/login";
+      window.location.href = (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/login";
     }
   };
 
   const handleReturnToHomepage = () => {
     setOpen(false);
-    window.location.href = "https://www.shikshacom.com/";
+    window.location.href = import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com/";
   };
 
   return (
@@ -53,6 +54,8 @@ export default function Header({ onMenuClick }) {
       >
         <HiOutlineMenuAlt3 />
       </button>
+
+      <NotificationBell />
 
       <div className="profile-menu" ref={menuRef}>
         <img

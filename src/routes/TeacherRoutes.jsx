@@ -38,7 +38,7 @@ import PrivateSessionDetail from "../pages/PrivateSessionDetail";
 
 function RedirectToMainLogin() {
   useEffect(() => {
-    window.location.href = "https://www.shikshacom.com/login";
+    window.location.href = (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/login";
   }, []);
   return null;
 }

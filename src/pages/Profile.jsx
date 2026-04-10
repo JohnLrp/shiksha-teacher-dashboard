@@ -96,7 +96,7 @@ export default function Profile() {
         <div className="tp-top-right">
           <button
             className="tp-edit-btn"
-            onClick={() => window.location.href = "https://www.shikshacom.com/form-fillup"}
+            onClick={() => window.location.href = (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/form-fillup"}
           >
             Edit Profile
           </button>

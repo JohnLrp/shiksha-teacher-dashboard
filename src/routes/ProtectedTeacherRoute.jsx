@@ -6,7 +6,7 @@ export default function ProtectedTeacherRoute({ children }) {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      window.location.href = "https://www.shikshacom.com/login";
+      window.location.href = (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/login";
     }
   }, [loading, isAuthenticated]);
 

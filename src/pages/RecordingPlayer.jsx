@@ -16,13 +16,13 @@ export default function RecordingPlayer() {
         const startTime = res.data.last_position || 0;
 
         iframeRef.current.src =
-          `https://iframe.mediadelivery.net/embed/615730/${videoId}?start=${Math.floor(startTime)}`;
+          `https://iframe.mediadelivery.net/embed/${import.meta.env.VITE_BUNNY_LIBRARY_ID || "615730"}/${videoId}?start=${Math.floor(startTime)}`;
 
       })
       .catch(() => {
 
         iframeRef.current.src =
-          `https://iframe.mediadelivery.net/embed/615730/${videoId}`;
+          `https://iframe.mediadelivery.net/embed/${import.meta.env.VITE_BUNNY_LIBRARY_ID || "615730"}/${videoId}`;
 
       });
 

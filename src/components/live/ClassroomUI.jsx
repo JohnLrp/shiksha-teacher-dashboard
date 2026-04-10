@@ -5,10 +5,11 @@ import ChatPanel from "./ChatPanel";
 import TeacherControls from "./TeacherControls";
 import { useState, useRef, useEffect } from "react";
 import "../../styles/live.css";
+import useLiveSessionChat from "../../hooks/useLiveSessionChat";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { IoChatbubblesOutline } from "react-icons/io5";
 
-export default function ClassroomUI({ role }) {
+export default function ClassroomUI({ role, sessionId: sessionIdProp }) {
   const isPresenter = role === "PRESENTER";
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -17,6 +18,9 @@ export default function ClassroomUI({ role }) {
   const [raisedHands, setRaisedHands] = useState({});
   const containerRef = useRef(null);
   const room = useRoomContext();
+
+  const sessionId = sessionIdProp || window.location.pathname.split("/").filter(Boolean).pop();
+  const { messages: chatMessages, sendMessage } = useLiveSessionChat(sessionId);
 
   /* =====================================
      🔥 RAISE / LOWER HAND LISTENER
@@ -160,7 +164,7 @@ export default function ClassroomUI({ role }) {
       {sidebarOpen && (
         <div className="right-sidebar">
           <ParticipantsPanel raisedHands={raisedHands} />
-          <ChatPanel role={role} />
+          <ChatPanel role={role} messages={chatMessages} onSendMessage={sendMessage} />
         </div>
       )}
     </div>
