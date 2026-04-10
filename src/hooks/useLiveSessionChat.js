@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useContext } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 const WS_HOST = import.meta.env.VITE_WS_HOST || "api.shikshacom.com";
@@ -6,14 +6,24 @@ const WS_HOST = import.meta.env.VITE_WS_HOST || "api.shikshacom.com";
 export default function useLiveSessionChat(sessionId) {
   const [messages, setMessages] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [rawHistory, setRawHistory] = useState([]);
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
   const { user } = useAuth();
-  const userIdRef = useRef(null);
 
+  // 🔥 Recalculate isMe when user loads
   useEffect(() => {
-    userIdRef.current = user?.id || null;
-  }, [user]);
+    if (user?.id && rawHistory.length > 0) {
+      setMessages(rawHistory.map((msg, i) => ({
+        id: i,
+        sender: msg.sender,
+        text: msg.text,
+        isMe: String(msg.sender_id) === String(user.id),
+        isTeacher: msg.isTeacher,
+        time: msg.time,
+      })));
+    }
+  }, [user, rawHistory]);
 
   const connect = useCallback(() => {
     if (!sessionId) return;
@@ -35,6 +45,7 @@ export default function useLiveSessionChat(sessionId) {
     ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
+
         if (data.type === "chat_message") {
           const msg = data.data;
           setMessages((prev) => [
@@ -43,21 +54,22 @@ export default function useLiveSessionChat(sessionId) {
               id: Date.now(),
               sender: msg.sender,
               text: msg.text,
-              isMe: msg.sender_id === userIdRef.current,
+              isMe: String(msg.sender_id) === String(user?.id),
               isTeacher: msg.isTeacher,
               time: msg.time,
             },
           ]);
         } else if (data.type === "chat_history") {
-          const history = data.data.map((msg, i) => ({
+          console.log('📜 Chat history received:', data.data.length, 'messages');
+          setRawHistory(data.data);
+          setMessages(data.data.map((msg, i) => ({
             id: i,
             sender: msg.sender,
             text: msg.text,
-            isMe: msg.sender_id === userIdRef.current,
+            isMe: String(msg.sender_id) === String(user?.id),
             isTeacher: msg.isTeacher,
             time: msg.time,
-          }));
-          setMessages(history);
+          })));
         }
       } catch {}
     };
