@@ -48,7 +48,7 @@ api.interceptors.response.use(
 
     try {
       await axios.post(
-        "https://api.shikshacom.com/api/accounts/refresh/",
+        `${import.meta.env.VITE_API_URL || "https://api.shikshacom.com/api"}/accounts/refresh/`,
         {},
         { withCredentials: true }
       );

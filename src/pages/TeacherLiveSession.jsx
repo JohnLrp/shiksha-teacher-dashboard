@@ -72,7 +72,7 @@ export default function TeacherLiveSession() {
         navigate(-1);
       }}
     >
-      <ClassroomUI role={sessionData.role} />
+      <ClassroomUI role={sessionData.role} sessionId={id} />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );

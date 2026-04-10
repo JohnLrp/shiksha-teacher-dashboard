@@ -126,7 +126,7 @@ export default function SessionRecordings() {
                 <img
                   src={
                     rec.thumbnail_url ||
-                    `https://vz-615730.b-cdn.net/${rec.bunny_video_id}/thumbnail.jpg`
+                    `https://vz-${import.meta.env.VITE_BUNNY_LIBRARY_ID || "615730"}.b-cdn.net/${rec.bunny_video_id}/thumbnail.jpg`
                   }
                   alt={rec.title}
                 />

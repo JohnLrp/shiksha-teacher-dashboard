@@ -123,7 +123,7 @@ export default function StudyMaterialView() {
             ) : (
               <div className="smv-files-list">
                 {filtered.map((file) => {
-                  const url = file.file_url || `https://api.shikshacom.com${file.file}`;
+                  const url = file.file_url || `${import.meta.env.VITE_API_BASE || "https://api.shikshacom.com"}${file.file}`;
                   const ext = getFileExt(file.file_name);
                   const color = extColor(ext);
                   return (
