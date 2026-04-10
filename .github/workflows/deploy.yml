@@ -1,0 +1,23 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches:
+      - Dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Dev Droplet
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            cd /home/appuser/frontend/teacher_ui
+            git checkout Dev
+            git pull origin Dev
+            npm run build
