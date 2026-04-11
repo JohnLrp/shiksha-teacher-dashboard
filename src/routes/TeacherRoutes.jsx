@@ -35,10 +35,12 @@ import PrivateSessionsDashboard from "../pages/PrivateSessionsDashboard";
 import PrivateRequestDetail from "../pages/PrivateRequestDetail";
 import PrivateSessionAvailability from "../pages/PrivateSessionAvailability";
 import PrivateSessionDetail from "../pages/PrivateSessionDetail";
+import ChangePassword from "../pages/ChangePassword"; // 
 
 function RedirectToMainLogin() {
   useEffect(() => {
-    window.location.href = (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/login";
+    window.location.href =
+      (import.meta.env.VITE_HOME_URL || "https://www.shikshacom.com") + "/login";
   }, []);
   return null;
 }
@@ -72,6 +74,8 @@ export default function TeacherRoutes() {
         <Route path="students/:studentId" element={<AllStudentDetail />} />
         <Route path="classes" element={<ClassesList />} />
         <Route path="classes/:subjectId" element={<Classes />} />
+
+        <Route path="change-password" element={<ChangePassword />} />
 
         {/* Assignments */}
         <Route path="classes/:subjectId/assignments" element={<Assignments />} />
