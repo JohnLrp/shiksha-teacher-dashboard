@@ -138,7 +138,7 @@ export default function LiveSessions() {
             <span className="live-badge">🔴 LIVE</span>
           )}
 
-          {(session.computed_status === "SCHEDULED" || session.computed_status === "WAITING_FOR_TEACHER") && (
+          {(session.computed_status === "SCHEDULED" || session.computed_status === "WAITING_FOR_TEACHER" || session.computed_status === "LIVE" || session.computed_status === "PAUSED" || session.computed_status === "RECONNECTING") && (
             <button
               className="session-cancel-btn"
               onClick={(e) => handleCancel(e, session.id)}
