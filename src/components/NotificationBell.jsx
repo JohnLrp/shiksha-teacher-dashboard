@@ -9,6 +9,7 @@ const TYPE_ICONS = {
   live_session: "🎥",
   material: "📚",
   forum: "💬",
+  submission: "📬",
 };
 
 const TYPE_COLORS = {
@@ -17,14 +18,16 @@ const TYPE_COLORS = {
   live_session: "#ef4444",
   material: "#10b981",
   forum: "#3b82f6",
+  submission: "#2563eb",
 };
 
 const TYPE_ROUTES = {
-  assignment: "/assignments",
-  quiz: "/subjects",
-  live_session: "/live-sessions",
-  material: "/subjects",
+  assignment: "/teacher/classes",
+  quiz: "/teacher/classes",
+  live_session: "/teacher/live-sessions",
+  material: "/teacher/classes",
   forum: "/forum",
+  submission: "/teacher/classes",
 };
 
 function timeAgo(isoString) {
@@ -60,17 +63,30 @@ export default function NotificationBell() {
 
   const handleNotifClick = (notif) => {
     const type = notif?.type || notif?.data?.type;
-    const route = TYPE_ROUTES[type];
-    if (route) {
-      navigate(route);
-      setOpen(false);
+    const subjectId = notif?.subject_id || notif?.data?.subject_id;
+
+    // For teacher notifications, route to the specific subject class if we have subject_id
+    if (subjectId && ["assignment", "quiz", "submission"].includes(type)) {
+      navigate(`/teacher/classes/${subjectId}`);
+    } else {
+      const route = TYPE_ROUTES[type];
+      if (route) navigate(route);
     }
+    setOpen(false);
   };
 
   const getTitle = (notif) => {
-    return notif?.title || notif?.data?.title ||
-           notif?.message || notif?.data?.message ||
-           "New notification";
+    return (
+      notif?.title ||
+      notif?.data?.title ||
+      notif?.message ||
+      notif?.data?.message ||
+      "New notification"
+    );
+  };
+
+  const getSubjectName = (notif) => {
+    return notif?.subject_name || notif?.data?.subject_name || "";
   };
 
   const getType = (notif) => {
@@ -78,7 +94,7 @@ export default function NotificationBell() {
   };
 
   const getTime = (notif) => {
-    return notif?.time || notif?.data?.time;
+    return notif?.time || notif?.data?.time || notif?.created_at;
   };
 
   return (
@@ -126,6 +142,9 @@ export default function NotificationBell() {
                   </span>
                   <div className="notif-bell-content">
                     <p className="notif-bell-title">{getTitle(notif)}</p>
+                    {getSubjectName(notif) && (
+                      <p className="notif-bell-subject">{getSubjectName(notif)}</p>
+                    )}
                     <p className="notif-bell-time">{timeAgo(getTime(notif))}</p>
                   </div>
                 </div>
