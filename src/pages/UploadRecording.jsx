@@ -133,6 +133,8 @@ export default function UploadRecording() {
 
           console.log("Recording saved");
 
+          alert("Upload successful! Video is now processing. You'll see a status badge on the recordings page.");
+
           navigate(-1);
 
         } catch (saveErr) {
