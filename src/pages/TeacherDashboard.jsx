@@ -13,16 +13,19 @@ const NOTIFICATION_COLORS = {
   ASSIGNMENT: "green",
   SESSION: "yellow",
   QUIZ: "purple",
+  SUBMISSION: "blue",
   assignment: "green",
   "live-session": "yellow",
   "private-session": "orange",
   quiz: "purple",
+  submission: "blue",
 };
 
 const NOTIFICATION_LABELS = {
   ASSIGNMENT: "Assignment",
   SESSION: "Live Session",
   QUIZ: "Quiz",
+  SUBMISSION: "Submission",
 };
 
 const DATE_FORMAT = { day: "2-digit", month: "short", year: "numeric" };
@@ -66,7 +69,6 @@ export default function TeacherDashboard() {
   const fetchDashboard = async () => {
     try {
       const res = await api.get("/dashboard/");
-      console.log("Dashboard data:", res.data);
       setData(res.data);
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -88,22 +90,27 @@ export default function TeacherDashboard() {
   const privateSessions = data?.private_sessions ?? [];
   const notifications = data?.notifications ?? [];
 
-  // --- Calendar events map (NO live sessions, YES private sessions) ---
+  // --- Calendar events map ---
   const calendarEvents = useMemo(() => {
     const map = {};
+    const now = new Date();
     const addEvent = (dateStr, type) => {
       if (!dateStr) return;
       const key = toDateKey(dateStr);
       if (!map[key]) map[key] = [];
       if (!map[key].includes(type)) map[key].push(type);
     };
-    assignments.forEach((a) => addEvent(a.due, "assignment"));
-    quizzes.forEach((q) => addEvent(q.due, "quiz"));
+    assignments.forEach((a) =>
+      addEvent(a.due, new Date(a.due) < now ? "assignment-overdue" : "assignment")
+    );
+    quizzes.forEach((q) =>
+      addEvent(q.due, new Date(q.due) < now ? "quiz-overdue" : "quiz")
+    );
     privateSessions.forEach((ps) => addEvent(ps.date, "private-session"));
     return map;
   }, [assignments, quizzes, privateSessions]);
 
-  // --- Combined schedule items (all types including private sessions) ---
+  // --- Combined schedule items ---
   const scheduleItems = useMemo(() => {
     const items = [];
     allSessions.forEach((s) =>
@@ -113,7 +120,7 @@ export default function TeacherDashboard() {
         title: `${s.subject} - ${s.topic}`,
         date: s.dateTime,
         labelColor: "yellow",
-        link: `/live/${s.id}`,
+        link: `/teacher/live/${s.id}`,
       })
     );
     assignments.forEach((a) =>
@@ -122,7 +129,7 @@ export default function TeacherDashboard() {
         type: "assignment",
         title: a.title,
         date: a.due,
-        labelColor: "green",
+        labelColor: new Date(a.due) < new Date() ? "red" : "green",
         link: a.subject_id ? `/teacher/classes/${a.subject_id}/assignments/${a.id}` : null,
       })
     );
@@ -132,7 +139,7 @@ export default function TeacherDashboard() {
         type: "quiz",
         title: q.title,
         date: q.due,
-        labelColor: "purple",
+        labelColor: new Date(q.due) < new Date() ? "red" : "purple",
         link: q.subject_id ? `/teacher/classes/${q.subject_id}/quizzes/${q.id}` : null,
       })
     );
@@ -149,8 +156,6 @@ export default function TeacherDashboard() {
     items.sort((a, b) => new Date(a.date) - new Date(b.date));
     return items;
   }, [allSessions, assignments, quizzes, privateSessions]);
-
-  // All hooks are above this point — safe to do early returns now
 
   if (loading) return <div className="dashboard">Loading...</div>;
 
@@ -194,10 +199,12 @@ export default function TeacherDashboard() {
   const getNotificationLink = (item) => {
     if (item.type === "ASSIGNMENT" && item.subject_id)
       return `/teacher/classes/${item.subject_id}/assignments`;
-    if (item.type === "SESSION")
+    if (item.type === "SESSION" && item.subject_id)
       return `/teacher/classes/${item.subject_id}/live-sessions`;
     if (item.type === "QUIZ" && item.subject_id)
       return `/teacher/classes/${item.subject_id}/quizzes`;
+    if (item.type === "SUBMISSION" && item.subject_id)
+      return `/teacher/classes/${item.subject_id}/assignments`;
     return null;
   };
 
@@ -222,7 +229,10 @@ export default function TeacherDashboard() {
                 key={s.id}
                 subject={s.subject}
                 topic={s.topic}
-                timing={new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}
+                timing={new Date(s.dateTime).toLocaleString("en-GB", {
+                  day: "2-digit", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit", hour12: true,
+                })}
               />
             ))}
           </div>
@@ -255,7 +265,7 @@ export default function TeacherDashboard() {
                 date={formatDate(item.created_at)}
                 label={NOTIFICATION_LABELS[item.type] || item.type}
                 labelColor={NOTIFICATION_COLORS[item.type] || "green"}
-                lines={[item.title]}
+                lines={[item.title, item.subject_name].filter(Boolean)}
                 onClick={() => {
                   const link = getNotificationLink(item);
                   if (link) navigate(link);
@@ -279,7 +289,7 @@ export default function TeacherDashboard() {
   // ---------------- DESKTOP ----------------
   return (
     <div className="dashboard">
-      {/* Row 1, Col 1-2: Upcoming Live Sessions */}
+      {/* Row 1: Upcoming Live Sessions */}
       <div className="dash-live-section">
         <div className="dash-live-header">
           <h3 className="dash-section-title">Upcoming Live Sessions</h3>
@@ -295,20 +305,23 @@ export default function TeacherDashboard() {
               subject={s.subject}
               topic={s.topic}
               startsIn={s.startsIn}
-              timing={s.timing || new Date(s.dateTime).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })}
+              timing={s.timing || new Date(s.dateTime).toLocaleString("en-GB", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit", hour12: true,
+              })}
             />
           ))}
         </div>
       </div>
 
-      {/* Row 1, Col 3: Calendar */}
+      {/* Row 1 Col 3: Calendar */}
       <CalendarWidget
         events={calendarEvents}
         selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
       />
 
-      {/* Row 2, Col 1: Assignments */}
+      {/* Row 2 Col 1: Assignments */}
       <div className="dash-card">
         <div className="dash-card-header">
           <h4>Assignments</h4>
@@ -344,7 +357,7 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Row 2, Col 2: Notifications */}
+      {/* Row 2 Col 2: Notifications */}
       <div className="dash-card">
         <div className="dash-card-header">
           <h4>Notification</h4>
@@ -357,6 +370,7 @@ export default function TeacherDashboard() {
             <option value="ASSIGNMENT">Assignment</option>
             <option value="SESSION">Live Session</option>
             <option value="QUIZ">Quiz</option>
+            <option value="SUBMISSION">Submissions</option>
           </select>
         </div>
         <div className="dash-card-body">
@@ -367,7 +381,7 @@ export default function TeacherDashboard() {
               date={formatDate(item.created_at)}
               label={NOTIFICATION_LABELS[item.type] || item.type}
               labelColor={NOTIFICATION_COLORS[item.type] || "green"}
-              lines={[item.title]}
+              lines={[item.title, item.subject_name].filter(Boolean)}
               onClick={() => {
                 const link = getNotificationLink(item);
                 if (link) navigate(link);
@@ -377,7 +391,7 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Row 2, Col 3: Schedule */}
+      {/* Row 2 Col 3: Schedule */}
       <div className="dash-card">
         <div className="dash-card-header">
           <h4>

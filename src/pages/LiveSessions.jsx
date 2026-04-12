@@ -150,7 +150,7 @@ export default function LiveSessions() {
           {session.computed_status === "LIVE" && (
             <span className="live-badge">🔴 LIVE</span>
           )}
-          {session.computed_status === "SCHEDULED" && new Date(session.start_time) > new Date() && (
+          {new Date(session.start_time) > new Date() && session.computed_status !== "COMPLETED" && session.computed_status !== "CANCELLED" && (
             <button
               className="session-cancel-btn"
               onClick={(e) => handleCancel(e, session.id)}
@@ -159,7 +159,7 @@ export default function LiveSessions() {
               <MdCancel /> Cancel
             </button>
           )}
-          {(session.computed_status === "WAITING_FOR_TEACHER" || session.computed_status === "LIVE" || session.computed_status === "PAUSED" || session.computed_status === "RECONNECTING") && (
+          {new Date(session.start_time) <= new Date() && (session.computed_status === "WAITING_FOR_TEACHER" || session.computed_status === "LIVE" || session.computed_status === "PAUSED" || session.computed_status === "RECONNECTING") && (
             <button
               className="session-cancel-btn"
               style={{ background: "#b91c1c" }}

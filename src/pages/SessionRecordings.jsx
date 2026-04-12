@@ -1,9 +1,18 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../api/apiClient";
 import "../styles/session-recordings.css";
+
+const STATUS_LABELS = {
+  0: "Created",
+  1: "Uploaded",
+  2: "Processing",
+  3: "Transcoding",
+  4: "Ready",
+  5: "Error",
+};
 
 export default function SessionRecordings() {
 
@@ -13,6 +22,7 @@ export default function SessionRecordings() {
   const [recordings, setRecordings] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const pollRef = useRef(null);
 
   useEffect(() => {
 
@@ -42,6 +52,32 @@ export default function SessionRecordings() {
     if (subjectId) fetchRecordings();
 
   }, [subjectId]);
+
+  // Poll for status of unfinished recordings
+  useEffect(() => {
+    const unfinished = recordings.filter((r) => r.status < 4);
+    if (unfinished.length === 0) {
+      if (pollRef.current) clearInterval(pollRef.current);
+      return;
+    }
+
+    pollRef.current = setInterval(async () => {
+      const updates = await Promise.all(
+        unfinished.map((r) =>
+          api.get(`/courses/recordings/${r.id}/status/`).then((res) => res.data).catch(() => r)
+        )
+      );
+
+      setRecordings((prev) =>
+        prev.map((rec) => {
+          const updated = updates.find((u) => u.id === rec.id);
+          return updated || rec;
+        })
+      );
+    }, 10000);
+
+    return () => clearInterval(pollRef.current);
+  }, [recordings.map((r) => `${r.id}:${r.status}`).join(",")]);
 
   const filtered = recordings.filter((rec) =>
     rec.title?.toLowerCase().includes(search.toLowerCase())
@@ -112,26 +148,34 @@ export default function SessionRecordings() {
           {filtered.map((rec) => (
 
             <div
-              className="sr-card"
+              className={`sr-card ${rec.status < 4 ? "sr-card-processing" : ""}`}
               key={rec.id}
-              onClick={() =>
-                navigate(
-                  `/teacher/classes/${subjectId}/session-recordings/${rec.id}/${rec.bunny_video_id}`
-                )
-              }
+              onClick={() => {
+                if (rec.status === 4) {
+                  navigate(
+                    `/teacher/classes/${subjectId}/session-recordings/${rec.id}/${rec.bunny_video_id}`
+                  );
+                }
+              }}
             >
 
               <div className="sr-thumb">
 
-                <img
-                  src={
-                    rec.thumbnail_url ||
-                    `https://vz-${import.meta.env.VITE_BUNNY_LIBRARY_ID || "615730"}.b-cdn.net/${rec.bunny_video_id}/thumbnail.jpg`
-                  }
-                  alt={rec.title}
-                />
+                {rec.status === 4 ? (
+                  <img
+                    src={
+                      rec.thumbnail_url ||
+                      `https://vz-${import.meta.env.VITE_BUNNY_LIBRARY_ID || "615730"}.b-cdn.net/${rec.bunny_video_id}/thumbnail.jpg`
+                    }
+                    alt={rec.title}
+                  />
+                ) : (
+                  <div className="sr-thumb-placeholder">
+                    {STATUS_LABELS[rec.status] || "Processing"}...
+                  </div>
+                )}
 
-                <div className="sr-play">▶</div>
+                {rec.status === 4 && <div className="sr-play">▶</div>}
 
                 {rec.duration_seconds && (
                   <span className="sr-duration">
@@ -145,7 +189,12 @@ export default function SessionRecordings() {
 
                 <h4>{rec.title}</h4>
 
-                <p>{rec.session_date}</p>
+                <div className="sr-info-bottom">
+                  <p>{rec.session_date}</p>
+                  <span className={`sr-status-badge sr-status-${rec.status}`}>
+                    {STATUS_LABELS[rec.status] || "Unknown"}
+                  </span>
+                </div>
 
               </div>
 

@@ -256,3 +256,73 @@
 .sr-card:active {
   transform: translateY(-2px);
 }
+
+/* processing card overlay */
+.sr-card-processing {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.sr-card-processing:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* thumbnail placeholder for processing videos */
+.sr-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* status badge */
+.sr-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sr-status-0,
+.sr-status-1 {
+  background: #ffc107;
+  color: #333;
+}
+
+.sr-status-2,
+.sr-status-3 {
+  background: #17a2b8;
+  color: #fff;
+}
+
+.sr-status-4 {
+  background: #28a745;
+  color: #fff;
+}
+
+.sr-status-5 {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* info bottom row */
+.sr-info-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sr-info-bottom p {
+  margin: 0;
+}

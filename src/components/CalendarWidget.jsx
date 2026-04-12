@@ -1,17 +1,27 @@
 import { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const EVENT_COLORS = {
-  "assignment":      "#57D982",
-  "quiz":            "#93A1E5",
+  "assignment": "#57D982",
+  "assignment-overdue": "#ef4444",
+  "quiz": "#93A1E5",
+  "quiz-overdue": "#ef4444",
   "private-session": "#FF8A65",
+  "live-session": "#38bdf8",
 };
 
 function getDateStyle(types) {
   if (!types || types.length === 0) return {};
-  const colors = types.map(t => EVENT_COLORS[t]);
+
+  // If any overdue — show red
+  if (types.some((t) => t.includes("overdue"))) {
+    return { background: "#ef4444", color: "#fff" };
+  }
+
+  const colors = types.map((t) => EVENT_COLORS[t]).filter(Boolean);
+  if (colors.length === 0) return {};
   if (colors.length === 1) {
     return { background: colors[0], color: "#1f2d3d" };
   }
@@ -60,7 +70,7 @@ export default function CalendarWidget({ events = {}, selectedDate = null, onDat
       </div>
 
       <div className="calendar-grid">
-        {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
+        {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(d => (
           <span key={d} className="cal-day-name">{d}</span>
         ))}
 
@@ -105,6 +115,10 @@ export default function CalendarWidget({ events = {}, selectedDate = null, onDat
         <span className="cal-legend-item">
           <span className="cal-legend-dot" style={{ background: "#FF8A65" }} />
           Private Session
+        </span>
+        <span className="cal-legend-item">
+          <span className="cal-legend-dot" style={{ background: "#ef4444" }} />
+          Overdue
         </span>
       </div>
     </div>
