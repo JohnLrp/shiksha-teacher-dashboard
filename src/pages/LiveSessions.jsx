@@ -86,6 +86,19 @@ export default function LiveSessions() {
       alert(err.response?.data?.detail || "Failed to cancel session.");
     }
   };
+  const handleEnd = async (e, sessionId) => {
+    e.stopPropagation();
+    if (!window.confirm("End this session permanently? Students will be disconnected.")) return;
+    try {
+      await api.post(`/livestream/sessions/${sessionId}/end/`);
+    } catch (err) {
+      console.error("Failed to end session:", err);
+      const msg = err.response?.data?.detail || "";
+      if (msg && msg !== "Session already completed.") alert(msg);
+    } finally {
+      fetchSessions();
+    }
+  };
 
   /* =====================================
      🔥 FILTER & CATEGORIZE
@@ -137,14 +150,23 @@ export default function LiveSessions() {
           {session.computed_status === "LIVE" && (
             <span className="live-badge">🔴 LIVE</span>
           )}
-
-          {(session.computed_status === "SCHEDULED" || session.computed_status === "WAITING_FOR_TEACHER") && (
+          {session.computed_status === "SCHEDULED" && new Date(session.start_time) > new Date() && (
             <button
               className="session-cancel-btn"
               onClick={(e) => handleCancel(e, session.id)}
               title="Cancel session"
             >
               <MdCancel /> Cancel
+            </button>
+          )}
+          {(session.computed_status === "WAITING_FOR_TEACHER" || session.computed_status === "LIVE" || session.computed_status === "PAUSED" || session.computed_status === "RECONNECTING") && (
+            <button
+              className="session-cancel-btn"
+              style={{ background: "#b91c1c" }}
+              onClick={(e) => handleEnd(e, session.id)}
+              title="End session permanently"
+            >
+              <MdCancel /> End
             </button>
           )}
         </div>

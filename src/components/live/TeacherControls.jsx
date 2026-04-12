@@ -1,5 +1,7 @@
 import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import api from "../../api/apiClient";
 import {
   BsMicFill,
   BsMicMuteFill,
@@ -8,36 +10,31 @@ import {
 } from "react-icons/bs";
 import { MdScreenShare, MdStopScreenShare, MdCallEnd } from "react-icons/md";
 
-export default function TeacherControls() {
+export default function TeacherControls({ onLeave }) {
   const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
+  const { id: sessionId } = useParams();
 
   const [micOn, setMicOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [pauseLoading, setPauseLoading] = useState(false);
 
-  /* =====================================
-     🔥 SYNC REAL STATE FROM LIVEKIT
-  ===================================== */
+  /* ── Sync real state from LiveKit ── */
   useEffect(() => {
     if (!localParticipant) return;
-
     setMicOn(localParticipant.isMicrophoneEnabled);
     setCameraOn(localParticipant.isCameraEnabled);
     setSharing(localParticipant.isScreenShareEnabled);
   }, [localParticipant]);
 
-  /* =====================================
-     🔥 TOGGLES WITH ERROR SAFETY
-  ===================================== */
   const toggleMic = async () => {
     try {
       const next = !micOn;
       await localParticipant.setMicrophoneEnabled(next);
       setMicOn(next);
-    } catch (err) {
-      console.error("Mic error:", err);
-    }
+    } catch (err) { console.error("Mic error:", err); }
   };
 
   const toggleCamera = async () => {
@@ -45,9 +42,7 @@ export default function TeacherControls() {
       const next = !cameraOn;
       await localParticipant.setCameraEnabled(next);
       setCameraOn(next);
-    } catch (err) {
-      console.error("Camera error:", err);
-    }
+    } catch (err) { console.error("Camera error:", err); }
   };
 
   const toggleScreen = async () => {
@@ -55,9 +50,28 @@ export default function TeacherControls() {
       const next = !sharing;
       await localParticipant.setScreenShareEnabled(next);
       setSharing(next);
+    } catch (err) { console.error("Screen share error:", err); }
+  };
+
+  /* ── Pause / Resume ── */
+  const handlePauseResume = async () => {
+    if (!sessionId) return;
+    setPauseLoading(true);
+    try {
+      const res = await api.post(`/livestream/sessions/${sessionId}/pause/`);
+      setPaused(res.data.status === "PAUSED");
     } catch (err) {
-      console.error("Screen share error:", err);
+      console.error("Pause error:", err);
+      alert(err?.response?.data?.detail || "Failed to pause session.");
+    } finally {
+      setPauseLoading(false);
     }
+  };
+
+  /* ── Leave — calls onLeave to clear sessionStorage cache ── */
+  const handleLeave = async () => {
+    await room.disconnect();
+    if (onLeave) onLeave();
   };
 
   return (
@@ -97,15 +111,28 @@ export default function TeacherControls() {
         {sharing ? "Stop Share" : "Share"}
       </button>
 
-      {/* END CALL */}
+      {/* PAUSE / RESUME */}
+      <button
+        className={`control-btn${paused ? " off" : ""}`}
+        onClick={handlePauseResume}
+        disabled={pauseLoading}
+        title={paused ? "Resume session" : "Pause session"}
+        style={{ opacity: pauseLoading ? 0.6 : 1 }}
+      >
+        <span style={{ fontSize: 16 }}>{paused ? "▶" : "⏸"}</span>
+        {pauseLoading ? "..." : paused ? "Resume" : "Pause"}
+      </button>
+
+      {/* LEAVE */}
       <button
         className="control-btn end-call-btn"
-        onClick={() => room.disconnect()}
-        title="End session"
+        onClick={handleLeave}
+        title="Leave session"
       >
         <MdCallEnd size={18} />
-        End
+        Leave
       </button>
+
     </div>
   );
 }
