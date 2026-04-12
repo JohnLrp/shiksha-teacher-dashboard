@@ -9,7 +9,7 @@ import useLiveSessionChat from "../../hooks/useLiveSessionChat";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { IoChatbubblesOutline } from "react-icons/io5";
 
-export default function ClassroomUI({ role, sessionId: sessionIdProp }) {
+export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave }) {
   const isPresenter = role === "PRESENTER";
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -140,7 +140,7 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp }) {
           </div>
         )}
 
-        {isPresenter && <TeacherControls />}
+        {isPresenter && <TeacherControls onLeave={onLeave} />}
 
         <div className="video-overlay-actions">
           <button
