@@ -365,9 +365,6 @@ export default function Profile() {
                       <div className="tp-pref-row-view">
                         <span className="tp-pref-dot" />
                         <span className="tp-pref-name">One-on-One</span>
-                        <span className="tp-toggle tp-toggle--on tp-toggle--static">
-                          <span className="tp-toggle-thumb" />
-                        </span>
                       </div>
                     )}
                     {profile.session_group_max && (
