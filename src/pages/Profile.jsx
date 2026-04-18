@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiCamera } from "react-icons/fi";
 import api from "../api/apiClient";
 import privateSessionService from "../api/privateSessionService";
 import "../styles/profile.css";
@@ -21,6 +22,10 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
   const [classes, setClasses] = useState([]);
+
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const avatarInputRef = useRef(null);
 
   const [editBio, setEditBio] = useState("");
   const [sessionOneOnOne, setSessionOneOnOne] = useState(false);
@@ -75,14 +80,23 @@ export default function Profile() {
   }, []);
 
   const handleEdit = () => {
-    // Always re-sync edit fields from the latest saved profile before opening
     if (profile) populateEditFields(profile);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     if (profile) populateEditFields(profile);
+    setAvatarFile(null);
+    setAvatarPreview(null);
     setIsEditing(false);
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    e.target.value = "";
   };
 
   const handleSave = async () => {
@@ -98,16 +112,30 @@ export default function Profile() {
       weekend_availability_end: weekendEnd,
     };
 
-    // Persist to server — errors are logged but don't block the UI update
     try {
-      await api.patch("/accounts/teacher/profile/", updates);
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("photo", avatarFile);
+        Object.entries(updates).forEach(([k, v]) => {
+          if (v !== null && v !== undefined) formData.append(k, v);
+        });
+        const res = await api.patch("/accounts/teacher/profile/", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if (res.data?.photo) updates.photo = res.data.photo;
+        else updates.photo = avatarPreview;
+      } else {
+        await api.patch("/accounts/teacher/profile/", updates);
+      }
     } catch (err) {
       console.error("Failed to save profile:", err);
+      if (avatarPreview) updates.photo = avatarPreview;
     }
 
-    // Always apply the user's values to local state so the view reflects them
     setProfile(prev => ({ ...prev, ...updates }));
     populateEditFields({ ...profile, ...updates });
+    setAvatarFile(null);
+    setAvatarPreview(null);
     setSaving(false);
     setIsEditing(false);
   };
@@ -140,11 +168,32 @@ export default function Profile() {
       {/* ===== TOP CARD ===== */}
       <div className="tp-top-card">
         <div className="tp-top-left">
-          <div className="tp-avatar">
-            {profile.photo
-              ? <img src={profile.photo} alt={profile.name} />
-              : <span className="tp-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
-            }
+          <div className="tp-avatar-wrap">
+            <div className="tp-avatar">
+              {(avatarPreview || profile.photo)
+                ? <img src={avatarPreview || profile.photo} alt={profile.name} />
+                : <span className="tp-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
+              }
+            </div>
+            {isEditing && (
+              <>
+                <button
+                  type="button"
+                  className="tp-avatar-edit-btn"
+                  onClick={() => avatarInputRef.current?.click()}
+                  title="Change photo"
+                >
+                  <FiCamera />
+                </button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleAvatarChange}
+                />
+              </>
+            )}
           </div>
           <div className="tp-info">
             <h1 className="tp-name">{displayName || "Teacher"}</h1>
