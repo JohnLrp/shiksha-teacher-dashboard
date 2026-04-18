@@ -20,6 +20,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+  const [classes, setClasses] = useState([]);
 
   const [editBio, setEditBio] = useState("");
   const [sessionOneOnOne, setSessionOneOnOne] = useState(false);
@@ -42,14 +43,27 @@ export default function Profile() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, historyRes] = await Promise.all([
+        const pickText = (...vals) =>
+          vals.find(v => typeof v === "string" && v.trim()) || "";
+
+        const [profileRes, historyRes, classesRes] = await Promise.all([
           api.get("/accounts/teacher/profile/"),
           api.get("/sessions/teacher/history/").catch(() => ({ data: [] })),
+          api.get("/courses/teacher/my-classes/").catch(() => ({ data: [] })),
         ]);
         const p = profileRes.data;
         setProfile(p);
         setSessionCount(Array.isArray(historyRes.data) ? historyRes.data.length : 0);
         populateEditFields(p);
+
+        const normalized = (classesRes.data || []).map(c => ({
+          subjectId:   c.subject_id || c.id,
+          subjectName: pickText(c.subject_name, c.name),
+          courseTitle: pickText(c.course_title, c.class_name, c.course),
+          board:       pickText(c.board, c.board_name, c.board_title, c.board?.name),
+          stream:      pickText(c.stream, c.stream_name, c.stream_title, c.stream?.name),
+        }));
+        setClasses(normalized);
       } catch (err) {
         console.error(err);
         setError("Failed to load profile.");
@@ -73,29 +87,29 @@ export default function Profile() {
 
   const handleSave = async () => {
     setSaving(true);
+
+    const updates = {
+      bio: editBio,
+      session_one_on_one: sessionOneOnOne,
+      session_group_max: sessionGroupMax,
+      weekday_availability_start: weekdayStart,
+      weekday_availability_end: weekdayEnd,
+      weekend_availability_start: weekendStart,
+      weekend_availability_end: weekendEnd,
+    };
+
+    // Persist to server — errors are logged but don't block the UI update
     try {
-      const payload = {
-        bio: editBio,
-        session_one_on_one: sessionOneOnOne,
-        session_group_max: sessionGroupMax,
-        weekday_availability_start: weekdayStart,
-        weekday_availability_end: weekdayEnd,
-        weekend_availability_start: weekendStart,
-        weekend_availability_end: weekendEnd,
-      };
-      const res = await api.patch("/accounts/teacher/profile/", payload);
-      // Priority: profile base → API response (server-computed fields) → payload
-      // Payload is last so the user's input always wins, even if the API
-      // returns null/undefined for fields it doesn't yet recognise.
-      const updated = { ...profile, ...res.data, ...payload };
-      setProfile(updated);
-      populateEditFields(updated);
-      setIsEditing(false);
+      await api.patch("/accounts/teacher/profile/", updates);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
+      console.error("Failed to save profile:", err);
     }
+
+    // Always apply the user's values to local state so the view reflects them
+    setProfile(prev => ({ ...prev, ...updates }));
+    populateEditFields({ ...profile, ...updates });
+    setSaving(false);
+    setIsEditing(false);
   };
 
   if (loading) {
@@ -245,47 +259,62 @@ export default function Profile() {
         <div className="tp-two-col">
           <div className="tp-section">
             <h2>Active Courses</h2>
-            {profile.active_courses?.length > 0 ? (
-              <div className="tp-list">
-                {profile.active_courses.map((course, i) => (
-                  <div key={i} className="tp-list-item">
-                    <span className="tp-list-num">{i + 1})</span>
-                    <div>
-                      <strong>{course.title}</strong>
-                      <ul className="tp-sub-list">
-                        {course.subjects.map((s, j) => <li key={j}>{s}</li>)}
-                      </ul>
+            {(() => {
+              // Group assignments by "CourseTitle Board" to form one row per class
+              const groups = {};
+              classes.forEach(cls => {
+                const key = [cls.courseTitle, cls.board].filter(Boolean).join(" ");
+                if (!groups[key]) groups[key] = { courseTitle: cls.courseTitle, board: cls.board, subjects: [] };
+                if (cls.subjectName) groups[key].subjects.push(cls.subjectName);
+              });
+              const rows = Object.values(groups);
+              return rows.length > 0 ? (
+                <div className="tp-list">
+                  {rows.map((row, i) => (
+                    <div key={i} className="tp-list-item">
+                      <span className="tp-list-num">{i + 1})</span>
+                      <div>
+                        <strong>
+                          {[row.courseTitle, row.board].filter(Boolean).join(" ")}
+                        </strong>
+                        <ul className="tp-sub-list">
+                          {row.subjects.map((s, j) => <li key={j}>{s}</li>)}
+                        </ul>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="tp-empty">No active courses assigned.</p>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <p className="tp-empty">No active courses assigned.</p>
+              );
+            })()}
           </div>
 
           <div className="tp-section">
             <h2>Subjects</h2>
-            {profile.course_applications?.length > 0 ? (
+            {classes.length > 0 ? (
               <div className="tp-list">
-                {profile.course_applications.map((ca, i) => (
-                  <div key={i} className="tp-list-item">
-                    <span className="tp-list-num">{i + 1})</span>
-                    <div>
-                      <strong>{ca.subject} ({ca.boards?.join(", ")})</strong>
-                      <ul className="tp-sub-list">
-                        {ca.classes?.map((c, j) => (
-                          <li key={j}>
-                            Class {c}{ca.stream ? `, ${ca.stream}` : ""}
-                          </li>
-                        ))}
-                      </ul>
+                {classes.map((cls, i) => {
+                  const meta = [cls.courseTitle, cls.board, cls.stream]
+                    .filter(Boolean)
+                    .join(" ");
+                  return (
+                    <div key={cls.subjectId ?? i} className="tp-list-item">
+                      <span className="tp-list-num">{i + 1})</span>
+                      <div>
+                        <strong>{cls.subjectName}</strong>
+                        {meta && (
+                          <ul className="tp-sub-list">
+                            <li>{meta}</li>
+                          </ul>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <p className="tp-empty">No subjects applied for.</p>
+              <p className="tp-empty">No subjects assigned.</p>
             )}
           </div>
         </div>
