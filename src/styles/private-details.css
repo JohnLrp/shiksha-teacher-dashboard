@@ -1,0 +1,147 @@
+/* =====================================================
+   PRIVATE DETAILS PAGE  (pd-* classes)
+   Top card reuses tp-* from profile.css
+===================================================== */
+
+.pd-content {
+  background: linear-gradient(180deg, #dff0f7 0%, #d4e9f2 100%);
+  border-radius: 20px;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== SECTION ===== */
+
+.pd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pd-section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a5f70;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid rgba(26, 95, 112, 0.15);
+}
+
+/* ===== GRID ===== */
+
+.pd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 48px;
+}
+
+.pd-full-width {
+  grid-column: 1 / -1;
+}
+
+/* ===== FIELD ===== */
+
+.pd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pd-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+/* View-mode value */
+.pd-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.pd-value--muted {
+  color: #6b7280;
+}
+
+/* Value row with trailing icon (email, dob) */
+.pd-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+}
+
+.pd-value-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.pd-field-icon {
+  color: #9ca3af;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ===== INPUT (edit mode) ===== */
+
+.pd-input {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #3a7a8c;
+  padding: 8px 0 6px;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  min-height: 36px;
+  transition: border-color 0.15s;
+}
+
+.pd-input:focus {
+  border-bottom-color: #0b5b5b;
+}
+
+.pd-input::placeholder {
+  color: #b0bec5;
+  font-weight: 400;
+}
+
+select.pd-input {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 640px) {
+  .pd-content {
+    padding: 24px 20px;
+    gap: 24px;
+  }
+
+  .pd-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .pd-full-width {
+    grid-column: 1;
+  }
+}

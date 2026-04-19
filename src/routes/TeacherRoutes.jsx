@@ -35,7 +35,8 @@ import PrivateSessionsDashboard from "../pages/PrivateSessionsDashboard";
 import PrivateRequestDetail from "../pages/PrivateRequestDetail";
 import PrivateSessionAvailability from "../pages/PrivateSessionAvailability";
 import PrivateSessionDetail from "../pages/PrivateSessionDetail";
-import ChangePassword from "../pages/ChangePassword"; // 
+import ChangePassword from "../pages/ChangePassword";
+import PrivateDetails from "../pages/PrivateDetails";
 
 function RedirectToMainLogin() {
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function TeacherRoutes() {
         }
       >
         <Route path="profile" element={<Profile />} />
+        <Route path="private-details" element={<PrivateDetails />} />
         <Route path="dashboard" element={<TeacherDashboard />} />
         <Route path="students" element={<AllStudents />} />
         <Route path="students/:studentId" element={<AllStudentDetail />} />
