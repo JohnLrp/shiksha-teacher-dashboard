@@ -44,17 +44,52 @@ export default function Quizzes() {
     }
   };
 
-  const handleDelete = async (quizId) => {
-    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
-    setDeletingId(quizId);
-    try {
-      // Correct URL matches backend: /teacher/quizzes/<pk>/delete/
-      await api.delete(`/teacher/quizzes/${quizId}/delete/`);
-      setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
-    } catch (err) {
-      alert(err.response?.data?.detail || "Failed to delete quiz.");
-    } finally {
-      setDeletingId(null);
+  const handleDelete = async (quiz) => {
+    if (quiz.is_published) {
+      // First call without force to get attempt count
+      setDeletingId(quiz.id);
+      try {
+        await api.delete(`/teacher/quizzes/${quiz.id}/delete/`);
+        setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+        return;
+      } catch (err) {
+        if (err.response?.status === 409 && err.response?.data?.requires_force) {
+          const count = err.response.data.attempt_count;
+          const confirmed = window.confirm(
+            `⚠️ This quiz has ${count} student attempt(s).
+
+` +
+            `Deleting it will permanently remove ALL student scores and attempt history.
+
+` +
+            `Are you sure you want to delete it?`
+          );
+          if (!confirmed) { setDeletingId(null); return; }
+          // Second call with force=true
+          try {
+            await api.delete(`/teacher/quizzes/${quiz.id}/delete/?force=true`);
+            setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+          } catch (err2) {
+            alert(err2.response?.data?.detail || "Failed to delete quiz.");
+          }
+        } else {
+          alert(err.response?.data?.detail || "Failed to delete quiz.");
+        }
+      } finally {
+        setDeletingId(null);
+      }
+    } else {
+      // Unpublished — simple confirm
+      if (!window.confirm("Delete this quiz?")) return;
+      setDeletingId(quiz.id);
+      try {
+        await api.delete(`/teacher/quizzes/${quiz.id}/delete/`);
+        setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+      } catch (err) {
+        alert(err.response?.data?.detail || "Failed to delete quiz.");
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
@@ -148,7 +183,17 @@ export default function Quizzes() {
                 </button>
 
                 {quiz.is_published ? (
-                  <span className="quiz-published-badge">✓ Published</span>
+                  <>
+                    <span className="quiz-published-badge">✓ Published</span>
+                    <button
+                      className="quiz-delete-btn"
+                      onClick={() => handleDelete(quiz)}
+                      disabled={deletingId === quiz.id}
+                      title="Delete this quiz (will warn if students have attempted it)"
+                    >
+                      {deletingId === quiz.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
@@ -165,7 +210,7 @@ export default function Quizzes() {
                     </button>
                     <button
                       className="quiz-delete-btn"
-                      onClick={() => handleDelete(quiz.id)}
+                      onClick={() => handleDelete(quiz)}
                       disabled={deletingId === quiz.id}
                     >
                       {deletingId === quiz.id ? "Deleting…" : "Delete"}

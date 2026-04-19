@@ -10,6 +10,13 @@ const createEmptyQuestion = () => ({
   explanation: "",
 });
 
+const createEmptyError = () => ({
+  question: "",
+  options: ["", "", "", ""],
+  answer: "",
+  explanation: "",
+});
+
 const TIME_PRESETS = [5, 10, 15, 30];
 
 /* ── tiny inline popup ── */
@@ -38,12 +45,11 @@ export default function CreateQuiz() {
   const [timeLimit, setTimeLimit] = useState(10);
   const [customTime, setCustomTime] = useState("");
   const [useCustom, setUseCustom] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   /* ── validation errors ── */
   const [titleError, setTitleError] = useState("");
-  const [qErrors, setQErrors] = useState(() => [
-    { question: "", options: ["", "", "", ""], answer: "", explanation: "" },
-  ]);
+  const [qErrors, setQErrors] = useState([createEmptyError()]);
 
   const effectiveTimeLimit = useCustom ? parseInt(customTime) || 5 : timeLimit;
 
@@ -93,17 +99,37 @@ export default function CreateQuiz() {
 
   const addQuestion = () => {
     setQuestions([...questions, createEmptyQuestion()]);
-    setQErrors((prev) => [
-      ...prev,
-      { question: "", options: ["", "", "", ""], answer: "", explanation: "" },
-    ]);
+    setQErrors((prev) => [...prev, createEmptyError()]);
+  };
+
+  /* ── delete a specific question ── */
+  const deleteQuestion = (index) => {
+    if (questions.length === 1) return; // keep at least one
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+    setQErrors((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /* ── cancel handlers ── */
+  const handleCancel = () => {
+    const hasContent =
+      title.trim() ||
+      questions.some(
+        (q) =>
+          q.question.trim() ||
+          q.options.some((o) => o.trim()) ||
+          q.explanation.trim()
+      );
+    if (hasContent) {
+      setShowCancelModal(true);
+    } else {
+      navigate(`/teacher/classes/${subjectId}/quizzes`);
+    }
   };
 
   /* ── validate and return true if all fields are valid ── */
   const validate = () => {
     let valid = true;
 
-    // title
     let newTitleError = "";
     if (!title.trim()) {
       newTitleError = "Quiz title is required.";
@@ -111,9 +137,8 @@ export default function CreateQuiz() {
     }
     setTitleError(newTitleError);
 
-    // questions
     const newQErrors = questions.map((q) => {
-      const err = { question: "", options: ["", "", "", ""], answer: "", explanation: "" };
+      const err = createEmptyError();
 
       if (!q.question.trim()) {
         err.question = "Question text is required.";
@@ -154,7 +179,7 @@ export default function CreateQuiz() {
         subject: subjectId,
         title,
         description: "",
-        due_date: new Date(Date.now() + 86400000).toISOString(),
+        // due_date removed — quizzes no longer expire
         time_limit_minutes: effectiveTimeLimit,
       });
 
@@ -185,7 +210,7 @@ export default function CreateQuiz() {
 
   return (
     <div className="create-quiz-page">
-      <button type="button" className="cq-back-btn" onClick={() => navigate(-1)}>
+      <button type="button" className="cq-back-btn" onClick={handleCancel}>
         ← Back
       </button>
 
@@ -245,10 +270,11 @@ export default function CreateQuiz() {
         <div className="cq-form-container">
           <div className="cq-questions-list">
             {questions.map((q, qIndex) => {
-              const err = qErrors[qIndex] || { question: "", options: ["","","",""], answer: "", explanation: "" };
+              const err = qErrors[qIndex] || createEmptyError();
               return (
                 <div key={qIndex} className="cq-question-block">
-                  {/* Question text */}
+
+                  {/* Question header with delete button */}
                   <div className="cq-question-top">
                     <span className="cq-qno">Q{qIndex + 1}.</span>
                     <div style={{ flex: 1 }}>
@@ -260,6 +286,17 @@ export default function CreateQuiz() {
                       />
                       <FieldError msg={err.question} />
                     </div>
+                    {/* Only show delete if more than one question */}
+                    {questions.length > 1 && (
+                      <button
+                        type="button"
+                        className="cq-delete-question-btn"
+                        onClick={() => deleteQuestion(qIndex)}
+                        title="Remove this question"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
                   {/* Options */}
@@ -316,12 +353,21 @@ export default function CreateQuiz() {
                       <FieldError msg={err.explanation} />
                     </div>
                   </div>
+
                 </div>
               );
             })}
           </div>
 
           <div className="cq-bottom-row">
+            <button
+              type="button"
+              className="cq-cancel-btn"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              Cancel
+            </button>
             <button type="button" className="cq-add-question-btn" onClick={addQuestion}>
               Add Question
             </button>
@@ -336,6 +382,34 @@ export default function CreateQuiz() {
           </div>
         </div>
       </div>
+
+      {/* Cancel confirmation modal */}
+      {showCancelModal && (
+        <div className="quiz-modal-overlay">
+          <div className="quiz-modal-box">
+            <h3>Discard Quiz?</h3>
+            <p>
+              You have unsaved content.
+              <br /><br />
+              ⚠️ All your work will be lost if you leave.
+            </p>
+            <div className="quiz-modal-actions">
+              <button
+                className="quiz-btn-cancel"
+                onClick={() => setShowCancelModal(false)}
+              >
+                Keep Editing
+              </button>
+              <button
+                className="quiz-btn-exit"
+                onClick={() => navigate(`/teacher/classes/${subjectId}/quizzes`)}
+              >
+                Discard & Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
