@@ -74,15 +74,6 @@ const EMPLOYMENT_STATUS_OPTIONS = [
   "Other",
 ];
 
-const BOARD_OPTIONS = [
-  "CBSE", "ICSE", "Mizoram Board", "Manipur Board",
-  "Assam Board", "State Board", "Other",
-];
-
-const CLASS_OPTIONS = [
-  "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6",
-  "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12",
-];
 
 const currentYear = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from(
@@ -113,11 +104,6 @@ export default function PrivateDetails() {
   const [editCity, setEditCity] = useState("");
   const [editPinCode, setEditPinCode] = useState("");
 
-  // Course Application
-  const [editSubject, setEditSubject] = useState("");
-  const [editBoards, setEditBoards] = useState([]);
-  const [editClasses, setEditClasses] = useState([]);
-
   // Teaching Experience
   const [editExperienceRange, setEditExperienceRange] = useState("");
   const [editEmploymentStatus, setEditEmploymentStatus] = useState("");
@@ -143,9 +129,6 @@ export default function PrivateDetails() {
     setEditDistrict(p.district || "");
     setEditCity(p.city || "");
     setEditPinCode(p.pin_code || "");
-    setEditSubject(p.subject || "");
-    setEditBoards(p.boards || []);
-    setEditClasses(p.classes || []);
     setEditExperienceRange(p.experience_range || "");
     setEditEmploymentStatus(p.employment_status || "");
     setEditIsCurrentlyEmployed(p.is_currently_employed || false);
@@ -185,19 +168,7 @@ export default function PrivateDetails() {
     );
   };
 
-  const toggleBoard = (board) => {
-    setEditBoards((prev) =>
-      prev.includes(board) ? prev.filter((b) => b !== board) : [...prev, board]
-    );
-  };
-
-  const toggleClass = (cls) => {
-    setEditClasses((prev) =>
-      prev.includes(cls) ? prev.filter((c) => c !== cls) : [...prev, cls]
-    );
-  };
-
-  const handleQualFileChange = (e) => {
+const handleQualFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) setEditQualFile(file);
     e.target.value = "";
@@ -215,9 +186,6 @@ export default function PrivateDetails() {
       district: editDistrict,
       city: editCity,
       pin_code: editPinCode,
-      subject: editSubject,
-      boards: editBoards,
-      classes: editClasses,
       experience_range: editExperienceRange,
       employment_status: editEmploymentStatus,
       is_currently_employed: editIsCurrentlyEmployed,
@@ -772,58 +740,17 @@ export default function PrivateDetails() {
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Subject</label>
-              {isEditing ? (
-                <input
-                  className="pd-input"
-                  value={editSubject}
-                  onChange={(e) => setEditSubject(e.target.value)}
-                  placeholder="e.g. Mathematics"
-                />
-              ) : (
-                <div className="pd-value">{profile.subject || "—"}</div>
-              )}
+              <div className="pd-value">{profile.subject || "—"}</div>
             </div>
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Boards</label>
-              {isEditing ? (
-                <div className="pd-cert-options">
-                  {BOARD_OPTIONS.map((board) => (
-                    <label key={board} className="pd-cert-option">
-                      <input
-                        type="checkbox"
-                        className="pd-cert-checkbox"
-                        checked={editBoards.includes(board)}
-                        onChange={() => toggleBoard(board)}
-                      />
-                      <span>{board}</span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <CheckList items={profile.boards} />
-              )}
+              <CheckList items={profile.boards} />
             </div>
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Classes</label>
-              {isEditing ? (
-                <div className="pd-cert-options">
-                  {CLASS_OPTIONS.map((cls) => (
-                    <label key={cls} className="pd-cert-option">
-                      <input
-                        type="checkbox"
-                        className="pd-cert-checkbox"
-                        checked={editClasses.includes(cls)}
-                        onChange={() => toggleClass(cls)}
-                      />
-                      <span>{cls}</span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <CheckList items={profile.classes} />
-              )}
+              <CheckList items={profile.classes} />
             </div>
 
           </div>
