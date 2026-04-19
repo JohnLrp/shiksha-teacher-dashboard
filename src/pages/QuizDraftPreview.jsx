@@ -25,6 +25,7 @@ export default function QuizDraftPreview() {
 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [search, setSearch] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState(null);
@@ -32,11 +33,18 @@ export default function QuizDraftPreview() {
   useEffect(() => {
     async function fetchQuiz() {
       try {
-        // Teacher endpoint returns full data including correct answers
-        const res = await api.get(`/quizzes/${quizId}/`);
+        setFetchError(null);
+        // /quizzes/:pk/draft/ — teacher-only endpoint that works for
+        // both published and unpublished quizzes (no is_published filter)
+        const res = await api.get(`/quizzes/${quizId}/draft/`);
         setQuiz(res.data);
       } catch (err) {
-        console.error("Failed to load quiz", err);
+        console.error("Failed to load quiz draft", err);
+        const msg = err.response?.data?.detail
+          || (err.response?.status === 404 ? "Quiz not found. It may have been deleted." : null)
+          || (err.response?.status === 403 ? "You are not authorised to preview this quiz." : null)
+          || "Failed to load quiz. Please go back and try again.";
+        setFetchError(msg);
       } finally {
         setLoading(false);
       }
@@ -60,7 +68,15 @@ export default function QuizDraftPreview() {
   };
 
   if (loading) return <div className="qdp-loading">Loading preview…</div>;
-  if (!quiz)   return <div className="qdp-loading">Quiz not found.</div>;
+  if (fetchError) return (
+    <div className="qdp-page">
+      <button className="qdp-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/quizzes`)}>
+        <IoChevronBack /> Back to Quizzes
+      </button>
+      <div className="qdp-fetch-error">⚠️ {fetchError}</div>
+    </div>
+  );
+  if (!quiz) return null;
 
   const questions = quiz.questions || [];
   const filtered = questions.filter((q) =>

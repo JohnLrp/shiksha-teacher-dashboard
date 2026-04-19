@@ -296,3 +296,14 @@
 .qdp-publish-btn-lg:hover    { opacity: .9; }
 .qdp-publish-btn-lg:active   { transform: scale(.98); }
 .qdp-publish-btn-lg:disabled { opacity: .5; cursor: not-allowed; }
+
+.qdp-fetch-error {
+  margin: 24px 28px;
+  background: #fff3f3;
+  border: 1.5px solid #ffb3b3;
+  border-radius: 10px;
+  padding: 18px 22px;
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 500;
+}

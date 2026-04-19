@@ -76,7 +76,8 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId" element={<Classes />} />
 
         <Route path="change-password" element={<ChangePassword />} />
-
+        // In your teacher routes file
+        <Route path="/teacher/classes/:subjectId/quizzes/:quizId/draft" element={<QuizDraftPreview />} />
         {/* Assignments */}
         <Route path="classes/:subjectId/assignments" element={<Assignments />} />
         <Route path="classes/:subjectId/assignments/create" element={<CreateAssignment />} />
