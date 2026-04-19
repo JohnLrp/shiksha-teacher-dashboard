@@ -108,12 +108,6 @@ export default function QuizView() {
           </p>
 
           <div className="qv-dates-row">
-            <span className="qv-date-text">
-              Due Date:{" "}
-              {quiz.due_date
-                ? new Date(quiz.due_date).toLocaleDateString()
-                : "-"}
-            </span>
             <span className="qv-question-count">
               {filtered.length} question{filtered.length !== 1 ? "s" : ""}
             </span>

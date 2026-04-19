@@ -29,8 +29,7 @@ const INSTRUCTIONS = [
     title: "Quiz Details",
     points: [
       "Set a clear, descriptive title for your quiz.",
-      "Choose a due date in the future — students cannot attempt after this date.",
-      "Set a time limit in minutes. Recommended: 1–2 minutes per question.",
+"Set a time limit in minutes. Recommended: 1–2 minutes per question.",
       "The quiz will only be visible to students after you publish it.",
     ],
   },
@@ -53,7 +52,7 @@ const INSTRUCTIONS = [
       "Preview the full quiz before publishing to catch errors.",
       "Once published, questions cannot be edited or deleted.",
       "Total marks are calculated automatically from individual question marks.",
-      "Students can attempt the quiz multiple times until the due date.",
+      "Students can attempt the quiz multiple times.
     ],
   },
 ];
@@ -68,8 +67,6 @@ function validateDetails(form) {
   const errors = {};
   if (!form.title.trim()) errors.title = "Title is required.";
   if (!form.subject) errors.subject = "Subject is required.";
-  if (!form.due_date) errors.due_date = "Due date is required.";
-  else if (new Date(form.due_date) <= new Date()) errors.due_date = "Due date must be in the future.";
   if (!form.time_limit_minutes || form.time_limit_minutes < 1)
     errors.time_limit_minutes = "Time limit must be at least 1 minute.";
   return errors;
@@ -260,8 +257,7 @@ function PreviewPanel({ details, questions, totalM }) {
         <div>
           <h2 className="qcf-preview-title">{details.title}</h2>
           <p className="qcf-preview-meta">
-            Due: {details.due_date ? new Date(details.due_date).toLocaleString() : "—"} &nbsp;•&nbsp;
-            Time limit: {details.time_limit_minutes} min &nbsp;•&nbsp;
+              Time limit: {details.time_limit_minutes} min &nbsp;•&nbsp;
             {questions.length} questions &nbsp;•&nbsp;
             {totalM} marks total
           </p>
@@ -320,7 +316,6 @@ export default function QuizCreateForm({ subjects = [] }) {
   const [form, setForm] = useState({
     title: "",
     subject: subjectId || "",
-    due_date: "",
     time_limit_minutes: 30,
     description: "",
   });
@@ -347,7 +342,6 @@ export default function QuizCreateForm({ subjects = [] }) {
           subject: form.subject,
           title: form.title.trim(),
           description: form.description.trim(),
-          due_date: new Date(form.due_date).toISOString(),
           time_limit_minutes: Number(form.time_limit_minutes),
         });
         setQuizId(res.data.id);
@@ -448,7 +442,7 @@ export default function QuizCreateForm({ subjects = [] }) {
           <h2>Quiz Published!</h2>
           <p>
             <strong>{form.title}</strong> is now live.<br />
-            Students can attempt it until {new Date(form.due_date).toLocaleString()}.
+            Students can now attempt it any time.
           </p>
           <div className="qcf-published-stats">
             <div><strong>{questions.length}</strong><span>Questions</span></div>
@@ -518,17 +512,7 @@ export default function QuizCreateForm({ subjects = [] }) {
                 />
               </div>
 
-              <div className="qcf-row">
-                <div className="qcf-field">
-                  <label>Due Date & Time <span className="qcf-req">*</span></label>
-                  <input
-                    type="datetime-local"
-                    className={`qcf-input ${detailErrors.due_date ? "qcf-input--error" : ""}`}
-                    value={form.due_date}
-                    min={new Date().toISOString().slice(0, 16)}
-                    onChange={(e) => handleDetailChange("due_date", e.target.value)}
-                  />
-                  {detailErrors.due_date && <p className="qcf-field-error">{detailErrors.due_date}</p>}
+              <div className="qcf-row">/>
                 </div>
 
                 <div className="qcf-field">

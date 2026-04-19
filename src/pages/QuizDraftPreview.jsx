@@ -145,12 +145,6 @@ export default function QuizDraftPreview() {
             <span className="qdp-meta-value">{quiz.title}</span>
           </div>
           <div className="qdp-meta-block">
-            <span className="qdp-meta-label">Due Date</span>
-            <span className="qdp-meta-value">
-              {quiz.due_date ? new Date(quiz.due_date).toLocaleString() : "—"}
-            </span>
-          </div>
-          <div className="qdp-meta-block">
             <span className="qdp-meta-label">Time Limit</span>
             <span className="qdp-meta-value">
               {quiz.time_limit_minutes ? `${quiz.time_limit_minutes} min` : "—"}
