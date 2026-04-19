@@ -12,6 +12,7 @@ export default function Quizzes() {
   const [quizzes, setQuizzes] = useState([]);
   const [subjectName, setSubjectName] = useState("");
   const [publishingId, setPublishingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -20,7 +21,6 @@ export default function Quizzes() {
         const res = await api.get(`/teacher/subjects/${subjectId}/quizzes/`);
         const data = res.data.results || res.data;
         setQuizzes(data);
-        // Grab subject name from first quiz, or fetch separately if needed
         if (data.length > 0 && data[0].subject_name) {
           setSubjectName(data[0].subject_name);
         }
@@ -38,7 +38,6 @@ export default function Quizzes() {
       const res = await api.get(`/teacher/subjects/${subjectId}/quizzes/`);
       setQuizzes(res.data.results || res.data);
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.detail || "Failed to publish quiz.");
     } finally {
       setPublishingId(null);
@@ -47,21 +46,22 @@ export default function Quizzes() {
 
   const handleDelete = async (quizId) => {
     if (!window.confirm("Are you sure you want to delete this quiz?")) return;
+    setDeletingId(quizId);
     try {
-      await api.delete(`/teacher/quizzes/${quizId}/`);
+      // Correct URL matches backend: /teacher/quizzes/<pk>/delete/
+      await api.delete(`/teacher/quizzes/${quizId}/delete/`);
       setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.detail || "Failed to delete quiz.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const handleView = (quiz) => {
     if (quiz.is_published) {
-      // Published: full view with submissions
       navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}`);
     } else {
-      // Unpublished: draft preview (can still review before publishing)
       navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}/draft`);
     }
   };
@@ -140,7 +140,6 @@ export default function Quizzes() {
               </div>
 
               <div className="quiz-actions">
-                {/* View always works — draft preview for unpublished */}
                 <button
                   className="quiz-view-btn"
                   onClick={() => handleView(quiz)}
@@ -167,8 +166,9 @@ export default function Quizzes() {
                     <button
                       className="quiz-delete-btn"
                       onClick={() => handleDelete(quiz.id)}
+                      disabled={deletingId === quiz.id}
                     >
-                      Delete
+                      {deletingId === quiz.id ? "Deleting…" : "Delete"}
                     </button>
                   </>
                 )}
