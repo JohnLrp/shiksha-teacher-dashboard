@@ -14,6 +14,7 @@ import SubmissionView from "../pages/SubmissionView";
 import Quizzes from "../pages/Quizzes";
 import CreateQuiz from "../pages/CreateQuiz";
 import QuizView from "../pages/QuizView";
+import QuizDraftPreview from "../pages/QuizDraftPreview";
 import QuizSubmissionView from "../pages/QuizSubmissionView";
 import QuizReviewView from "../pages/QuizReviewView";
 import StudyMaterials from "../pages/StudyMaterials";
@@ -76,10 +77,8 @@ export default function TeacherRoutes() {
         <Route path="students/:studentId" element={<AllStudentDetail />} />
         <Route path="classes" element={<ClassesList />} />
         <Route path="classes/:subjectId" element={<Classes />} />
-
         <Route path="change-password" element={<ChangePassword />} />
-        // In your teacher routes file
-        <Route path="/teacher/classes/:subjectId/quizzes/:quizId/draft" element={<QuizDraftPreview />} />
+
         {/* Assignments */}
         <Route path="classes/:subjectId/assignments" element={<Assignments />} />
         <Route path="classes/:subjectId/assignments/create" element={<CreateAssignment />} />
@@ -89,6 +88,8 @@ export default function TeacherRoutes() {
         {/* Quizzes */}
         <Route path="classes/:subjectId/quizzes" element={<Quizzes />} />
         <Route path="classes/:subjectId/quizzes/create" element={<CreateQuiz />} />
+        {/* Draft preview — must be before :quizId so it isn't caught as a quizId value */}
+        <Route path="classes/:subjectId/quizzes/:quizId/draft" element={<QuizDraftPreview />} />
         <Route path="classes/:subjectId/quizzes/:quizId" element={<QuizView />} />
         <Route path="classes/:subjectId/quizzes/:quizId/submissions" element={<QuizSubmissionView />} />
         <Route path="classes/:subjectId/quizzes/:quizId/student/:studentId" element={<QuizStudentAttemptsView />} />
@@ -114,7 +115,7 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId/live-sessions/create" element={<TeacherCreateLiveSession />} />
         <Route path="live/:id" element={<TeacherLiveSession />} />
 
-        {/* ═══ PRIVATE SESSIONS ═══ */}
+        {/* Private Sessions */}
         <Route path="private-sessions" element={<PrivateSessionsDashboard />} />
         <Route path="private-sessions/availability" element={<PrivateSessionAvailability />} />
         <Route path="private-sessions/scheduled/:id" element={<PrivateSessionDetail />} />
