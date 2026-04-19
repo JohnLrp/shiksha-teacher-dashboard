@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLock, FiCalendar } from "react-icons/fi";
+import { FiLock, FiCalendar, FiFileText } from "react-icons/fi";
 import api from "../api/apiClient";
 import "../styles/profile.css";
 import "../styles/private-details.css";
@@ -13,6 +13,38 @@ function formatDob(dob) {
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
   const year = d.getUTCFullYear();
   return `${day}/${month}/${year}`;
+}
+
+function getFileName(url) {
+  if (!url || typeof url !== "string") return null;
+  return decodeURIComponent(url.split("/").pop());
+}
+
+function FileDisplay({ file, size }) {
+  const name = getFileName(file);
+  if (!name) return <div className="pd-value pd-value--muted">—</div>;
+  return (
+    <div className="pd-file-item">
+      <FiFileText className="pd-file-svg" />
+      <span className="pd-file-name">{name}</span>
+      {size && <span className="pd-file-size">({size})</span>}
+    </div>
+  );
+}
+
+function CheckList({ items }) {
+  if (!items || items.length === 0)
+    return <div className="pd-value pd-value--muted">—</div>;
+  return (
+    <div className="pd-checks-row">
+      {items.map((item) => (
+        <label key={item} className="pd-check-item">
+          <input type="checkbox" checked readOnly className="pd-checkbox" />
+          <span>{item}</span>
+        </label>
+      ))}
+    </div>
+  );
 }
 
 export default function PrivateDetails() {
@@ -111,6 +143,8 @@ export default function PrivateDetails() {
   const gender = profile.gender
     ? profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1)
     : "";
+
+  const skills = profile.skill_applications || [];
 
   return (
     <div className="tp-page">
@@ -322,6 +356,163 @@ export default function PrivateDetails() {
               ) : (
                 <div className="pd-value">{profile.pin_code || "—"}</div>
               )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* Educational Qualifications */}
+        <div className="pd-section">
+          <h2 className="pd-section-title">Educational Qualifications</h2>
+          <div className="pd-grid">
+
+            <div className="pd-field">
+              <label className="pd-label">Highest Degree</label>
+              <div className="pd-value">{profile.highest_degree || "—"}</div>
+            </div>
+
+            <div className="pd-field" />
+
+            <div className="pd-field">
+              <label className="pd-label">Field of Study</label>
+              <div className="pd-value">{profile.field_of_study || "—"}</div>
+            </div>
+
+            <div className="pd-field">
+              <label className="pd-label">Year of Completion</label>
+              <div className="pd-value">{profile.year_of_completion || "—"}</div>
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Teaching Certificate</label>
+              <CheckList items={profile.teaching_certifications} />
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Upload Qualification Certificate</label>
+              <FileDisplay file={profile.qualification_certificate} />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Teaching Experience */}
+        <div className="pd-section">
+          <h2 className="pd-section-title">Teaching Experience</h2>
+          <div className="pd-grid">
+
+            <div className="pd-field">
+              <label className="pd-label">Years of Teaching Experience</label>
+              <div className="pd-value">{profile.experience_range || "—"}</div>
+            </div>
+
+            <div className="pd-field">
+              <label className="pd-label">Current Employment Status</label>
+              <div className="pd-value">{profile.employment_status || "—"}</div>
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Currently Employed?</label>
+              <div className="pd-yn-row">
+                <span className={`pd-yn-btn ${profile.is_currently_employed ? "pd-yn-btn--active" : ""}`}>
+                  Yes
+                </span>
+                <span className={`pd-yn-btn ${!profile.is_currently_employed ? "pd-yn-btn--active" : ""}`}>
+                  No
+                </span>
+              </div>
+            </div>
+
+            <div className="pd-field">
+              <label className="pd-label">School/Institution Name</label>
+              <div className="pd-value">{profile.institution_name || "—"}</div>
+            </div>
+
+            <div className="pd-field">
+              <label className="pd-label">Position/Role</label>
+              <div className="pd-value">{profile.position || "—"}</div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Course Application */}
+        <div className="pd-section">
+          <h2 className="pd-section-title">Course Application</h2>
+          <div className="pd-grid">
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Subject</label>
+              <div className="pd-value">{profile.subject || "—"}</div>
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Boards</label>
+              <CheckList items={profile.boards} />
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Classes</label>
+              <CheckList items={profile.classes} />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Specialized Skill */}
+        {skills.length > 0 && skills.map((skill, idx) => (
+          <div className="pd-section" key={idx}>
+            <h2 className="pd-section-title">Specialized Skill</h2>
+            <div className="pd-grid">
+
+              <div className="pd-field">
+                <label className="pd-label">Skill Name</label>
+                <div className="pd-value">{skill.skill_name || skill.name || "—"}</div>
+              </div>
+
+              <div className="pd-field" />
+
+              <div className="pd-field pd-full-width">
+                <label className="pd-label">Skill Description</label>
+                <div className="pd-value">{skill.skill_description || skill.description || "—"}</div>
+              </div>
+
+              <div className="pd-field">
+                <label className="pd-label">Related Subject</label>
+                <div className="pd-value">{skill.related_subject || "—"}</div>
+              </div>
+
+              <div className="pd-field" />
+
+              <div className="pd-field pd-full-width">
+                <label className="pd-label">File Related to Skill</label>
+                <FileDisplay file={skill.skill_file || skill.file} />
+              </div>
+
+            </div>
+          </div>
+        ))}
+
+        {/* Documents Verification */}
+        <div className="pd-section">
+          <h2 className="pd-section-title">Documents Verification</h2>
+          <div className="pd-grid">
+
+            <div className="pd-field">
+              <label className="pd-label">Government ID Type</label>
+              <div className="pd-value">{profile.government_id_type || "—"}</div>
+            </div>
+
+            <div className="pd-field" />
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Id Number</label>
+              <div className="pd-value">{profile.id_number || "—"}</div>
+            </div>
+
+            <div className="pd-field pd-full-width">
+              <label className="pd-label">Label</label>
+              <FileDisplay file={profile.id_document} />
             </div>
 
           </div>
