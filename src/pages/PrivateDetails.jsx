@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLock, FiCalendar, FiFileText } from "react-icons/fi";
+import { FiLock, FiCalendar, FiFileText, FiChevronDown, FiX } from "react-icons/fi";
 import api from "../api/apiClient";
 import "../styles/profile.css";
 import "../styles/private-details.css";
@@ -47,23 +47,53 @@ function CheckList({ items }) {
   );
 }
 
+const DEGREE_OPTIONS = [
+  "High School / Secondary",
+  "Diploma",
+  "Bachelor's Degree",
+  "Master's Degree",
+  "PhD / Doctorate",
+  "Other",
+];
+
+const CERT_OPTIONS = ["B.Ed", "M.Ed", "CTET", "State TET", "Other"];
+
+const currentYear = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from(
+  { length: currentYear - 1950 + 1 },
+  (_, i) => currentYear - i
+);
+
 export default function PrivateDetails() {
   const navigate = useNavigate();
+  const qualFileInputRef = useRef(null);
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Basic Details
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editDob, setEditDob] = useState("");
   const [editGender, setEditGender] = useState("");
+
+  // Address
   const [editState, setEditState] = useState("");
   const [editDistrict, setEditDistrict] = useState("");
   const [editCity, setEditCity] = useState("");
   const [editPinCode, setEditPinCode] = useState("");
+
+  // Educational Qualifications
+  const [editHighestDegree, setEditHighestDegree] = useState("");
+  const [editFieldOfStudy, setEditFieldOfStudy] = useState("");
+  const [editYearOfCompletion, setEditYearOfCompletion] = useState("");
+  const [editTeachingCerts, setEditTeachingCerts] = useState([]);
+  const [editQualFile, setEditQualFile] = useState(null);
+  const [editQualFileRemoved, setEditQualFileRemoved] = useState(false);
 
   const populateEditFields = (p) => {
     setEditFirstName(p.first_name || "");
@@ -75,6 +105,12 @@ export default function PrivateDetails() {
     setEditDistrict(p.district || "");
     setEditCity(p.city || "");
     setEditPinCode(p.pin_code || "");
+    setEditHighestDegree(p.highest_degree || "");
+    setEditFieldOfStudy(p.field_of_study || "");
+    setEditYearOfCompletion(p.year_of_completion || "");
+    setEditTeachingCerts(p.teaching_certifications || []);
+    setEditQualFile(null);
+    setEditQualFileRemoved(false);
   };
 
   useEffect(() => {
@@ -97,6 +133,18 @@ export default function PrivateDetails() {
     setIsEditing(false);
   };
 
+  const toggleCert = (cert) => {
+    setEditTeachingCerts((prev) =>
+      prev.includes(cert) ? prev.filter((c) => c !== cert) : [...prev, cert]
+    );
+  };
+
+  const handleQualFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setEditQualFile(file);
+    e.target.value = "";
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const updates = {
@@ -109,10 +157,28 @@ export default function PrivateDetails() {
       district: editDistrict,
       city: editCity,
       pin_code: editPinCode,
+      highest_degree: editHighestDegree,
+      field_of_study: editFieldOfStudy,
+      year_of_completion: editYearOfCompletion,
+      teaching_certifications: editTeachingCerts,
     };
     try {
       await api.patch("/accounts/teacher/profile/", updates);
       setProfile((prev) => ({ ...prev, ...updates }));
+
+      if (editQualFile) {
+        const formData = new FormData();
+        formData.append("qualification_certificate", editQualFile);
+        const res = await api.patch("/accounts/teacher/profile/", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setProfile(res.data);
+      } else if (editQualFileRemoved) {
+        const res = await api.patch("/accounts/teacher/profile/", {
+          qualification_certificate: null,
+        });
+        setProfile(res.data);
+      }
     } catch (err) {
       console.error("Failed to save private details:", err);
     }
@@ -145,6 +211,10 @@ export default function PrivateDetails() {
     : "";
 
   const skills = profile.skill_applications || [];
+
+  const existingQualFile = !editQualFileRemoved
+    ? (profile.qualification_certificate || null)
+    : null;
 
   return (
     <div className="tp-page">
@@ -366,31 +436,157 @@ export default function PrivateDetails() {
           <h2 className="pd-section-title">Educational Qualifications</h2>
           <div className="pd-grid">
 
+            {/* Highest Degree */}
             <div className="pd-field">
               <label className="pd-label">Highest Degree</label>
-              <div className="pd-value">{profile.highest_degree || "—"}</div>
+              {isEditing ? (
+                <div className="pd-select-wrap">
+                  <select
+                    className="pd-input pd-select"
+                    value={editHighestDegree}
+                    onChange={(e) => setEditHighestDegree(e.target.value)}
+                  >
+                    <option value="">Select degree</option>
+                    {DEGREE_OPTIONS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <FiChevronDown className="pd-select-icon" />
+                </div>
+              ) : (
+                <div className="pd-value">{profile.highest_degree || "—"}</div>
+              )}
             </div>
 
             <div className="pd-field" />
 
+            {/* Field of Study + Year of Completion */}
             <div className="pd-field">
               <label className="pd-label">Field of Study</label>
-              <div className="pd-value">{profile.field_of_study || "—"}</div>
+              {isEditing ? (
+                <div className="pd-input-wrap">
+                  <input
+                    className="pd-input pd-input-clearable"
+                    value={editFieldOfStudy}
+                    onChange={(e) => setEditFieldOfStudy(e.target.value)}
+                    placeholder="e.g. Civil Engineering"
+                  />
+                  {editFieldOfStudy && (
+                    <button
+                      className="pd-input-clear-btn"
+                      onClick={() => setEditFieldOfStudy("")}
+                      type="button"
+                    >
+                      <FiX />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="pd-value">{profile.field_of_study || "—"}</div>
+              )}
             </div>
 
             <div className="pd-field">
               <label className="pd-label">Year of Completion</label>
-              <div className="pd-value">{profile.year_of_completion || "—"}</div>
+              {isEditing ? (
+                <div className="pd-select-wrap">
+                  <select
+                    className="pd-input pd-select"
+                    value={editYearOfCompletion}
+                    onChange={(e) => setEditYearOfCompletion(e.target.value)}
+                  >
+                    <option value="">Select year</option>
+                    {YEAR_OPTIONS.map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                  <FiChevronDown className="pd-select-icon" />
+                </div>
+              ) : (
+                <div className="pd-value">{profile.year_of_completion || "—"}</div>
+              )}
             </div>
 
+            {/* Teaching Certificate */}
             <div className="pd-field pd-full-width">
               <label className="pd-label">Teaching Certificate</label>
-              <CheckList items={profile.teaching_certifications} />
+              {isEditing ? (
+                <div className="pd-cert-options">
+                  {CERT_OPTIONS.map((cert) => (
+                    <label key={cert} className="pd-cert-option">
+                      <input
+                        type="checkbox"
+                        className="pd-cert-checkbox"
+                        checked={editTeachingCerts.includes(cert)}
+                        onChange={() => toggleCert(cert)}
+                      />
+                      <span>{cert}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <CheckList items={profile.teaching_certifications} />
+              )}
             </div>
 
+            {/* Upload Qualification Certificate */}
             <div className="pd-field pd-full-width">
               <label className="pd-label">Upload Qualification Certificate</label>
-              <FileDisplay file={profile.qualification_certificate} />
+              {isEditing ? (
+                <div className="pd-file-edit-list">
+                  {/* Existing file */}
+                  {existingQualFile && !editQualFile && (
+                    <div className="pd-file-edit-item">
+                      <FiFileText className="pd-file-svg" />
+                      <span className="pd-file-name">{getFileName(existingQualFile)}</span>
+                      <button
+                        className="pd-file-remove-btn"
+                        type="button"
+                        onClick={() => setEditQualFileRemoved(true)}
+                      >
+                        <FiX />
+                      </button>
+                    </div>
+                  )}
+                  {/* Newly selected file */}
+                  {editQualFile && (
+                    <div className="pd-file-edit-item">
+                      <FiFileText className="pd-file-svg" />
+                      <span className="pd-file-name">{editQualFile.name}</span>
+                      <span className="pd-file-size">
+                        ({(editQualFile.size / (1024 * 1024)).toFixed(1)} MB)
+                      </span>
+                      <button
+                        className="pd-file-remove-btn"
+                        type="button"
+                        onClick={() => setEditQualFile(null)}
+                      >
+                        <FiX />
+                      </button>
+                    </div>
+                  )}
+                  {/* Add file button */}
+                  {!editQualFile && (
+                    <div
+                      className="pd-file-add-btn"
+                      onClick={() => qualFileInputRef.current?.click()}
+                    >
+                      <FiFileText className="pd-file-svg" />
+                      <span>[ + Add file ]</span>
+                      <span className="pd-file-add-note">(Max 50 MB)</span>
+                    </div>
+                  )}
+                  <input
+                    ref={qualFileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    style={{ display: "none" }}
+                    onChange={handleQualFileChange}
+                  />
+                </div>
+              ) : (
+                <FileDisplay file={profile.qualification_certificate} />
+              )}
             </div>
 
           </div>

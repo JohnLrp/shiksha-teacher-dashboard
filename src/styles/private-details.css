@@ -128,6 +128,145 @@ select.pd-input {
   appearance: auto;
 }
 
+/* ===== SELECT DROPDOWN (edit mode) ===== */
+
+.pd-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pd-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.pd-select-icon {
+  position: absolute;
+  right: 4px;
+  color: #6b7280;
+  font-size: 15px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* ===== INPUT WITH CLEAR BUTTON (edit mode) ===== */
+
+.pd-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pd-input-clearable {
+  padding-right: 28px;
+}
+
+.pd-input-clear-btn {
+  position: absolute;
+  right: 2px;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pd-input-clear-btn:hover {
+  color: #374151;
+}
+
+/* ===== CERT CHECKBOXES (edit mode) ===== */
+
+.pd-cert-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+  align-items: center;
+}
+
+.pd-cert-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pd-cert-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #1a5f70;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ===== FILE EDIT LIST (edit mode) ===== */
+
+.pd-file-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0 4px;
+  border-bottom: 1px solid #c3d9e4;
+}
+
+.pd-file-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.pd-file-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  padding: 2px;
+  margin-left: 4px;
+}
+
+.pd-file-remove-btn:hover {
+  color: #ef4444;
+}
+
+.pd-file-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: #1a5f70;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pd-file-add-btn:hover {
+  color: #0b5b5b;
+}
+
+.pd-file-add-note {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
 /* ===== CHECKLIST ===== */
 
 .pd-checks-row {
