@@ -14,8 +14,8 @@ function fmtTime(t) {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -283,54 +283,7 @@ export default function Profile() {
             <p className="tp-rating-sub">Based on private session reviews</p>
           </div>
         </div>
-      </div>
-
-      {/* ===== ADDRESS ===== */}
-      <div className="tp-section">
-        <h2>Address</h2>
-        <div className="tp-field-grid">
-          <div className="tp-field"><span className="tp-field-label">State</span><span className="tp-field-value">{val(form.state)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">District</span><span className="tp-field-value">{val(form.district)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">City / Town</span><span className="tp-field-value">{val(form.city_town)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Pin Code</span><span className="tp-field-value">{val(form.pin_code)}</span></div>
-        </div>
-      </div>
-
-      {/* ===== EDUCATIONAL QUALIFICATIONS ===== */}
-      <div className="tp-section">
-        <h2>Educational Qualifications</h2>
-        <div className="tp-field-grid">
-          <div className="tp-field"><span className="tp-field-label">Highest Degree</span><span className="tp-field-value">{val(profile.highest_degree)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Field of Study</span><span className="tp-field-value">{val(form.field_of_study)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Year of Completion</span><span className="tp-field-value">{val(form.year_of_completion)}</span></div>
-          <div className="tp-field">
-            <span className="tp-field-label">Teaching Certifications</span>
-            <span className="tp-field-value">
-              {form.teaching_certifications?.length ? form.teaching_certifications.join(", ") : "—"}
-            </span>
-          </div>
-          <div className="tp-field">
-            <span className="tp-field-label">Qualification Certificate</span>
-            <span className="tp-field-value">
-              {form.qualification_certificate
-                ? <a href={form.qualification_certificate} target="_blank" rel="noreferrer">View file</a>
-                : "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== TEACHING EXPERIENCE ===== */}
-      <div className="tp-section">
-        <h2>Teaching Experience</h2>
-        <div className="tp-field-grid">
-          <div className="tp-field"><span className="tp-field-label">Experience Range</span><span className="tp-field-value">{val(profile.experience_range)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Employment Status</span><span className="tp-field-value">{val(profile.employment_status)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Currently Employed</span><span className="tp-field-value">{form.currently_employed ? "Yes" : "No"}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Current Institution</span><span className="tp-field-value">{val(form.current_institution)}</span></div>
-          <div className="tp-field"><span className="tp-field-label">Current Position</span><span className="tp-field-value">{val(form.current_position)}</span></div>
-        </div>
-      </div>
+      )}
 
       {/* ===== ABOUT ===== */}
       <div className="tp-section">
