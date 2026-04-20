@@ -1,21 +1,29 @@
+/**
+ * FILE: src/api/privateSessionService.js
+ *
+ * Shared service for both student and teacher sides.
+ * Connects to:
+ *   - sessions_app  → /api/sessions/...
+ *   - accounts      → /api/accounts/...
+ *   - courses       → /api/courses/...
+ */
+
 import api from "./apiClient";
 
 const privateSessionService = {
 
-  async getSubjectsByCourse() {
-  const res = await api.get("/courses/subjects/mine/");  // ← only student's subjects
-  return res.data || [];
-},
+  // ─────────────────────────────────────────────
+  // STUDENT — Session management
+  // ─────────────────────────────────────────────
 
-  async getTeachers(subjectId) {
-    if (!subjectId) return [];
-    const res = await api.get(`/sessions/subjects/${subjectId}/teachers/`);
-    return res.data || [];
+  async getSessions(tab = "scheduled") {
+    const res = await api.get(`/sessions/student/?tab=${tab}`);
+    return (res.data || []).map(transformSession);
   },
 
-  async validateStudentId(studentId) {
-    const res = await api.get(`/accounts/validate-student/?student_id=${studentId}`);
-    return res.data;
+  async getSessionDetail(id) {
+    const res = await api.get(`/sessions/${id}/`);
+    return transformSession(res.data);
   },
 
   async requestSession(data) {
@@ -34,11 +42,6 @@ const privateSessionService = {
     return transformSession(res.data);
   },
 
-  async getSessions(tab = "scheduled") {
-    const res = await api.get(`/sessions/student/?tab=${tab}`);
-    return (res.data || []).map(transformSession);
-  },
-
   async cancelSession(id, reason = "") {
     const res = await api.post(`/sessions/${id}/cancel/`, { reason });
     return transformSession(res.data);
@@ -53,6 +56,57 @@ const privateSessionService = {
     const res = await api.post(`/sessions/${id}/decline-reschedule/`);
     return transformSession(res.data);
   },
+
+  // ─────────────────────────────────────────────
+  // STUDENT — Subject / Teacher / Student lookup
+  // ─────────────────────────────────────────────
+
+  // Only subjects for THIS student's enrolled course
+  async getSubjectsByCourse() {
+    const res = await api.get("/courses/subjects/mine/");
+    return res.data || [];
+  },
+
+  // Teachers assigned to a subject (by subject UUID)
+  async getTeachers(subjectId) {
+    if (!subjectId) return [];
+    const res = await api.get(`/sessions/subjects/${subjectId}/teachers/`);
+    return res.data || [];
+  },
+
+  // All students enrolled in the course that owns this subject.
+  // Used by the group session picker in Step 2 of the request form.
+  // Optional `query` filters by name or student ID (server-side).
+  // Returns: [{ user_id, name, student_id }, ...]
+  async getCourseStudents(subjectId, query = "") {
+    if (!subjectId) return [];
+    const params = query ? `?q=${encodeURIComponent(query)}` : "";
+    const res = await api.get(`/sessions/subjects/${subjectId}/students/${params}`);
+    return res.data || [];
+  },
+
+  // Legacy: validate a student by their student ID string
+  async validateStudentId(studentId) {
+    const res = await api.get(`/accounts/validate-student/?student_id=${studentId}`);
+    return res.data; // { valid, name, user_id, student_id }
+  },
+
+  // ─────────────────────────────────────────────
+  // SHARED — LiveKit
+  // ─────────────────────────────────────────────
+
+  async joinSession(sessionId) {
+    const res = await api.post(`/sessions/${sessionId}/join/`);
+    return res.data; // { livekit_url, token, room, role }
+  },
+
+  async getLiveKitToken(sessionId) {
+    return privateSessionService.joinSession(sessionId);
+  },
+
+  // ─────────────────────────────────────────────
+  // TEACHER — Session management
+  // ─────────────────────────────────────────────
 
   async getTeacherSessions() {
     const res = await api.get("/sessions/teacher/sessions/");
@@ -103,19 +157,9 @@ const privateSessionService = {
     return transformSession(res.data);
   },
 
-  async getSessionDetail(id) {
-    const res = await api.get(`/sessions/${id}/`);
-    return transformSession(res.data);
-  },
-
-  async joinSession(sessionId) {
-    const res = await api.post(`/sessions/${sessionId}/join/`);
-    return res.data;
-  },
-
-  async getLiveKitToken(sessionId) {
-    return privateSessionService.joinSession(sessionId);
-  },
+  // ─────────────────────────────────────────────
+  // TEACHER — Availability
+  // ─────────────────────────────────────────────
 
   async getAvailability() {
     try {
@@ -134,6 +178,10 @@ const privateSessionService = {
       return { success: false };
     }
   },
+
+  // ─────────────────────────────────────────────
+  // CONSTANTS
+  // ─────────────────────────────────────────────
 
   TIME_SLOTS: [
     { label: "6:00 AM",  value: "06:00" },
@@ -161,8 +209,16 @@ const privateSessionService = {
     { label: "120 minutes", value: 120 },
   ],
 
+  // Full day names — used by availability grid
   DAYS: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+
+  // Short day names — used by PrivateSessionAvailability column headers
+  SHORT_DAYS: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
 };
+
+// ─────────────────────────────────────────────
+// Transform backend response → frontend shape
+// ─────────────────────────────────────────────
 
 function transformSession(s) {
   if (!s) return s;
@@ -196,15 +252,20 @@ function transformSession(s) {
   };
 }
 
+// Named exports (for components that import individual methods)
 export const {
-  getSubjectsByCourse,
-  getTeachers,
-  validateStudentId,
-  requestSession,
   getSessions,
+  getSessionDetail,
+  requestSession,
   cancelSession,
   confirmReschedule,
   declineReschedule,
+  getSubjectsByCourse,
+  getTeachers,
+  getCourseStudents,       // ← new
+  validateStudentId,
+  joinSession,
+  getLiveKitToken,
   getTeacherSessions,
   getRequests,
   getHistory,
@@ -214,11 +275,12 @@ export const {
   startSession,
   endSession,
   teacherCancelSession,
-  getSessionDetail,
-  joinSession,
-  getLiveKitToken,
   getAvailability,
   saveAvailability,
+  TIME_SLOTS,
+  DURATIONS,
+  DAYS,
+  SHORT_DAYS,              // ← new
 } = privateSessionService;
 
 export default privateSessionService;
