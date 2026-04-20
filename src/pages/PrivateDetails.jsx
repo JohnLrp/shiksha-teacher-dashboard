@@ -769,8 +769,15 @@ const handleQualFileChange = (e) => {
               )}
             </div>
 
+          </div>
+        </div>
+
+        {/* Currently Employed */}
+        <div className="pd-section">
+          <h2 className="pd-section-title">Currently Employed?</h2>
+          <div className="pd-grid">
+
             <div className="pd-field pd-full-width">
-              <label className="pd-label">Currently Employed?</label>
               {isEditing ? (
                 <div className="pd-yn-row">
                   <button
@@ -796,33 +803,37 @@ const handleQualFileChange = (e) => {
               )}
             </div>
 
-            <div className="pd-field">
-              <label className="pd-label">School/Institution Name</label>
-              {isEditing ? (
-                <input
-                  className="pd-input"
-                  value={editInstitutionName}
-                  onChange={(e) => setEditInstitutionName(e.target.value)}
-                  placeholder="School or institution name"
-                />
-              ) : (
-                <div className="pd-value">{profile.institution_name || "—"}</div>
-              )}
-            </div>
+            {(isEditing ? editIsCurrentlyEmployed : profile.is_currently_employed) && (
+              <>
+                <div className="pd-field">
+                  <label className="pd-label">School/Institution Name</label>
+                  {isEditing ? (
+                    <input
+                      className="pd-input"
+                      value={editInstitutionName}
+                      onChange={(e) => setEditInstitutionName(e.target.value)}
+                      placeholder="School or institution name"
+                    />
+                  ) : (
+                    <div className="pd-value">{profile.institution_name || "—"}</div>
+                  )}
+                </div>
 
-            <div className="pd-field">
-              <label className="pd-label">Position/Role</label>
-              {isEditing ? (
-                <input
-                  className="pd-input"
-                  value={editPosition}
-                  onChange={(e) => setEditPosition(e.target.value)}
-                  placeholder="e.g. Math Teacher"
-                />
-              ) : (
-                <div className="pd-value">{profile.position || "—"}</div>
-              )}
-            </div>
+                <div className="pd-field">
+                  <label className="pd-label">Position/Role</label>
+                  {isEditing ? (
+                    <input
+                      className="pd-input"
+                      value={editPosition}
+                      onChange={(e) => setEditPosition(e.target.value)}
+                      placeholder="e.g. Math Teacher"
+                    />
+                  ) : (
+                    <div className="pd-value">{profile.position || "—"}</div>
+                  )}
+                </div>
+              </>
+            )}
 
           </div>
         </div>
