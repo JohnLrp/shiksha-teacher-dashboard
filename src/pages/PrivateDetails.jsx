@@ -298,24 +298,19 @@ const handleQualFileChange = (e) => {
       gender: editGender,
       state: editState,
       district: editDistrict,
-      city: editCity,
+      city_town: editCity,
       pin_code: editPinCode,
       experience_range: editExperienceRange,
       employment_status: editEmploymentStatus,
-      is_currently_employed: editIsCurrentlyEmployed,
-      institution_name: editInstitutionName,
-      position: editPosition,
+      currently_employed: editIsCurrentlyEmployed,
+      current_institution: editInstitutionName,
+      current_position: editPosition,
       highest_degree: editHighestDegree,
       field_of_study: editFieldOfStudy,
       year_of_completion: editYearOfCompletion,
       teaching_certifications: editTeachingCerts,
-      government_id_type: editGovtIdType,
+      govt_id_type: editGovtIdType,
       id_number: editIdNumber,
-      skill_applications: editSkills.map((es, idx) => ({
-        ...(profile.skill_applications?.[idx] || {}),
-        skill_description: es.skill_description,
-        related_subject: es.related_subject,
-      })),
     };
     try {
       await api.patch("/accounts/teacher/profile/", updates);
@@ -337,13 +332,13 @@ const handleQualFileChange = (e) => {
 
       if (editIdFile) {
         const fd = new FormData();
-        fd.append("id_document", editIdFile);
+        fd.append("id_proof_front", editIdFile);
         const res = await api.patch("/accounts/teacher/profile/", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setProfile(res.data);
       } else if (editIdFileRemoved) {
-        const res = await api.patch("/accounts/teacher/profile/", { id_document: null });
+        const res = await api.patch("/accounts/teacher/profile/", { id_proof_front: null });
         setProfile(res.data);
       }
 
