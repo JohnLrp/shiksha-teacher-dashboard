@@ -170,3 +170,276 @@
 .ur-upload-btn:hover {
   background: #2ea88a;
 }
+
+/* ─── Page Shell ─────────────────────────────────────────────────────────── */
+.ur-page {
+  min-height: 100vh;
+  padding: 24px 20px 48px;
+  max-width: 640px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.ur-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+}
+.ur-back-btn:hover { color: #111; }
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+.ur-header { margin-bottom: 32px; }
+.ur-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  color: #111;
+}
+
+/* ─── Step Indicator ─────────────────────────────────────────────────────── */
+.ur-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ur-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.ur-step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  background: #fff;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.ur-step.active .ur-step-circle {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.ur-step.done .ur-step-circle {
+  border-color: #16a34a;
+  background: #16a34a;
+  color: #fff;
+}
+
+.ur-step-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+.ur-step.active .ur-step-label { color: #2563eb; font-weight: 600; }
+.ur-step.done .ur-step-label   { color: #16a34a; }
+
+.ur-step-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  margin: 0 8px;
+}
+.ur-step.done + .ur-step .ur-step-line,
+.ur-step.done .ur-step-line { background: #16a34a; }
+
+/* ─── Card ───────────────────────────────────────────────────────────────── */
+.ur-form-container { }
+.ur-form-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+
+.ur-form-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 20px;
+}
+
+/* ─── Fields ─────────────────────────────────────────────────────────────── */
+.ur-field {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.ur-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.ur-required { color: #dc2626; margin-left: 2px; }
+
+.ur-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ur-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+
+.ur-char-count {
+  position: absolute;
+  right: 12px;
+  bottom: -18px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ─── Drop Zone ──────────────────────────────────────────────────────────── */
+.ur-drop-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 20px;
+}
+.ur-drop-zone:hover { border-color: #2563eb; background: #f8faff; }
+.ur-drop-zone--has-file { border-color: #16a34a; background: #f0fdf4; }
+
+.ur-drop-icon { font-size: 36px; margin-bottom: 8px; }
+.ur-drop-hint { font-size: 14px; color: #374151; margin: 0 0 4px; }
+.ur-drop-sub  { font-size: 12px; color: #9ca3af; margin: 0; }
+
+.ur-file-icon { font-size: 36px; margin-bottom: 8px; }
+.ur-file-name { font-size: 14px; font-weight: 600; color: #111; margin: 0 0 2px; word-break: break-all; }
+.ur-file-size { font-size: 12px; color: #6b7280; margin: 0 0 12px; }
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+.ur-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-width: 140px;
+}
+.ur-btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.ur-btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+
+.ur-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.ur-btn-ghost:hover { border-color: #9ca3af; }
+
+.ur-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+.ur-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: -8px 0 16px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+/* ─── Review ─────────────────────────────────────────────────────────────── */
+.ur-review-grid {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.ur-review-row {
+  display: flex;
+  padding: 11px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+.ur-review-row:last-child { border-bottom: none; }
+.ur-review-label { width: 80px; color: #6b7280; font-weight: 500; flex-shrink: 0; }
+.ur-review-value { color: #111; word-break: break-all; }
+
+/* ─── Progress ───────────────────────────────────────────────────────────── */
+.ur-progress-wrap { margin-bottom: 20px; }
+.ur-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.ur-progress-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.ur-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+.ur-progress-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 8px 0 0;
+}
+
+/* ─── Success ────────────────────────────────────────────────────────────── */
+.ur-success {
+  text-align: center;
+  padding: 16px 0;
+}
+.ur-success-icon { font-size: 48px; margin-bottom: 12px; }
+.ur-success h3 { font-size: 18px; font-weight: 700; margin: 0 0 10px; color: #111; }
+.ur-success p  { font-size: 14px; color: #6b7280; margin: 0 0 24px; line-height: 1.6; }

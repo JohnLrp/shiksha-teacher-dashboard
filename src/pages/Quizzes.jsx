@@ -10,14 +10,20 @@ export default function Quizzes() {
   const { subjectId } = useParams();
 
   const [quizzes, setQuizzes] = useState([]);
+  const [subjectName, setSubjectName] = useState("");
   const [publishingId, setPublishingId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchQuizzes() {
       try {
         const res = await api.get(`/teacher/subjects/${subjectId}/quizzes/`);
-        setQuizzes(res.data.results || res.data);
+        const data = res.data.results || res.data;
+        setQuizzes(data);
+        if (data.length > 0 && data[0].subject_name) {
+          setSubjectName(data[0].subject_name);
+        }
       } catch (err) {
         console.error("Failed to load quizzes", err);
       }
@@ -32,43 +38,75 @@ export default function Quizzes() {
       const res = await api.get(`/teacher/subjects/${subjectId}/quizzes/`);
       setQuizzes(res.data.results || res.data);
     } catch (err) {
-      console.error(err);
-      alert("Failed to publish quiz");
+      alert(err.response?.data?.detail || "Failed to publish quiz.");
     } finally {
       setPublishingId(null);
     }
   };
 
-  const handleDelete = async (quizId) => {
-    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
-    try {
-      await api.delete(`/teacher/quizzes/${quizId}/`);
-      setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete quiz");
+  const handleDelete = async (quiz) => {
+    if (quiz.is_published) {
+      // First call without force to get attempt count
+      setDeletingId(quiz.id);
+      try {
+        await api.delete(`/teacher/quizzes/${quiz.id}/delete/`);
+        setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+        return;
+      } catch (err) {
+        if (err.response?.status === 409 && err.response?.data?.requires_force) {
+          const count = err.response.data.attempt_count;
+          const confirmed = window.confirm(
+            `⚠️ This quiz has ${count} student attempt(s).
+
+` +
+            `Deleting it will permanently remove ALL student scores and attempt history.
+
+` +
+            `Are you sure you want to delete it?`
+          );
+          if (!confirmed) { setDeletingId(null); return; }
+          // Second call with force=true
+          try {
+            await api.delete(`/teacher/quizzes/${quiz.id}/delete/?force=true`);
+            setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+          } catch (err2) {
+            alert(err2.response?.data?.detail || "Failed to delete quiz.");
+          }
+        } else {
+          alert(err.response?.data?.detail || "Failed to delete quiz.");
+        }
+      } finally {
+        setDeletingId(null);
+      }
+    } else {
+      // Unpublished — simple confirm
+      if (!window.confirm("Delete this quiz?")) return;
+      setDeletingId(quiz.id);
+      try {
+        await api.delete(`/teacher/quizzes/${quiz.id}/delete/`);
+        setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
+      } catch (err) {
+        alert(err.response?.data?.detail || "Failed to delete quiz.");
+      } finally {
+        setDeletingId(null);
+      }
     }
   };
 
+  const handleView = (quiz) => {
+    if (quiz.is_published) {
+      navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}`);
+    } else {
+      navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}/draft`);
+    }
+  };
+
+  const filtered = quizzes.filter((q) =>
+    q.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="quizzes-page">
-
-      {/* ── Publish warning modal ── */}
-      {showModal && (
-        <div className="qz-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="qz-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="qz-modal-icon">⚠️</div>
-            <h3 className="qz-modal-title">Quiz Not Published</h3>
-            <p className="qz-modal-msg">
-              This quiz must be published before it can be viewed.
-            </p>
-            <button className="qz-modal-btn" onClick={() => setShowModal(false)}>
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
-
       <button
         className="quizzes-back-btn"
         onClick={() => navigate(`/teacher/classes/${subjectId}`)}
@@ -77,9 +115,14 @@ export default function Quizzes() {
       </button>
 
       <div className="quizzes-title-container">
-        <h2 className="quizzes-title">Mathematics</h2>
+        <h2 className="quizzes-title">{subjectName || "Quizzes"}</h2>
         <div className="quizzes-search">
-          <input type="text" placeholder="Search" />
+          <input
+            type="text"
+            placeholder="Search quizzes…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <FiSearch className="quizzes-search-icon" />
         </div>
       </div>
@@ -95,18 +138,20 @@ export default function Quizzes() {
         </div>
 
         <div className="quizzes-list">
-          {quizzes.length === 0 && (
+          {filtered.length === 0 && (
             <p className="quizzes-empty">
-              No quizzes created yet. Click "Create New Quiz" to get started.
+              {quizzes.length === 0
+                ? 'No quizzes created yet. Click "Create New Quiz" to get started.'
+                : "No quizzes match your search."}
             </p>
           )}
 
-          {quizzes.map((quiz, index) => (
+          {filtered.map((quiz, index) => (
             <div className="quiz-row" key={quiz.id || index}>
 
               <div className="quiz-info">
                 <span className="quiz-id">{quiz.title}</span>
-                <span className="quiz-name">ID: {quiz.id.slice(0, 8)}</span>
+                <span className="quiz-name">ID: {quiz.id.toString().slice(0, 8)}</span>
                 <span className="quiz-creator">{quiz.teacher_name || quiz.created_by_email}</span>
               </div>
 
@@ -122,30 +167,55 @@ export default function Quizzes() {
                 <span className="quiz-value bold">{quiz.questions_count ?? 0}</span>
               </div>
 
+              <div className="quiz-detail">
+                <span className="quiz-label">Due:</span>
+                <span className="quiz-value">
+                  {quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : "-"}
+                </span>
+              </div>
+
               <div className="quiz-actions">
                 <button
                   className="quiz-view-btn"
-                  onClick={() => {
-                    if (!quiz.is_published) {
-                      setShowModal(true);
-                      return;
-                    }
-                    navigate(`/teacher/classes/${subjectId}/quizzes/${quiz.id}`);
-                  }}
+                  onClick={() => handleView(quiz)}
                 >
-                  View
+                  {quiz.is_published ? "View" : "Preview"}
                 </button>
 
                 {quiz.is_published ? (
-                  <span className="quiz-published-badge">✓ Published</span>
+                  <>
+                    <span className="quiz-published-badge">✓ Published</span>
+                    <button
+                      className="quiz-delete-btn"
+                      onClick={() => handleDelete(quiz)}
+                      disabled={deletingId === quiz.id}
+                      title="Delete this quiz (will warn if students have attempted it)"
+                    >
+                      {deletingId === quiz.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </>
                 ) : (
-                  <button
-                    className={`quiz-publish-btn ${publishingId === quiz.id ? "loading" : ""}`}
-                    onClick={() => handlePublish(quiz.id)}
-                    disabled={publishingId === quiz.id}
-                  >
-                    {publishingId === quiz.id ? "Publishing…" : "Publish"}
-                  </button>
+                  <>
+                    <button
+                      className={`quiz-publish-btn ${publishingId === quiz.id ? "loading" : ""}`}
+                      onClick={() => handlePublish(quiz.id)}
+                      disabled={publishingId === quiz.id || (quiz.questions_count ?? 0) === 0}
+                      title={
+                        (quiz.questions_count ?? 0) === 0
+                          ? "Add at least one question before publishing"
+                          : "Publish this quiz"
+                      }
+                    >
+                      {publishingId === quiz.id ? "Publishing…" : "Publish"}
+                    </button>
+                    <button
+                      className="quiz-delete-btn"
+                      onClick={() => handleDelete(quiz)}
+                      disabled={deletingId === quiz.id}
+                    >
+                      {deletingId === quiz.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </>
                 )}
               </div>
 

@@ -1,0 +1,398 @@
+/* =====================================================
+   PRIVATE DETAILS PAGE  (pd-* classes)
+   Top card reuses tp-* from profile.css
+===================================================== */
+
+.pd-skill-divider {
+  border-top: 1px solid #c5dde8;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.pd-content {
+  background: linear-gradient(180deg, #dff0f7 0%, #d4e9f2 100%);
+  border-radius: 20px;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== SECTION ===== */
+
+.pd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pd-section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a5f70;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid rgba(26, 95, 112, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pd-title-lock {
+  font-size: 14px;
+  color: #1a5f70;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ===== GRID ===== */
+
+.pd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 48px;
+}
+
+.pd-full-width {
+  grid-column: 1 / -1;
+}
+
+/* ===== FIELD ===== */
+
+.pd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pd-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+/* View-mode value */
+.pd-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.pd-value--muted {
+  color: #6b7280;
+}
+
+/* Value row with trailing icon (email, dob) */
+.pd-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+}
+
+.pd-value-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.pd-field-icon {
+  color: #9ca3af;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ===== INPUT (edit mode) ===== */
+
+.pd-input {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #3a7a8c;
+  padding: 8px 0 6px;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  min-height: 36px;
+  transition: border-color 0.15s;
+}
+
+.pd-input:focus {
+  border-bottom-color: #0b5b5b;
+}
+
+.pd-input::placeholder {
+  color: #b0bec5;
+  font-weight: 400;
+}
+
+select.pd-input {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* ===== SELECT DROPDOWN (edit mode) ===== */
+
+.pd-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pd-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.pd-select-icon {
+  position: absolute;
+  right: 4px;
+  color: #6b7280;
+  font-size: 15px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* ===== INPUT WITH CLEAR BUTTON (edit mode) ===== */
+
+.pd-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pd-input-clearable {
+  padding-right: 28px;
+}
+
+.pd-input-clear-btn {
+  position: absolute;
+  right: 2px;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pd-input-clear-btn:hover {
+  color: #374151;
+}
+
+/* ===== CERT CHECKBOXES (edit mode) ===== */
+
+.pd-cert-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+  align-items: center;
+}
+
+.pd-cert-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pd-cert-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #1a5f70;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ===== FILE EDIT LIST (edit mode) ===== */
+
+.pd-file-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0 4px;
+  border-bottom: 1px solid #c3d9e4;
+}
+
+.pd-file-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.pd-file-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  padding: 2px;
+  margin-left: 4px;
+}
+
+.pd-file-remove-btn:hover {
+  color: #ef4444;
+}
+
+.pd-file-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  color: #1a5f70;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pd-file-add-btn:hover {
+  color: #0b5b5b;
+}
+
+.pd-file-add-note {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* ===== CHECKLIST ===== */
+
+.pd-checks-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+  align-items: center;
+}
+
+.pd-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  cursor: default;
+  user-select: none;
+}
+
+.pd-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #1a5f70;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+/* ===== FILE DISPLAY ===== */
+
+.pd-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid #c3d9e4;
+  min-height: 36px;
+}
+
+.pd-file-svg {
+  color: #1a5f70;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.pd-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.pd-file-size {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ===== YES / NO TOGGLE (view-only) ===== */
+
+.pd-yn-row {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0 4px;
+}
+
+.pd-yn-btn {
+  padding: 6px 22px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #c3d9e4;
+  color: #6b7280;
+  background: transparent;
+  cursor: default;
+  user-select: none;
+  font-family: inherit;
+}
+
+button.pd-yn-btn {
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
+  border-color: #1a5f70;
+  color: #1a5f70;
+}
+
+.pd-yn-btn--active {
+  background: #1a5f70;
+  color: #fff;
+  border-color: #1a5f70;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 640px) {
+  .pd-content {
+    padding: 24px 20px;
+    gap: 24px;
+  }
+
+  .pd-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .pd-full-width {
+    grid-column: 1;
+  }
+}
