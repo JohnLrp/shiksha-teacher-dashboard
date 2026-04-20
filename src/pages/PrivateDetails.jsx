@@ -182,10 +182,59 @@ export default function PrivateDetails() {
   };
 
   useEffect(() => {
-    api.get("/accounts/teacher/profile/")
-      .then((res) => {
-        setProfile(res.data);
-        populateEditFields(res.data);
+    Promise.all([
+      api.get("/accounts/teacher/profile/"),
+      api.get("/accounts/form-fillup/"),
+    ])
+      .then(([profRes, formRes]) => {
+        const p = profRes.data;
+        const f = formRes.data;
+        const courseApp = f.course_applications?.[0] || {};
+        const merged = {
+          // Identity (from teacher/profile)
+          name: p.name,
+          photo: p.photo,
+          is_approved: p.is_approved,
+          languages: p.languages,
+          spoken_languages: p.spoken_languages,
+          // Basic Details (from form-fillup)
+          username: f.username,
+          email: f.email,
+          first_name: f.first_name,
+          last_name: f.last_name,
+          phone: f.phone,
+          date_of_birth: f.date_of_birth,
+          gender: f.gender,
+          // Address
+          state: f.state,
+          district: f.district,
+          city: f.city_town,
+          pin_code: f.pin_code,
+          // Education
+          highest_degree: f.highest_degree,
+          field_of_study: f.field_of_study,
+          year_of_completion: f.year_of_completion,
+          teaching_certifications: f.teaching_certifications,
+          qualification_certificate: f.qualification_certificate,
+          // Experience
+          experience_range: f.experience_range,
+          employment_status: f.employment_status,
+          is_currently_employed: f.currently_employed,
+          institution_name: f.current_institution,
+          position: f.current_position,
+          // Verification
+          government_id_type: f.govt_id_type,
+          id_number: f.id_number,
+          id_document: f.id_proof_front || f.id_proof_back,
+          // Course application (single-row view)
+          subject: courseApp.subject,
+          boards: courseApp.boards,
+          classes: courseApp.classes,
+          // Skills (from either — teacher/profile is formatted nicer)
+          skill_applications: p.skill_applications || f.skill_applications || [],
+        };
+        setProfile(merged);
+        populateEditFields(merged);
       })
       .catch(() => setError("Failed to load private details."))
       .finally(() => setLoading(false));
