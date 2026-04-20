@@ -4,25 +4,16 @@ import { IoChevronBack } from "react-icons/io5";
 import api from "../api/apiClient";
 import "../styles/upload-recording.css";
 
-// Upload goes through your backend — never expose Bunny keys on the client.
-// Backend endpoint: POST /courses/subjects/:subjectId/recordings/upload/
-// which proxies the file to Bunny server-side.
-
 const STEPS = ["Details", "Video", "Upload"];
 
 export default function UploadRecording() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
 
-  // Step state
-  const [step, setStep] = useState(0); // 0: Details, 1: Video, 2: Upload
-
-  // Form fields
+  const [step, setStep] = useState(0);
   const [topic, setTopic] = useState("");
   const [sessionDate, setSessionDate] = useState("");
   const [videoFile, setVideoFile] = useState(null);
-
-  // Upload state
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
@@ -31,7 +22,6 @@ export default function UploadRecording() {
   const fileInputRef = useRef(null);
   const xhrRef = useRef(null);
 
-  // ─── Step 1: validate details ────────────────────────────────────────────
   const handleNextFromDetails = () => {
     if (!topic.trim()) { setError("Please enter a topic/title."); return; }
     if (!sessionDate)  { setError("Please select a session date."); return; }
@@ -39,7 +29,6 @@ export default function UploadRecording() {
     setStep(1);
   };
 
-  // ─── Step 2: file pick ───────────────────────────────────────────────────
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -48,7 +37,7 @@ export default function UploadRecording() {
       setError("Only MP4, WebM, or MOV files are allowed.");
       return;
     }
-    if (file.size > 4 * 1024 * 1024 * 1024) { // 4 GB guard
+    if (file.size > 4 * 1024 * 1024 * 1024) {
       setError("File is too large (max 4 GB).");
       return;
     }
@@ -62,7 +51,6 @@ export default function UploadRecording() {
     setStep(2);
   };
 
-  // ─── Step 3: upload ──────────────────────────────────────────────────────
   const handleUpload = async () => {
     if (!subjectId) { setError("Invalid subject."); return; }
 
@@ -71,25 +59,24 @@ export default function UploadRecording() {
       setUploadProgress(0);
       setError("");
 
-      // STEP 1: Create Bunny video slot via backend (key stays server-side)
+      // STEP 1: create Bunny video slot
       const res = await api.post("/courses/recordings/create-video/", {
         title: topic,
       });
       const videoId = res.data.video_id;
 
-      // STEP 2: Upload file — route through your backend proxy OR use a
-      // short-lived signed URL returned from the backend (recommended).
-      // Here we use the signed-URL pattern: backend returns a one-time
-      // upload URL so the Bunny AccessKey is never in the browser.
+      // STEP 2: get upload URL + access key from backend (key never in frontend env)
       const signedRes = await api.post("/courses/recordings/signed-upload-url/", {
         video_id: videoId,
       });
-      const uploadUrl = signedRes.data.upload_url;
+      const { upload_url, access_key } = signedRes.data;
 
+      // STEP 3: upload directly to Bunny with the key received from backend
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhrRef.current = xhr;
-        xhr.open("PUT", uploadUrl, true);
+        xhr.open("PUT", upload_url, true);
+        xhr.setRequestHeader("AccessKey", access_key);
         xhr.setRequestHeader("Content-Type", videoFile.type);
 
         xhr.upload.onprogress = (e) => {
@@ -106,7 +93,7 @@ export default function UploadRecording() {
         xhr.send(videoFile);
       });
 
-      // STEP 3: Save metadata
+      // STEP 4: save metadata
       await api.post(`/courses/subjects/${subjectId}/recordings/save/`, {
         title: topic,
         session_date: sessionDate,
@@ -129,7 +116,6 @@ export default function UploadRecording() {
     navigate(-1);
   };
 
-  // ─── helpers ─────────────────────────────────────────────────────────────
   const formatBytes = (bytes) => {
     if (!bytes) return "";
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -137,20 +123,16 @@ export default function UploadRecording() {
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
-  // ─── render ──────────────────────────────────────────────────────────────
   return (
     <div className="ur-page">
 
-      {/* Back */}
       <button className="ur-back-btn" onClick={handleCancel}>
         <IoChevronBack /> Back
       </button>
 
-      {/* Header */}
       <div className="ur-header">
         <h2 className="ur-title">Add Session Recording</h2>
 
-        {/* Step indicator */}
         <div className="ur-steps">
           {STEPS.map((label, i) => (
             <div key={label} className={`ur-step ${i === step ? "active" : ""} ${i < step ? "done" : ""}`}>
@@ -165,7 +147,7 @@ export default function UploadRecording() {
       <div className="ur-form-container">
         <div className="ur-form-card">
 
-          {/* ── STEP 0: Details ── */}
+          {/* STEP 0: Details */}
           {step === 0 && (
             <>
               <h3 className="ur-form-heading">Recording Details</h3>
@@ -189,7 +171,7 @@ export default function UploadRecording() {
                   type="date"
                   className="ur-input"
                   value={sessionDate}
-                  max={new Date().toISOString().split("T")[0]} // can't record future sessions
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) => { setSessionDate(e.target.value); setError(""); }}
                 />
               </div>
@@ -202,7 +184,7 @@ export default function UploadRecording() {
             </>
           )}
 
-          {/* ── STEP 1: Video File ── */}
+          {/* STEP 1: Video File */}
           {step === 1 && (
             <>
               <h3 className="ur-form-heading">Attach Video</h3>
@@ -259,7 +241,7 @@ export default function UploadRecording() {
             </>
           )}
 
-          {/* ── STEP 2: Review & Upload ── */}
+          {/* STEP 2: Review & Upload */}
           {step === 2 && !uploadDone && (
             <>
               <h3 className="ur-form-heading">Review & Upload</h3>
@@ -279,7 +261,6 @@ export default function UploadRecording() {
                 </div>
               </div>
 
-              {/* Progress bar */}
               {uploading && (
                 <div className="ur-progress-wrap">
                   <div className="ur-progress-header">
@@ -287,10 +268,7 @@ export default function UploadRecording() {
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="ur-progress-bar">
-                    <div
-                      className="ur-progress-fill"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
+                    <div className="ur-progress-fill" style={{ width: `${uploadProgress}%` }} />
                   </div>
                   <p className="ur-progress-note">
                     Do not close this tab. Video will process automatically after upload.
@@ -317,7 +295,7 @@ export default function UploadRecording() {
             </>
           )}
 
-          {/* ── DONE ── */}
+          {/* DONE */}
           {uploadDone && (
             <div className="ur-success">
               <div className="ur-success-icon">✅</div>
