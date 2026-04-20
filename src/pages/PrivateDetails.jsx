@@ -853,129 +853,138 @@ const handleQualFileChange = (e) => {
         </div>
 
         {/* Specialized Skill */}
-        {skills.length > 0 && skills.map((skill, idx) => {
-          const es = editSkills[idx] || {};
-          const existingSkillFile = !es.fileRemoved ? (skill.skill_file || skill.file || null) : null;
-          return (
-            <div className="pd-section" key={idx}>
-              <h2 className="pd-section-title">Specialized Skill</h2>
-              <div className="pd-grid">
+        <div className="pd-section">
+          <h2 className="pd-section-title">Specialized Skill</h2>
+          {skills.length === 0 ? (
+            <div className="pd-grid">
+              <div className="pd-field"><label className="pd-label">Skill Name</label><div className="pd-value pd-value--muted">—</div></div>
+              <div className="pd-field" />
+              <div className="pd-field pd-full-width"><label className="pd-label">Skill Description</label><div className="pd-value pd-value--muted">—</div></div>
+              <div className="pd-field"><label className="pd-label">Related Subject</label><div className="pd-value pd-value--muted">—</div></div>
+              <div className="pd-field" />
+              <div className="pd-field pd-full-width"><label className="pd-label">File Related to Skill</label><div className="pd-value pd-value--muted">—</div></div>
+            </div>
+          ) : (
+            skills.map((skill, idx) => {
+              const es = editSkills[idx] || {};
+              const existingSkillFile = !es.fileRemoved ? (skill.skill_file || skill.file || null) : null;
+              return (
+                <div key={idx} className={idx > 0 ? "pd-skill-divider" : ""}>
+                  <div className="pd-grid">
 
-                {/* Skill Name — always locked */}
-                <div className="pd-field">
-                  <label className="pd-label">Skill Name</label>
-                  <div className="pd-value-row">
-                    <span className="pd-value-text">{skill.skill_name || skill.name || "—"}</span>
-                    {isEditing && <FiLock className="pd-field-icon" />}
+                    <div className="pd-field">
+                      <label className="pd-label">Skill Name</label>
+                      <div className="pd-value-row">
+                        <span className="pd-value-text">{skill.skill_name || skill.name || "—"}</span>
+                        {isEditing && <FiLock className="pd-field-icon" />}
+                      </div>
+                    </div>
+
+                    <div className="pd-field" />
+
+                    <div className="pd-field pd-full-width">
+                      <label className="pd-label">Skill Description</label>
+                      {isEditing ? (
+                        <div className="pd-input-wrap">
+                          <input
+                            className="pd-input pd-input-clearable"
+                            value={es.skill_description || ""}
+                            onChange={(e) => updateSkillField(idx, "skill_description", e.target.value)}
+                            placeholder="Describe the skill"
+                          />
+                          {es.skill_description && (
+                            <button
+                              className="pd-input-clear-btn"
+                              type="button"
+                              onClick={() => updateSkillField(idx, "skill_description", "")}
+                            >
+                              <FiX />
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="pd-value">{skill.skill_description || skill.description || "—"}</div>
+                      )}
+                    </div>
+
+                    <div className="pd-field">
+                      <label className="pd-label">Related Subject</label>
+                      {isEditing ? (
+                        <div className="pd-select-wrap">
+                          <select
+                            className="pd-input pd-select"
+                            value={es.related_subject || ""}
+                            onChange={(e) => updateSkillField(idx, "related_subject", e.target.value)}
+                          >
+                            <option value="">Select subject</option>
+                            {RELATED_SUBJECT_OPTIONS.map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                          <FiChevronDown className="pd-select-icon" />
+                        </div>
+                      ) : (
+                        <div className="pd-value">{skill.related_subject || "—"}</div>
+                      )}
+                    </div>
+
+                    <div className="pd-field" />
+
+                    <div className="pd-field pd-full-width">
+                      <label className="pd-label">File Related to Skill</label>
+                      {isEditing ? (
+                        <div className="pd-file-edit-list">
+                          {existingSkillFile && !es.newFile && (
+                            <div className="pd-file-edit-item">
+                              <FiFileText className="pd-file-svg" />
+                              <span className="pd-file-name">{getFileName(existingSkillFile)}</span>
+                              <button
+                                className="pd-file-remove-btn"
+                                type="button"
+                                onClick={() => updateSkillField(idx, "fileRemoved", true)}
+                              >
+                                <FiX />
+                              </button>
+                            </div>
+                          )}
+                          {es.newFile && (
+                            <div className="pd-file-edit-item">
+                              <FiFileText className="pd-file-svg" />
+                              <span className="pd-file-name">{es.newFile.name}</span>
+                              <span className="pd-file-size">
+                                ({(es.newFile.size / (1024 * 1024)).toFixed(1)} MB)
+                              </span>
+                              <button
+                                className="pd-file-remove-btn"
+                                type="button"
+                                onClick={() => updateSkillField(idx, "newFile", null)}
+                              >
+                                <FiX />
+                              </button>
+                            </div>
+                          )}
+                          {!es.newFile && (
+                            <div
+                              className="pd-file-add-btn"
+                              onClick={() => handleSkillFileClick(idx)}
+                            >
+                              <FiFileText className="pd-file-svg" />
+                              <span>[ + Add file ]</span>
+                              <span className="pd-file-add-note">(Max 50 MB)</span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <FileDisplay file={skill.skill_file || skill.file} />
+                      )}
+                    </div>
+
                   </div>
                 </div>
-
-                <div className="pd-field" />
-
-                {/* Skill Description */}
-                <div className="pd-field pd-full-width">
-                  <label className="pd-label">Skill Description</label>
-                  {isEditing ? (
-                    <div className="pd-input-wrap">
-                      <input
-                        className="pd-input pd-input-clearable"
-                        value={es.skill_description || ""}
-                        onChange={(e) => updateSkillField(idx, "skill_description", e.target.value)}
-                        placeholder="Describe the skill"
-                      />
-                      {es.skill_description && (
-                        <button
-                          className="pd-input-clear-btn"
-                          type="button"
-                          onClick={() => updateSkillField(idx, "skill_description", "")}
-                        >
-                          <FiX />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="pd-value">{skill.skill_description || skill.description || "—"}</div>
-                  )}
-                </div>
-
-                {/* Related Subject */}
-                <div className="pd-field">
-                  <label className="pd-label">Related Subject</label>
-                  {isEditing ? (
-                    <div className="pd-select-wrap">
-                      <select
-                        className="pd-input pd-select"
-                        value={es.related_subject || ""}
-                        onChange={(e) => updateSkillField(idx, "related_subject", e.target.value)}
-                      >
-                        <option value="">Select subject</option>
-                        {RELATED_SUBJECT_OPTIONS.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                      <FiChevronDown className="pd-select-icon" />
-                    </div>
-                  ) : (
-                    <div className="pd-value">{skill.related_subject || "—"}</div>
-                  )}
-                </div>
-
-                <div className="pd-field" />
-
-                {/* File Related to Skill */}
-                <div className="pd-field pd-full-width">
-                  <label className="pd-label">File Related to Skill</label>
-                  {isEditing ? (
-                    <div className="pd-file-edit-list">
-                      {existingSkillFile && !es.newFile && (
-                        <div className="pd-file-edit-item">
-                          <FiFileText className="pd-file-svg" />
-                          <span className="pd-file-name">{getFileName(existingSkillFile)}</span>
-                          <button
-                            className="pd-file-remove-btn"
-                            type="button"
-                            onClick={() => updateSkillField(idx, "fileRemoved", true)}
-                          >
-                            <FiX />
-                          </button>
-                        </div>
-                      )}
-                      {es.newFile && (
-                        <div className="pd-file-edit-item">
-                          <FiFileText className="pd-file-svg" />
-                          <span className="pd-file-name">{es.newFile.name}</span>
-                          <span className="pd-file-size">
-                            ({(es.newFile.size / (1024 * 1024)).toFixed(1)} MB)
-                          </span>
-                          <button
-                            className="pd-file-remove-btn"
-                            type="button"
-                            onClick={() => updateSkillField(idx, "newFile", null)}
-                          >
-                            <FiX />
-                          </button>
-                        </div>
-                      )}
-                      {!es.newFile && (
-                        <div
-                          className="pd-file-add-btn"
-                          onClick={() => handleSkillFileClick(idx)}
-                        >
-                          <FiFileText className="pd-file-svg" />
-                          <span>[ + Add file ]</span>
-                          <span className="pd-file-add-note">(Max 50 MB)</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <FileDisplay file={skill.skill_file || skill.file} />
-                  )}
-                </div>
-
-              </div>
-            </div>
-          );
-        })}
+              );
+            })
+          )}
+        </div>
 
         {/* Hidden file input shared across all skill file pickers */}
         <input

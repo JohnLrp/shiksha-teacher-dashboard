@@ -3,6 +3,12 @@
    Top card reuses tp-* from profile.css
 ===================================================== */
 
+.pd-skill-divider {
+  border-top: 1px solid #c5dde8;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
 .pd-content {
   background: linear-gradient(180deg, #dff0f7 0%, #d4e9f2 100%);
   border-radius: 20px;
