@@ -24,6 +24,7 @@ import SessionRecordings from "../pages/SessionRecordings";
 import UploadRecording from "../pages/UploadRecording";
 import RecordingPlayer from "../pages/RecordingPlayer";
 import LiveSessions from "../pages/LiveSessions";
+import LiveSessionDetail from "../pages/LiveSessionDetail";
 import TeacherCreateLiveSession from "../pages/TeacherCreateLiveSession";
 import Profile from "../pages/Profile";
 import StudentsList from "../pages/StudentsList";
@@ -114,6 +115,8 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId/live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions/create" element={<TeacherCreateLiveSession />} />
         <Route path="live/:id" element={<TeacherLiveSession />} />
+        <Route path="live-sessions/:id/detail" element={<LiveSessionDetail />} />
+        <Route path="classes/:subjectId/live-sessions/:id/detail" element={<LiveSessionDetail />} />
 
         {/* Private Sessions */}
         <Route path="private-sessions" element={<PrivateSessionsDashboard />} />

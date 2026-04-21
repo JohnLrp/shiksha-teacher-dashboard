@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { IoPeople } from "react-icons/io5";
 import { BsMicFill, BsMicMuteFill } from "react-icons/bs";
 
-export default function ParticipantsPanel({ raisedHands = {} }) {
+export default function ParticipantsPanel({ raisedHands = {}, onLowerHand }) {
   const participants = useParticipants();
   const room = useRoomContext();
   const [open, setOpen] = useState(true);
@@ -146,7 +146,12 @@ export default function ParticipantsPanel({ raisedHands = {} }) {
                   )}
 
                   {handRaised && (
-                    <span className="raised-hand-icon">✋</span>
+                    <span
+                      className="raised-hand-icon"
+                      title="Click to lower hand"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => onLowerHand && onLowerHand(p.identity)}
+                    >✋</span>
                   )}
                 </div>
 

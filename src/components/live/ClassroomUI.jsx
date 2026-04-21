@@ -83,6 +83,27 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
   }, []);
 
   /* =====================================
+     🔥 LOWER HAND (teacher forces lower)
+  ===================================== */
+  const handleLowerHand = async (identity) => {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify({ type: "lower-hand" }));
+      await room.localParticipant.publishData(data, {
+        reliable: true,
+        destinationIdentities: [identity],
+      });
+      setRaisedHands((prev) => {
+        const updated = { ...prev };
+        delete updated[identity];
+        return updated;
+      });
+    } catch (err) {
+      console.error("Lower hand error:", err);
+    }
+  };
+
+  /* =====================================
      🔥 TRACKS
   ===================================== */
   const tracks = useTracks([
@@ -163,7 +184,7 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
       {/* SIDEBAR */}
       {sidebarOpen && (
         <div className="right-sidebar">
-          <ParticipantsPanel raisedHands={raisedHands} />
+          <ParticipantsPanel raisedHands={raisedHands} onLowerHand={handleLowerHand} />
           <ChatPanel role={role} messages={chatMessages} onSendMessage={sendMessage} />
         </div>
       )}
