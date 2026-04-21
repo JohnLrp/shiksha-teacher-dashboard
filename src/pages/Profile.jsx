@@ -124,6 +124,11 @@ export default function Profile() {
         });
         if (res.data?.photo) updates.photo = res.data.photo;
         else updates.photo = avatarPreview;
+
+        if (updates.photo) {
+          localStorage.setItem("avatar", updates.photo);
+          window.dispatchEvent(new CustomEvent("avatar-updated", { detail: updates.photo }));
+        }
       } else {
         await api.patch("/accounts/teacher/profile/", updates);
       }
