@@ -21,15 +21,6 @@ const EVENT_COLORS = {
   "live-session":       "#38bdf8",
 };
 
-function getDateStyle(types) {
-  if (!types || types.length === 0) return {};
-  if (types.some((t) => t.includes("overdue")))
-    return { background: "#ef4444", color: "#fff" };
-  const colors = types.map((t) => EVENT_COLORS[t]).filter(Boolean);
-  if (colors.length === 0) return {};
-  if (colors.length === 1) return { background: colors[0], color: "#1f2d3d" };
-  return { background: `linear-gradient(135deg, ${colors.join(", ")})`, color: "#1f2d3d" };
-}
 
 const now = new Date();
 
@@ -80,24 +71,34 @@ export default function CalendarWidget({ events = {}, selectedDate = null, onDat
         ))}
 
         {[...Array(daysInMonth)].map((_, i) => {
-          const day     = i + 1;
-          const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const isToday =
+          const day      = i + 1;
+          const dateKey  = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const isToday  =
             day === today.getDate() &&
             month === today.getMonth() &&
             year === today.getFullYear();
-          const isSelected  = isSameDay(day);
-          const eventTypes  = events[dateKey] || null;
-          const eventStyle  = !isToday && eventTypes ? getDateStyle(eventTypes) : {};
+          const isSelected = isSameDay(day);
+          const eventTypes = events[dateKey] || null;
+          const hasEvents  = eventTypes?.length > 0;
 
           return (
             <span
               key={day}
               className={`cal-date${isToday ? " cal-today" : ""}${isSelected ? " cal-selected" : ""}`}
-              style={eventStyle}
               onClick={() => onDateSelect?.(new Date(year, month, day))}
             >
               {day}
+              {hasEvents && !isSelected && (
+                <span className="calDate__dots">
+                  {eventTypes.map((type) => (
+                    <span
+                      key={type}
+                      className="calDate__dot"
+                      style={{ background: EVENT_COLORS[type] || "#ccc" }}
+                    />
+                  ))}
+                </span>
+              )}
             </span>
           );
         })}
