@@ -63,8 +63,8 @@ export default function TeacherDashboard() {
   const [selectedDate, setSelectedDate]           = useState(null);
   const [scheduleTypeFilter, setScheduleTypeFilter] = useState("all");
 
-  // Notification hook — for markOneRead in notification panel
-  const { markOneRead } = useNotificationSocket();
+  // Notification hook — live WS notifications + markOneRead
+  const { notifications: liveNotifications, markOneRead } = useNotificationSocket();
 
   useEffect(() => {
     const fetch_ = async () => {
@@ -91,7 +91,19 @@ export default function TeacherDashboard() {
   const assignments     = data?.assignments      ?? [];
   const quizzes         = data?.quizzes          ?? [];
   const privateSessions = data?.private_sessions ?? [];
-  const notifications   = data?.notifications    ?? [];
+  const apiNotifications = data?.notifications ?? [];
+
+  // Merge live WS notifications with REST API ones, deduped by id.
+  // Live ones come first so new private session events appear instantly.
+  const notifications = (() => {
+    const seen = new Set();
+    const merged = [];
+    for (const n of [...liveNotifications, ...apiNotifications]) {
+      const key = n.id || JSON.stringify(n);
+      if (!seen.has(key)) { seen.add(key); merged.push(n); }
+    }
+    return merged;
+  })();
 
   // Calendar events — FIX: live sessions now included
   const calendarEvents = useMemo(() => {

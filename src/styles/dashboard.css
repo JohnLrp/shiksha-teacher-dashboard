@@ -622,3 +622,9 @@
     min-height: auto;
   }
 }
+
+
+
+/* Add to your dashboard.css — teal color for private session notifications */
+.act-bar.teal       { background: #015865; }
+.act-label.teal     { color: #015865; background: #e0f2f4; }

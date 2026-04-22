@@ -37,6 +37,12 @@ export default function ActivityItem({
     if (!n) return;
     if (!n.is_read && n.id && onRead) onRead(n.id);
 
+    // Private session — always go to private sessions page
+    if (n.is_private_session || n.type === "PRIVATE_SESSION") {
+      navigate("/teacher/private-sessions");
+      return;
+    }
+
     if (n.subject_id) {
       if (n.type === "ASSIGNMENT" || n.type === "SUBMISSION")
         navigate(`/teacher/classes/${n.subject_id}/assignments`);
@@ -66,17 +72,21 @@ export default function ActivityItem({
   // ── Notification mode (rich, expandable) ──
   if (n) {
     const LABEL_MAP = {
-      ASSIGNMENT: "Assignment",
-      SESSION:    "Live Session",
-      QUIZ:       "Quiz",
-      SUBMISSION: "Submission",
+      ASSIGNMENT:      "Assignment",
+      SESSION:         "Live Session",
+      QUIZ:            "Quiz",
+      SUBMISSION:      "Submission",
+      PRIVATE_SESSION: "Private Session",
     };
     const COLOR_MAP = {
-      ASSIGNMENT: "green",
-      SESSION:    "yellow",
-      QUIZ:       "purple",
-      SUBMISSION: "blue",
+      ASSIGNMENT:      "green",
+      SESSION:         "yellow",
+      QUIZ:            "purple",
+      SUBMISSION:      "blue",
+      PRIVATE_SESSION: "teal",
     };
+    // Backend sends SESSION type with is_private_session flag
+    const displayType = n.is_private_session ? "PRIVATE_SESSION" : n.type;
 
     return (
       <div
@@ -84,13 +94,14 @@ export default function ActivityItem({
         onClick={handleClick}
         style={{ cursor: "pointer" }}
       >
-        <span className={`act-bar ${COLOR_MAP[n.type] || "green"}`} />
+        <span className={`act-bar ${COLOR_MAP[displayType] || "green"}`} />
         {!n.is_read && <span className="act-unread-dot" />}
+
         <div className="act-content">
           <div className="act-header-row">
             <p className="act-date">{formattedCreated}</p>
-            <span className={`act-label ${COLOR_MAP[n.type] || "green"}`}>
-              {LABEL_MAP[n.type] || n.type}
+            <span className={`act-label ${COLOR_MAP[displayType] || "green"}`}>
+              {LABEL_MAP[displayType] || displayType}
             </span>
             <span className="act-chevron">{expanded ? "▴" : "▾"}</span>
           </div>
