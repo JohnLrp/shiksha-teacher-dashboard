@@ -191,13 +191,13 @@ export default function PrivateRequestDetail() {
   }
 
   const handleAccept = async () => {
-    await privateSession.acceptSession(req.id);
+    await privateSession.acceptRequest(req.id);
     alert("✅ Session accepted! The student has been notified.");
     navigate("/teacher/private-sessions");
   };
 
   const handleDecline = async () => {
-    await privateSession.declineSession(req.id);
+    await privateSession.declineRequest(req.id);
     alert("❌ Session declined. The student has been notified.");
     navigate("/teacher/private-sessions");
   };
@@ -207,7 +207,7 @@ export default function PrivateRequestDetail() {
     if (!selectedTime) { setError("Please select a new time."); return; }
     setError("");
     const dateStr = `${MONTH_NAMES[selectedDate.month].slice(0,3)} ${selectedDate.day}, ${selectedDate.year}`;
-    await privateSession.rescheduleSession(req.id, {
+    await privateSession.rescheduleRequest(req.id, {
       new_date: dateStr,
       new_time: selectedTime.display,
       duration: reschedDur,
