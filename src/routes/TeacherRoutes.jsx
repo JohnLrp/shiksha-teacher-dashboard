@@ -14,6 +14,7 @@ import SubmissionView from "../pages/SubmissionView";
 import Quizzes from "../pages/Quizzes";
 import CreateQuiz from "../pages/CreateQuiz";
 import QuizView from "../pages/QuizView";
+import QuizDraftPreview from "../pages/QuizDraftPreview";
 import QuizSubmissionView from "../pages/QuizSubmissionView";
 import QuizReviewView from "../pages/QuizReviewView";
 import StudyMaterials from "../pages/StudyMaterials";
@@ -23,6 +24,7 @@ import SessionRecordings from "../pages/SessionRecordings";
 import UploadRecording from "../pages/UploadRecording";
 import RecordingPlayer from "../pages/RecordingPlayer";
 import LiveSessions from "../pages/LiveSessions";
+import LiveSessionDetail from "../pages/LiveSessionDetail";
 import TeacherCreateLiveSession from "../pages/TeacherCreateLiveSession";
 import Profile from "../pages/Profile";
 import StudentsList from "../pages/StudentsList";
@@ -35,7 +37,8 @@ import PrivateSessionsDashboard from "../pages/PrivateSessionsDashboard";
 import PrivateRequestDetail from "../pages/PrivateRequestDetail";
 import PrivateSessionAvailability from "../pages/PrivateSessionAvailability";
 import PrivateSessionDetail from "../pages/PrivateSessionDetail";
-import ChangePassword from "../pages/ChangePassword"; // 
+import ChangePassword from "../pages/ChangePassword";
+import PrivateDetails from "../pages/PrivateDetails";
 
 function RedirectToMainLogin() {
   useEffect(() => {
@@ -69,12 +72,12 @@ export default function TeacherRoutes() {
         }
       >
         <Route path="profile" element={<Profile />} />
+        <Route path="private-details" element={<PrivateDetails />} />
         <Route path="dashboard" element={<TeacherDashboard />} />
         <Route path="students" element={<AllStudents />} />
         <Route path="students/:studentId" element={<AllStudentDetail />} />
         <Route path="classes" element={<ClassesList />} />
         <Route path="classes/:subjectId" element={<Classes />} />
-
         <Route path="change-password" element={<ChangePassword />} />
 
         {/* Assignments */}
@@ -86,6 +89,8 @@ export default function TeacherRoutes() {
         {/* Quizzes */}
         <Route path="classes/:subjectId/quizzes" element={<Quizzes />} />
         <Route path="classes/:subjectId/quizzes/create" element={<CreateQuiz />} />
+        {/* Draft preview — must be before :quizId so it isn't caught as a quizId value */}
+        <Route path="classes/:subjectId/quizzes/:quizId/draft" element={<QuizDraftPreview />} />
         <Route path="classes/:subjectId/quizzes/:quizId" element={<QuizView />} />
         <Route path="classes/:subjectId/quizzes/:quizId/submissions" element={<QuizSubmissionView />} />
         <Route path="classes/:subjectId/quizzes/:quizId/student/:studentId" element={<QuizStudentAttemptsView />} />
@@ -110,8 +115,10 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId/live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions/create" element={<TeacherCreateLiveSession />} />
         <Route path="live/:id" element={<TeacherLiveSession />} />
+        <Route path="live-sessions/:id/detail" element={<LiveSessionDetail />} />
+        <Route path="classes/:subjectId/live-sessions/:id/detail" element={<LiveSessionDetail />} />
 
-        {/* ═══ PRIVATE SESSIONS ═══ */}
+        {/* Private Sessions */}
         <Route path="private-sessions" element={<PrivateSessionsDashboard />} />
         <Route path="private-sessions/availability" element={<PrivateSessionAvailability />} />
         <Route path="private-sessions/scheduled/:id" element={<PrivateSessionDetail />} />

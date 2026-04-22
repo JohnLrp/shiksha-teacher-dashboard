@@ -34,13 +34,14 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
         const msg = JSON.parse(text);
 
         const identity = participant.identity;
+        const displayName = participant.name || identity;
 
         // ✅ FIX: lowercase to match RaiseHandButton
         if (msg.type === "raise-hand") {
           setRaisedHands((prev) => ({ ...prev, [identity]: true }));
 
           const toastId = Date.now() + Math.random();
-          setRaiseHandToasts((prev) => [...prev, { id: toastId, identity }]);
+          setRaiseHandToasts((prev) => [...prev, { id: toastId, identity, displayName }]);
           setTimeout(
             () =>
               setRaiseHandToasts((prev) =>
@@ -81,6 +82,27 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
     document.addEventListener("fullscreenchange", onFSChange);
     return () => document.removeEventListener("fullscreenchange", onFSChange);
   }, []);
+
+  /* =====================================
+     🔥 LOWER HAND (teacher forces lower)
+  ===================================== */
+  const handleLowerHand = async (identity) => {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify({ type: "lower-hand" }));
+      await room.localParticipant.publishData(data, {
+        reliable: true,
+        destinationIdentities: [identity],
+      });
+      setRaisedHands((prev) => {
+        const updated = { ...prev };
+        delete updated[identity];
+        return updated;
+      });
+    } catch (err) {
+      console.error("Lower hand error:", err);
+    }
+  };
 
   /* =====================================
      🔥 TRACKS
@@ -124,7 +146,8 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
         <div className="rh-toasts">
           {raiseHandToasts.map((t) => (
             <div key={t.id} className="rh-toast">
-              ✋ <strong>{t.identity}</strong> raised their hand
+              <span>✋ <strong>{t.displayName || t.identity}</strong> raised their hand</span>
+              <button onClick={() => handleLowerHand(t.identity)} style={{ marginLeft: 10, padding: "2px 8px", borderRadius: 6, background: "rgba(0,0,0,0.3)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 11 }}>Lower ✕</button>
             </div>
           ))}
         </div>
@@ -163,7 +186,7 @@ export default function ClassroomUI({ role, sessionId: sessionIdProp, onLeave })
       {/* SIDEBAR */}
       {sidebarOpen && (
         <div className="right-sidebar">
-          <ParticipantsPanel raisedHands={raisedHands} />
+          <ParticipantsPanel raisedHands={raisedHands} onLowerHand={handleLowerHand} />
           <ChatPanel role={role} messages={chatMessages} onSendMessage={sendMessage} />
         </div>
       )}

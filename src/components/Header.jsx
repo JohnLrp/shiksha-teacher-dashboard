@@ -19,6 +19,13 @@ export default function Header({ onMenuClick }) {
     if (storedAvatar) {
       setAvatar(storedAvatar);
     }
+
+    const handleAvatarUpdate = (e) => {
+      const next = e?.detail || localStorage.getItem("avatar");
+      if (next) setAvatar(next);
+    };
+    window.addEventListener("avatar-updated", handleAvatarUpdate);
+    return () => window.removeEventListener("avatar-updated", handleAvatarUpdate);
   }, []);
 
   const handleLogout = async () => {

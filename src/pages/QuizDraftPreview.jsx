@@ -1,0 +1,244 @@
+/**
+ * QuizDraftPreview.jsx
+ * 
+ * Teacher-only view of an UNPUBLISHED quiz.
+ * Route: /teacher/classes/:subjectId/quizzes/:quizId/draft
+ * 
+ * Uses the existing /quizzes/:pk/ endpoint (teacher role gets full data
+ * including correct answers). Shows everything the published QuizView shows,
+ * plus a prominent "Publish" CTA and a draft watermark.
+ */
+
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { IoChevronBack } from "react-icons/io5";
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { FiSearch } from "react-icons/fi";
+import api from "../api/apiClient";
+import "../styles/quiz-draft-preview.css";
+
+const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
+
+export default function QuizDraftPreview() {
+  const navigate = useNavigate();
+  const { subjectId, quizId } = useParams();
+
+  const [quiz, setQuiz] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState(null);
+
+  useEffect(() => {
+    async function fetchQuiz() {
+      try {
+        setFetchError(null);
+        // /quizzes/:pk/draft/ — teacher-only endpoint that works for
+        // both published and unpublished quizzes (no is_published filter)
+        const res = await api.get(`/quizzes/${quizId}/draft/`);
+        setQuiz(res.data);
+      } catch (err) {
+        console.error("Failed to load quiz draft", err);
+        const msg = err.response?.data?.detail
+          || (err.response?.status === 404 ? "Quiz not found. It may have been deleted." : null)
+          || (err.response?.status === 403 ? "You are not authorised to preview this quiz." : null)
+          || "Failed to load quiz. Please go back and try again.";
+        setFetchError(msg);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuiz();
+  }, [quizId]);
+
+  const handlePublish = async () => {
+    if (!window.confirm("Publish this quiz? Students will be able to attempt it immediately and questions cannot be edited after publishing.")) return;
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      await api.patch(`/teacher/quizzes/${quizId}/publish/`);
+      // Redirect to the proper published view
+      navigate(`/teacher/classes/${subjectId}/quizzes/${quizId}`, { replace: true });
+    } catch (err) {
+      setPublishError(err.response?.data?.detail || "Failed to publish quiz.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  if (loading) return <div className="qdp-loading">Loading preview…</div>;
+  if (fetchError) return (
+    <div className="qdp-page">
+      <button className="qdp-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/quizzes`)}>
+        <IoChevronBack /> Back to Quizzes
+      </button>
+      <div className="qdp-fetch-error">⚠️ {fetchError}</div>
+    </div>
+  );
+  if (!quiz) return null;
+
+  const questions = quiz.questions || [];
+  const filtered = questions.filter((q) =>
+    (q.text || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Find correct answer for a question (uses choices array from backend)
+  const getCorrectText = (q) => {
+    const correct = (q.choices || q.options || []).find((c) => c.is_correct);
+    return correct ? (correct.text || correct) : "";
+  };
+
+  const totalMarks = questions.reduce((sum, q) => sum + (q.marks || 1), 0);
+
+  return (
+    <div className="qdp-page">
+      {/* Banner */}
+      <div className="qdp-draft-banner">
+        <span className="qdp-draft-badge">DRAFT — Not visible to students</span>
+        <div className="qdp-banner-actions">
+          {publishError && <span className="qdp-publish-error">{publishError}</span>}
+          <button
+            className="qdp-publish-btn"
+            onClick={handlePublish}
+            disabled={publishing || questions.length === 0}
+            title={questions.length === 0 ? "Add questions before publishing" : ""}
+          >
+            {publishing ? "Publishing…" : "🚀 Publish Quiz"}
+          </button>
+        </div>
+      </div>
+
+      <button
+        className="qdp-back-btn"
+        onClick={() => navigate(`/teacher/classes/${subjectId}/quizzes`)}
+      >
+        <IoChevronBack /> Back to Quizzes
+      </button>
+
+      {/* Header */}
+      <div className="qdp-header">
+        <div>
+          <h2 className="qdp-title">{quiz.subject_name || "Subject"}</h2>
+          <p className="qdp-meta">
+            {quiz.teacher_name} &nbsp;·&nbsp;
+            Created: {quiz.created_at ? new Date(quiz.created_at).toLocaleDateString() : "—"}
+          </p>
+        </div>
+        <div className="qdp-search">
+          <input
+            type="text"
+            placeholder="Search questions…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <FiSearch className="qdp-search-icon" />
+        </div>
+      </div>
+
+      <div className="qdp-content-card">
+
+        {/* Quiz meta */}
+        <div className="qdp-quiz-meta-row">
+          <div className="qdp-meta-block">
+            <span className="qdp-meta-label">Quiz Title</span>
+            <span className="qdp-meta-value">{quiz.title}</span>
+          </div>
+          <div className="qdp-meta-block">
+            <span className="qdp-meta-label">Time Limit</span>
+            <span className="qdp-meta-value">
+              {quiz.time_limit_minutes ? `${quiz.time_limit_minutes} min` : "—"}
+            </span>
+          </div>
+          <div className="qdp-meta-block">
+            <span className="qdp-meta-label">Questions</span>
+            <span className="qdp-meta-value">{questions.length}</span>
+          </div>
+          <div className="qdp-meta-block">
+            <span className="qdp-meta-label">Total Marks</span>
+            <span className="qdp-meta-value">{totalMarks}</span>
+          </div>
+        </div>
+
+        {quiz.description && (
+          <p className="qdp-description">{quiz.description}</p>
+        )}
+
+        {/* Questions */}
+        {filtered.length === 0 && (
+          <p className="qdp-empty">
+            {questions.length === 0
+              ? "No questions added yet. Go back and add questions before publishing."
+              : "No questions match your search."}
+          </p>
+        )}
+
+        <div className="qdp-questions-list">
+          {filtered.map((q, qIndex) => {
+            const correctText = getCorrectText(q);
+            const choices = q.choices || q.options || [];
+
+            return (
+              <div className="qdp-question-block" key={q.id || qIndex}>
+                <div className="qdp-question-row">
+                  <div className="qdp-question-left">
+                    <span className="qdp-q-num">{qIndex + 1}.</span>
+                    <span className="qdp-q-text">{q.text || "Question text"}</span>
+                  </div>
+                  <span className="qdp-q-marks">{q.marks || 1} {(q.marks || 1) === 1 ? "mark" : "marks"}</span>
+                </div>
+
+                <div className="qdp-options-row">
+                  {choices.map((opt, optIndex) => {
+                    const optText = (opt.text || opt).trim();
+                    const isCorrect = opt.is_correct || optText.toLowerCase() === correctText.toLowerCase();
+                    return (
+                      <label
+                        className={`qdp-option ${isCorrect ? "qdp-option--correct" : ""}`}
+                        key={optIndex}
+                      >
+                        <span className="qdp-opt-letter">{OPTION_LABELS[optIndex]}</span>
+                        <input type="radio" disabled />
+                        <span className="qdp-opt-text">{optText}</span>
+                        {isCorrect && <IoCheckmarkCircle className="qdp-check-icon" />}
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div className="qdp-answer-pill">
+                  <IoCheckmarkCircle />
+                  <span>Correct answer: <strong>{correctText}</strong></span>
+                </div>
+
+                {q.explanation && (
+                  <div className="qdp-explanation">
+                    <strong>Explanation:</strong> {q.explanation}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom publish CTA */}
+        {questions.length > 0 && (
+          <div className="qdp-bottom-cta">
+            <p className="qdp-cta-note">
+              Everything looks good? Publishing makes this quiz live for students.
+              <br />
+              <strong>Questions cannot be edited after publishing.</strong>
+            </p>
+            <button
+              className="qdp-publish-btn-lg"
+              onClick={handlePublish}
+              disabled={publishing}
+            >
+              {publishing ? "Publishing…" : "🚀 Publish Quiz"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

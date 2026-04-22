@@ -24,6 +24,7 @@ import { useState, useEffect, useCallback } from "react";
 import "./privateClassroom.css";
 import ChatPanel from "./ChatPanel";
 import api from "../../api/apiClient";
+import { useAuth } from "../../contexts/AuthContext";
 import soundManager from "../../utils/soundManager";
 
 /* ═══════════════════════════════════════════════════════════
@@ -234,6 +235,8 @@ function RemoveModal({ participant, onClose, onConfirm }) {
 
 export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   const room = useRoomContext();
+  const { user } = useAuth();
+  const myUserId = user?.id ? String(user.id) : null;
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
   const timer = useTimer();
@@ -270,10 +273,9 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
   // ── Load persisted chat messages on mount ──
   useEffect(() => {
     if (!session?.id) return;
-    const myName = localParticipant?.name || "";
     api.get(`/sessions/${session.id}/chat/`).then((res) => {
       const msgs = (res.data || []).map((m) => {
-        const isMe = myName && m.sender_name === myName;
+        const isMe = myUserId && String(m.sender_id) === myUserId;
         return {
           id: m.id,
           sender: m.sender_name,
@@ -285,40 +287,57 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
       });
       setChatMessages(msgs);
     }).catch(() => {});
-  }, [session?.id, localParticipant?.name]);
+  }, [session?.id, myUserId]);
 
-  // ── WebSocket for real-time chat updates ──
+  // ── WebSocket for real-time chat — with token auth + auto-reconnect ──
   useEffect(() => {
     if (!session?.id) return;
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${import.meta.env.VITE_WS_HOST || "api.shikshacom.com"}/ws/private-session/${session.id}/chat/`;
-    const myName = localParticipant?.name || "";
-    let ws;
-    try {
-      ws = new WebSocket(wsUrl);
-      ws.onmessage = (event) => {
-        try {
-          const { data } = JSON.parse(event.data);
-          if (data) {
-            setChatMessages((prev) => {
-              if (prev.some((m) => m.id === data.id)) return prev;
-              const isMe = myName && data.sender_name === myName;
-              if (!isMe) soundManager.messageReceive();
-              return [...prev, {
-                id: data.id,
-                sender: data.sender_name,
-                text: data.message,
-                isTeacher: data.sender_role === "teacher",
-                isMe,
-                time: new Date(data.created_at),
-              }];
-            });
-          }
-        } catch {}
-      };
-    } catch {}
-    return () => { if (ws) ws.close(); };
-  }, [session?.id, localParticipant?.name]);
+    let ws = null;
+    let reconnectTimer = null;
+    let unmounted = false;
+
+    const connect = () => {
+      if (unmounted) return;
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsHost = import.meta.env.VITE_WS_HOST || window.location.host;
+      const token = localStorage.getItem("access") || sessionStorage.getItem("access") || "";
+      const wsUrl = `${protocol}//${wsHost}/ws/private-session/${session.id}/chat/${token ? `?token=${token}` : ""}`;
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+          try {
+            const { data } = JSON.parse(event.data);
+            if (data) {
+              setChatMessages((prev) => {
+                if (prev.some((m) => m.id === data.id)) return prev;
+                const isMe = myUserId && String(data.sender_id) === myUserId;
+                if (!isMe) soundManager.messageReceive();
+                return [...prev, {
+                  id: data.id,
+                  sender: data.sender_name,
+                  text: data.message,
+                  isTeacher: data.sender_role === "teacher",
+                  isMe,
+                  time: new Date(data.created_at),
+                }];
+              });
+            }
+          } catch {}
+        };
+        ws.onclose = () => {
+          if (!unmounted) reconnectTimer = setTimeout(connect, 3000);
+        };
+        ws.onerror = () => ws.close();
+      } catch {}
+    };
+
+    connect();
+    return () => {
+      unmounted = true;
+      clearTimeout(reconnectTimer);
+      if (ws) ws.close();
+    };
+  }, [session?.id, myUserId]);
 
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },

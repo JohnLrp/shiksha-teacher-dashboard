@@ -1,40 +1,42 @@
+// ============================================================
+// TEACHER — src/pages/TeacherDashboard.jsx  (FULL REPLACEMENT)
+// ============================================================
+
 import { useState, useEffect, useMemo } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 
-import LiveSessionCard from "../components/LiveSessionCard";
-import CalendarWidget from "../components/CalendarWidget";
-import AssignmentItem from "../components/AssignmentItem";
-import ActivityItem from "../components/ActivityItem";
+import LiveSessionCard  from "../components/LiveSessionCard";
+import CalendarWidget   from "../components/CalendarWidget";
+import AssignmentItem   from "../components/AssignmentItem";
+import ActivityItem     from "../components/ActivityItem";
 
 import api from "../api/apiClient";
-
-const NOTIFICATION_COLORS = {
-  ASSIGNMENT: "green",
-  SESSION: "yellow",
-  QUIZ: "purple",
-  SUBMISSION: "blue",
-  assignment: "green",
-  "live-session": "yellow",
-  "private-session": "orange",
-  quiz: "purple",
-  submission: "blue",
-};
+import useNotificationSocket from "../hooks/useNotificationSocket";
 
 const NOTIFICATION_LABELS = {
   ASSIGNMENT: "Assignment",
-  SESSION: "Live Session",
-  QUIZ: "Quiz",
+  SESSION:    "Live Session",
+  QUIZ:       "Quiz",
   SUBMISSION: "Submission",
+};
+
+const NOTIFICATION_COLORS = {
+  ASSIGNMENT: "green",
+  SESSION:    "yellow",
+  QUIZ:       "purple",
+  SUBMISSION: "blue",
 };
 
 const DATE_FORMAT = { day: "2-digit", month: "short", year: "numeric" };
 
 function formatDate(dateStr) {
+  if (!dateStr) return "";
   return new Date(dateStr).toLocaleDateString("en-GB", DATE_FORMAT);
 }
 
 function toDateKey(dateStr) {
+  if (!dateStr) return null;
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -49,33 +51,34 @@ function isSameDay(a, b) {
 
 export default function TeacherDashboard() {
   const outletContext = useOutletContext();
-  const active = outletContext?.active || "sessions";
-  const navigate = useNavigate();
+  const active        = outletContext?.active || "sessions";
+  const navigate      = useNavigate();
 
-  const [data, setData] = useState(null);
+  const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const [assignFilter, setAssignFilter] = useState(null);
-  const [activityFilter, setActivityFilter] = useState("all");
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [scheduleTypeFilter, setScheduleTypeFilter] = useState("all");
-
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  const [assignFilter, setAssignFilter]           = useState(null);
+  const [activityFilter, setActivityFilter]       = useState("all");
+  const [selectedDate, setSelectedDate]           = useState(null);
+  const [scheduleTypeFilter, setScheduleTypeFilter] = useState("all");
 
-  const fetchDashboard = async () => {
-    try {
-      const res = await api.get("/dashboard/");
-      setData(res.data);
-    } catch (err) {
-      console.error("Dashboard error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Notification hook — live WS notifications + markOneRead
+  const { notifications: liveNotifications, markOneRead } = useNotificationSocket();
+
+  useEffect(() => {
+    const fetch_ = async () => {
+      try {
+        const res = await api.get("/dashboard/");
+        setData(res.data);
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch_();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -83,74 +86,87 @@ export default function TeacherDashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sessions = data?.sessions ?? [];
-  const allSessions = data?.all_sessions ?? sessions;
-  const assignments = data?.assignments ?? [];
-  const quizzes = data?.quizzes ?? [];
+  const sessions        = data?.sessions         ?? [];
+  const allSessions     = data?.all_sessions     ?? sessions;
+  const assignments     = data?.assignments      ?? [];
+  const quizzes         = data?.quizzes          ?? [];
   const privateSessions = data?.private_sessions ?? [];
-  const notifications = data?.notifications ?? [];
+  const apiNotifications = data?.notifications ?? [];
 
-  // --- Calendar events map ---
+  // Merge live WS notifications with REST API ones, deduped by id.
+  // Live ones come first so new private session events appear instantly.
+  const notifications = (() => {
+    const seen = new Set();
+    const merged = [];
+    for (const n of [...liveNotifications, ...apiNotifications]) {
+      const key = n.id || JSON.stringify(n);
+      if (!seen.has(key)) { seen.add(key); merged.push(n); }
+    }
+    return merged;
+  })();
+
+  // Calendar events — FIX: live sessions now included
   const calendarEvents = useMemo(() => {
     const map = {};
     const now = new Date();
-    const addEvent = (dateStr, type) => {
-      if (!dateStr) return;
+    const add = (dateStr, type) => {
       const key = toDateKey(dateStr);
+      if (!key) return;
       if (!map[key]) map[key] = [];
       if (!map[key].includes(type)) map[key].push(type);
     };
     assignments.forEach((a) =>
-      addEvent(a.due, new Date(a.due) < now ? "assignment-overdue" : "assignment")
+      add(a.due, new Date(a.due) < now ? "assignment-overdue" : "assignment")
     );
     quizzes.forEach((q) =>
-      addEvent(q.due, new Date(q.due) < now ? "quiz-overdue" : "quiz")
+      add(q.due, new Date(q.due) < now ? "quiz-overdue" : "quiz")
     );
-    privateSessions.forEach((ps) => addEvent(ps.date, "private-session"));
+    privateSessions.forEach((ps) => add(ps.date, "private-session"));
+    allSessions.forEach((s)     => add(s.dateTime, "live-session")); // FIX
     return map;
-  }, [assignments, quizzes, privateSessions]);
+  }, [assignments, quizzes, privateSessions, allSessions]);
 
-  // --- Combined schedule items ---
+  // Unified schedule
   const scheduleItems = useMemo(() => {
     const items = [];
     allSessions.forEach((s) =>
       items.push({
-        id: `session-${s.id}`,
-        type: "live-session",
-        title: `${s.subject} - ${s.topic}`,
-        date: s.dateTime,
+        id:         `session-${s.id}`,
+        type:       "live-session",
+        title:      `${s.subject} - ${s.topic}`,
+        date:       s.dateTime,
         labelColor: "yellow",
-        link: `/teacher/live/${s.id}`,
+        link:       `/teacher/live/${s.id}`,
       })
     );
     assignments.forEach((a) =>
       items.push({
-        id: `assignment-${a.id}`,
-        type: "assignment",
-        title: a.title,
-        date: a.due,
+        id:         `assignment-${a.id}`,
+        type:       "assignment",
+        title:      a.title,
+        date:       a.due,
         labelColor: new Date(a.due) < new Date() ? "red" : "green",
-        link: a.subject_id ? `/teacher/classes/${a.subject_id}/assignments/${a.id}` : null,
+        link:       a.subject_id ? `/teacher/classes/${a.subject_id}/assignments` : null,
       })
     );
     quizzes.forEach((q) =>
       items.push({
-        id: `quiz-${q.id}`,
-        type: "quiz",
-        title: q.title,
-        date: q.due,
+        id:         `quiz-${q.id}`,
+        type:       "quiz",
+        title:      q.title,
+        date:       q.due,
         labelColor: new Date(q.due) < new Date() ? "red" : "purple",
-        link: q.subject_id ? `/teacher/classes/${q.subject_id}/quizzes/${q.id}` : null,
+        link:       q.subject_id ? `/teacher/classes/${q.subject_id}/quizzes` : null,
       })
     );
     privateSessions.forEach((ps) =>
       items.push({
-        id: `private-${ps.id}`,
-        type: "private-session",
-        title: `${ps.subject} (${ps.student})`,
-        date: ps.date,
+        id:         `private-${ps.id}`,
+        type:       "private-session",
+        title:      `${ps.subject} (${ps.student})`,
+        date:       ps.date,
         labelColor: "orange",
-        link: `/teacher/private-sessions/scheduled/${ps.id}`,
+        link:       `/teacher/private-sessions/scheduled/${ps.id}`,
       })
     );
     items.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -159,16 +175,8 @@ export default function TeacherDashboard() {
 
   if (loading) return <div className="dashboard">Loading...</div>;
 
-  const isAllEmpty =
-    sessions.length === 0 &&
-    assignments.length === 0 &&
-    quizzes.length === 0 &&
-    privateSessions.length === 0 &&
-    notifications.length === 0;
-
-  const toggleFilter = (current, value, setter) => {
+  const toggleFilter = (current, value, setter) =>
     setter(current === value ? null : value);
-  };
 
   const filteredAssignments = assignFilter
     ? assignments.filter((a) =>
@@ -189,34 +197,11 @@ export default function TeacherDashboard() {
   });
 
   const handleDateSelect = (date) => {
-    if (selectedDate && isSameDay(selectedDate, date)) {
-      setSelectedDate(null);
-    } else {
-      setSelectedDate(date);
-    }
+    if (selectedDate && isSameDay(selectedDate, date)) setSelectedDate(null);
+    else setSelectedDate(date);
   };
 
-  const getNotificationLink = (item) => {
-    if (item.type === "ASSIGNMENT" && item.subject_id)
-      return `/teacher/classes/${item.subject_id}/assignments`;
-    if (item.type === "SESSION" && item.subject_id)
-      return `/teacher/classes/${item.subject_id}/live-sessions`;
-    if (item.type === "QUIZ" && item.subject_id)
-      return `/teacher/classes/${item.subject_id}/quizzes`;
-    if (item.type === "SUBMISSION" && item.subject_id)
-      return `/teacher/classes/${item.subject_id}/assignments`;
-    return null;
-  };
-
-  if (isAllEmpty) {
-    return (
-      <div className="dashboard">
-        <div className="dash-empty">No data available yet.</div>
-      </div>
-    );
-  }
-
-  // ---------------- MOBILE ----------------
+  // ── MOBILE ────────────────────────────────────────────────
   if (isMobile) {
     return (
       <div className="dashboard">
@@ -243,14 +228,22 @@ export default function TeacherDashboard() {
             <h4>Assignments</h4>
             {filteredAssignments.length === 0 && <p>No assignments</p>}
             {filteredAssignments.map((a) => (
-              <AssignmentItem
-                key={a.id}
-                id={a.id}
-                title={a.title}
-                subject={a.subject_name || a.teacher}
-                dueDate={formatDate(a.due)}
-                subjectId={a.subject_id}
-              />
+              <AssignmentItem key={a.id} id={a.id} title={a.title}
+                subject={a.subject_name} dueDate={formatDate(a.due)}
+                subjectId={a.subject_id} />
+            ))}
+          </div>
+        )}
+
+        {/* FIX: quizzes case was missing — tab showed blank */}
+        {active === "quizzes" && (
+          <div className="dash-card">
+            <h4>Quizzes</h4>
+            {quizzes.length === 0 && <p>No quizzes</p>}
+            {quizzes.map((q) => (
+              <AssignmentItem key={q.id} id={q.id} title={q.title}
+                subject={q.subject_name} dueDate={formatDate(q.due)}
+                subjectId={q.subject_id} />
             ))}
           </div>
         )}
@@ -262,14 +255,8 @@ export default function TeacherDashboard() {
             {filteredActivities.map((item) => (
               <ActivityItem
                 key={item.id}
-                date={formatDate(item.created_at)}
-                label={NOTIFICATION_LABELS[item.type] || item.type}
-                labelColor={NOTIFICATION_COLORS[item.type] || "green"}
-                lines={[item.title, item.subject_name].filter(Boolean)}
-                onClick={() => {
-                  const link = getNotificationLink(item);
-                  if (link) navigate(link);
-                }}
+                notification={item}
+                onRead={markOneRead}
               />
             ))}
           </div>
@@ -286,19 +273,18 @@ export default function TeacherDashboard() {
     );
   }
 
-  // ---------------- DESKTOP ----------------
+  // ── DESKTOP ───────────────────────────────────────────────
   return (
     <div className="dashboard">
-      {/* Row 1: Upcoming Live Sessions */}
+
+      {/* Row 1: Live Sessions */}
       <div className="dash-live-section">
         <div className="dash-live-header">
           <h3 className="dash-section-title">Upcoming Live Sessions</h3>
-          <div className="dash-remaining">
-            {sessions.length} Classes (Remaining classes)
-          </div>
+          <div className="dash-remaining">{sessions.length} Remaining</div>
         </div>
         <div className="dash-live-row">
-          {sessions.length === 0 && <p>No sessions</p>}
+          {sessions.length === 0 && <p>No sessions today</p>}
           {sessions.map((s) => (
             <LiveSessionCard
               key={s.id}
@@ -314,58 +300,61 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Row 1 Col 3: Calendar */}
+      {/* Calendar */}
       <CalendarWidget
         events={calendarEvents}
         selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
       />
 
-      {/* Row 2 Col 1: Assignments */}
+      {/* Assignments */}
       <div className="dash-card">
         <div className="dash-card-header">
           <h4>Assignments</h4>
           <div className="dash-pills">
-            <button
-              type="button"
+            <button type="button"
               className={`dash-pill pill-due ${assignFilter === "due" ? "pill-active" : ""}`}
-              onClick={() => toggleFilter(assignFilter, "due", setAssignFilter)}
-            >
+              onClick={() => toggleFilter(assignFilter, "due", setAssignFilter)}>
               Due
             </button>
-            <button
-              type="button"
+            <button type="button"
               className={`dash-pill pill-overdue ${assignFilter === "overdue" ? "pill-active" : ""}`}
-              onClick={() => toggleFilter(assignFilter, "overdue", setAssignFilter)}
-            >
-              Over Due
+              onClick={() => toggleFilter(assignFilter, "overdue", setAssignFilter)}>
+              Overdue
             </button>
           </div>
         </div>
         <div className="dash-card-body">
           {filteredAssignments.length === 0 && <p>No assignments</p>}
           {filteredAssignments.map((a) => (
-            <AssignmentItem
-              key={a.id}
-              id={a.id}
-              title={a.title}
-              subject={a.subject_name || a.teacher}
-              dueDate={formatDate(a.due)}
-              subjectId={a.subject_id}
-            />
+            <AssignmentItem key={a.id} id={a.id} title={a.title}
+              subject={a.subject_name} dueDate={formatDate(a.due)}
+              subjectId={a.subject_id} />
           ))}
         </div>
       </div>
 
-      {/* Row 2 Col 2: Notifications */}
+      {/* FIX: Quizzes card — was missing on desktop */}
       <div className="dash-card">
         <div className="dash-card-header">
-          <h4>Notification</h4>
-          <select
-            className="dash-filter"
-            value={activityFilter}
-            onChange={(e) => setActivityFilter(e.target.value)}
-          >
+          <h4>Quizzes</h4>
+        </div>
+        <div className="dash-card-body">
+          {quizzes.length === 0 && <p>No quizzes</p>}
+          {quizzes.map((q) => (
+            <AssignmentItem key={q.id} id={q.id} title={q.title}
+              subject={q.subject_name} dueDate={formatDate(q.due)}
+              subjectId={q.subject_id} />
+          ))}
+        </div>
+      </div>
+
+      {/* Notifications — FIX: uses notification prop for expand support */}
+      <div className="dash-card">
+        <div className="dash-card-header">
+          <h4>Notifications</h4>
+          <select className="dash-filter" value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value)}>
             <option value="all">All</option>
             <option value="ASSIGNMENT">Assignment</option>
             <option value="SESSION">Live Session</option>
@@ -378,20 +367,14 @@ export default function TeacherDashboard() {
           {filteredActivities.map((item) => (
             <ActivityItem
               key={item.id}
-              date={formatDate(item.created_at)}
-              label={NOTIFICATION_LABELS[item.type] || item.type}
-              labelColor={NOTIFICATION_COLORS[item.type] || "green"}
-              lines={[item.title, item.subject_name].filter(Boolean)}
-              onClick={() => {
-                const link = getNotificationLink(item);
-                if (link) navigate(link);
-              }}
+              notification={item}
+              onRead={markOneRead}
             />
           ))}
         </div>
       </div>
 
-      {/* Row 2 Col 3: Schedule */}
+      {/* Schedule */}
       <div className="dash-card">
         <div className="dash-card-header">
           <h4>
@@ -402,11 +385,8 @@ export default function TeacherDashboard() {
               </span>
             )}
           </h4>
-          <select
-            className="dash-filter"
-            value={scheduleTypeFilter}
-            onChange={(e) => setScheduleTypeFilter(e.target.value)}
-          >
+          <select className="dash-filter" value={scheduleTypeFilter}
+            onChange={(e) => setScheduleTypeFilter(e.target.value)}>
             <option value="all">All</option>
             <option value="assignment">Assignment</option>
             <option value="live-session">Live Session</option>
@@ -423,13 +403,12 @@ export default function TeacherDashboard() {
               label={item.type}
               labelColor={item.labelColor}
               lines={[item.title]}
-              onClick={() => {
-                if (item.link) navigate(item.link);
-              }}
+              onClick={() => { if (item.link) navigate(item.link); }}
             />
           ))}
         </div>
       </div>
+
     </div>
   );
 }
