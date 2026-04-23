@@ -39,6 +39,8 @@ import PrivateSessionAvailability from "../pages/PrivateSessionAvailability";
 import PrivateSessionDetail from "../pages/PrivateSessionDetail";
 import ChangePassword from "../pages/ChangePassword";
 import PrivateDetails from "../pages/PrivateDetails";
+import StudyGroups from "../pages/StudyGroups";
+import StudyGroupLive from "../pages/StudyGroupLive";
 
 function RedirectToMainLogin() {
   useEffect(() => {
@@ -59,6 +61,16 @@ export default function TeacherRoutes() {
         element={
           <ProtectedTeacherRoute>
             <PrivateSessionLive />
+          </ProtectedTeacherRoute>
+        }
+      />
+
+      {/* Study Group Live — fullscreen, outside TeacherLayout */}
+      <Route
+        path="/teacher/study-group/live/:id"
+        element={
+          <ProtectedTeacherRoute>
+            <StudyGroupLive />
           </ProtectedTeacherRoute>
         }
       />
@@ -124,6 +136,9 @@ export default function TeacherRoutes() {
         <Route path="private-sessions/scheduled/:id" element={<PrivateSessionDetail />} />
         <Route path="private-sessions/request/:id" element={<PrivateSessionDetail />} />
         <Route path="private-sessions/history/:id" element={<PrivateSessionDetail />} />
+
+        {/* Study Groups (teacher is an invited participant) */}
+        <Route path="study-groups" element={<StudyGroups />} />
       </Route>
     </Routes>
   );

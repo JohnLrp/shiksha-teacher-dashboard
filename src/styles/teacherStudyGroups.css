@@ -1,0 +1,339 @@
+/* ============================================================
+   TEACHER STUDY GROUPS  (tsg__ prefix)
+   Matches the teacher dashboard's blue accent while clearly
+   distinguishing from private session dashboards.
+   ============================================================ */
+
+.tsg__page {
+  padding: 20px 28px 40px;
+}
+
+.tsg__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.tsg__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.tsg__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.tsg__tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+.tsg__tab:hover { background: #f1f5f9; }
+.tsg__tab.active {
+  background: #3b5c7c;
+  color: #fff;
+}
+
+.tsg__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.tsg__card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #3b5c7c;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.tsg__card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+.tsg__card--completed { border-left-color: #16a34a; opacity: 0.85; }
+.tsg__card--cancelled { border-left-color: #ef4444; opacity: 0.85; }
+.tsg__card--expired   { border-left-color: #94a3b8; opacity: 0.85; }
+.tsg__card--live      { border-left-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,0.18); }
+
+.tsg__cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.tsg__cardSubject { font-weight: 700; color: #0f172a; font-size: 16px; }
+.tsg__cardCourse  { color: #64748b; font-size: 12px; margin-bottom: 6px; }
+.tsg__cardTopic   { font-style: italic; color: #475569; font-size: 14px; margin-bottom: 10px; }
+
+.tsg__cardMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.tsg__metaChip {
+  background: #eff6ff;
+  color: #1e40af;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tsg__cardCounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+}
+.tsg__countChip {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tsg__countChip--accepted { background: #dcfce7; color: #166534; }
+.tsg__countChip--pending  { background: #fef3c7; color: #92400e; }
+
+.tsg__statusPill {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.tsg__statusPill--scheduled { background: #e0e7ff; color: #3730a3; }
+.tsg__statusPill--live      { background: #fee2e2; color: #991b1b; }
+.tsg__statusPill--completed { background: #dcfce7; color: #166534; }
+.tsg__statusPill--cancelled { background: #fee2e2; color: #991b1b; }
+.tsg__statusPill--expired   { background: #e5e7eb; color: #475569; }
+
+.tsg__loading, .tsg__empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed #e2e8f0;
+}
+
+.tsg__btnPrimary {
+  padding: 10px 20px;
+  background: #3b5c7c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnPrimary:hover:not(:disabled) { background: #2c4a66; }
+.tsg__btnPrimary:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+.tsg__btnGhost {
+  padding: 10px 20px;
+  background: transparent;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnGhost:hover { background: #f8fafc; }
+
+/* Detail */
+.tsg__detail {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+.tsg__detailBack { margin-bottom: 10px; }
+.tsg__backBtn {
+  border: none;
+  background: transparent;
+  color: #3b5c7c;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.tsg__backBtn:hover { text-decoration: underline; }
+
+.tsg__statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 16px;
+  background: #3b5c7c;
+}
+.tsg__statusBar--live      { background: #dc2626; }
+.tsg__statusBar--completed { background: #16a34a; }
+.tsg__statusBar--cancelled { background: #94a3b8; }
+.tsg__statusBar--expired   { background: #64748b; }
+
+.tsg__joinBtn {
+  background: #fff;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tsg__joinBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.tsg__detailBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 760px) {
+  .tsg__detailBody { grid-template-columns: 1fr; }
+}
+
+.tsg__detailRow {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+.tsg__detailKey {
+  color: #64748b;
+  font-weight: 500;
+  min-width: 120px;
+}
+.tsg__detailVal {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.tsg__sectionHead {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.tsg__participantList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tsg__participant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border-left: 3px solid transparent;
+}
+.tsg__participant--host     { border-left-color: #3b5c7c; background: #eff6ff; }
+.tsg__participant--accepted { border-left-color: #16a34a; background: #f0fdf4; }
+.tsg__participant--pending  { border-left-color: #f59e0b; background: #fffbeb; }
+.tsg__participant--declined { border-left-color: #ef4444; background: #fef2f2; opacity: 0.85; }
+
+.tsg__pAv {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3b5c7c;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.tsg__pInfo { display: flex; flex-direction: column; }
+.tsg__pName { font-weight: 600; color: #0f172a; }
+.tsg__pRole { font-size: 11px; color: #64748b; }
+
+.tsg__inviteeBar {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.tsg__inviteeNote {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+  color: #991b1b;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.tsg__errorBox {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+/* Live room banner */
+.tsgLive__banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(59, 92, 124, 0.95);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 600;
+  z-index: 100;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+}
+.tsgLive__bannerBadge {
+  background: #fff;
+  color: #3b5c7c;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+.tsgLive__bannerCountdown {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
