@@ -3,7 +3,7 @@ import { FiUsers, FiHome} from "react-icons/fi";
 import { MdDashboard } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { RiLockLine, RiLiveLine } from "react-icons/ri";
+import { RiLockLine, RiLiveLine, RiGroupLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import api from "../api/apiClient";
 import logo from "../assets/Shiksha.svg";
@@ -146,6 +146,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         >
           <RiLockLine />
           <span>Private Sessions</span>
+        </div>
+
+        <div
+          className="menu-item"
+          onClick={() => {
+            navigate("/teacher/study-groups");
+            setSidebarOpen(false);
+          }}
+        >
+          <RiGroupLine />
+          <span>Study Groups</span>
         </div>
             </nav>
       <div className="sidebar__bottom">
