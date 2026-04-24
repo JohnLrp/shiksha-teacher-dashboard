@@ -10,33 +10,38 @@ export default function ParticipantsPanel({ raisedHands = {}, onLowerHand }) {
   const [open, setOpen] = useState(true);
   const [mutedMap, setMutedMap] = useState({});
 
-  const updateMuteStatus = useCallback(() => {
-    const map = {};
-    for (const p of participants) {
-      let isMuted = true;
-      for (const pub of p.audioTrackPublications?.values?.() || []) {
-        if (pub.source === "microphone") {
-          isMuted = pub.isMuted ?? true;
+  // Initialize new participants as muted (don't reset existing)
+  useEffect(() => {
+    setMutedMap((prev) => {
+      const map = { ...prev };
+      for (const p of participants) {
+        if (!(p.identity in map)) {
+          map[p.identity] = true; // default muted
         }
       }
-      map[p.identity] = isMuted;
-    }
-    setMutedMap(map);
+      return map;
+    });
   }, [participants]);
 
+  // Sync track mute per participant when they self-mute/unmute
   useEffect(() => {
-    updateMuteStatus();
-    room.on(RoomEvent.TrackMuted, updateMuteStatus);
-    room.on(RoomEvent.TrackUnmuted, updateMuteStatus);
-    room.on(RoomEvent.TrackPublished, updateMuteStatus);
-    room.on(RoomEvent.TrackUnpublished, updateMuteStatus);
-    return () => {
-      room.off(RoomEvent.TrackMuted, updateMuteStatus);
-      room.off(RoomEvent.TrackUnmuted, updateMuteStatus);
-      room.off(RoomEvent.TrackPublished, updateMuteStatus);
-      room.off(RoomEvent.TrackUnpublished, updateMuteStatus);
+    const onMuted = (pub, participant) => {
+      if (pub.source === "microphone") {
+        setMutedMap((prev) => ({ ...prev, [participant.identity]: true }));
+      }
     };
-  }, [room, updateMuteStatus]);
+    const onUnmuted = (pub, participant) => {
+      if (pub.source === "microphone") {
+        setMutedMap((prev) => ({ ...prev, [participant.identity]: false }));
+      }
+    };
+    room.on(RoomEvent.TrackMuted, onMuted);
+    room.on(RoomEvent.TrackUnmuted, onUnmuted);
+    return () => {
+      room.off(RoomEvent.TrackMuted, onMuted);
+      room.off(RoomEvent.TrackUnmuted, onUnmuted);
+    };
+  }, [room]);
 
   const handleToggleMute = async (participant) => {
     try {
@@ -48,6 +53,8 @@ export default function ParticipantsPanel({ raisedHands = {}, onLowerHand }) {
         reliable: true,
         destinationIdentities: [participant.identity],
       });
+      const newMap = Object.assign({}, mutedMap, { [participant.identity]: !isMuted });
+      setMutedMap(newMap);
     } catch (err) {
       console.error("Failed to toggle mute:", err);
     }
