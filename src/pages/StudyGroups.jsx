@@ -6,9 +6,10 @@
  * study group and can accept / decline / join.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import studyGroupService from "../api/studyGroupService";
+import studyGroupService, { extractApiError } from "../api/studyGroupService";
+import ConfirmDialog from "../components/ConfirmDialog";
 import "../styles/teacherStudyGroups.css";
 
 function formatDate(d) {
@@ -77,6 +78,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [data, setData] = useState(group);
+  const [dlg, setDlg] = useState(null);
 
   useEffect(() => { setData(group); }, [group]);
 
@@ -87,6 +89,20 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const accepted = data.invites.filter((i) => i.status === "accepted");
   const pending = data.invites.filter((i) => i.status === "pending");
   const declined = data.invites.filter((i) => i.status === "declined");
+
+  // Response-window: can the teacher still Accept/Decline? Must be BEFORE
+  // scheduled start time (mirrors backend gating in study_group_views.py).
+  const scheduledAt = useMemo(() => {
+    if (!data.date || !data.time) return null;
+    // Assume the server-provided ISO-ish date + "HH:MM" time is in the
+    // user's local browser tz — same approach used across the app.
+    const iso = `${data.date}T${data.time}`;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
+  }, [data.date, data.time]);
+
+  const isPast = scheduledAt ? scheduledAt.getTime() <= Date.now() : false;
+  const roomOpened = Boolean(data.roomStartedAt);
 
   const canJoin =
     myStatus === "accepted" &&
@@ -99,7 +115,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
       const fresh = await studyGroupService.acceptInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
-      setErr(e?.response?.data?.error || "Failed to accept invite.");
+      setErr(extractApiError(e, "Failed to accept invite."));
     } finally { setBusy(false); }
   };
 
@@ -109,8 +125,51 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
       const fresh = await studyGroupService.declineInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
-      setErr(e?.response?.data?.error || "Failed to decline invite.");
+      setErr(extractApiError(e, "Failed to decline invite."));
     } finally { setBusy(false); }
+  };
+
+  // Teacher flips their 'accepted' response back to 'pending'. Allowed any
+  // time before the LiveKit room actually opens.
+  const doUnaccept = async () => {
+    setBusy(true); setErr("");
+    try {
+      const fresh = await studyGroupService.unacceptInvite(data.id);
+      setData(fresh); onChanged?.();
+      setDlg(null);
+    } catch (e) {
+      setErr(extractApiError(e, "Could not cancel your attendance."));
+    } finally { setBusy(false); }
+  };
+
+  const confirmUnaccept = () => {
+    setDlg({
+      title: "Cancel your attendance?",
+      message:
+        "The host and other invitees will see you're no longer coming. " +
+        "You can re-accept any time before the room opens.",
+      confirmLabel: "Yes, cancel attendance",
+      cancelLabel: "Keep attending",
+      danger: true,
+      busy: false,
+      onConfirm: doUnaccept,
+    });
+  };
+
+  const confirmDecline = () => {
+    setDlg({
+      title: "Decline this invite?",
+      message:
+        "You won't be able to join this study group unless the host sends a new invite.",
+      confirmLabel: "Decline invite",
+      cancelLabel: "Keep it",
+      danger: true,
+      busy: false,
+      onConfirm: async () => {
+        await doDecline();
+        setDlg(null);
+      },
+    });
   };
 
   const enterRoom = async () => {
@@ -119,7 +178,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
       await studyGroupService.joinRoom(data.id);
       navigate(`/teacher/study-group/live/${data.id}`);
     } catch (e) {
-      setErr(e?.response?.data?.error || "Unable to join right now.");
+      setErr(extractApiError(e, "Unable to join right now."));
       setBusy(false);
     }
   };
@@ -138,6 +197,27 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
           </button>
         )}
       </div>
+
+      {data.status === "cancelled" && (
+        <div className="tsg__cancelBanner">
+          <strong>This study group was cancelled by the host.</strong>
+          {data.cancelReason && (
+            <span className="tsg__cancelBannerReason">
+              Reason: {data.cancelReason}
+            </span>
+          )}
+        </div>
+      )}
+
+      {data.status === "expired" && !roomOpened && (
+        <div className="tsg__cancelBanner tsg__cancelBanner--muted">
+          <strong>Not attended.</strong>
+          <span className="tsg__cancelBannerReason">
+            The room was never opened, so this study group has been moved to
+            History.
+          </span>
+        </div>
+      )}
 
       {err && <div className="tsg__errorBox">{err}</div>}
 
@@ -211,17 +291,51 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
         </div>
       </div>
 
-      {myStatus === "pending" && data.status === "scheduled" && (
+      {myStatus === "pending" && data.status === "scheduled" && !isPast && (
         <div className="tsg__inviteeBar">
-          <button className="tsg__btnPrimary" disabled={busy} onClick={doAccept}>Accept Invite</button>
-          <button className="tsg__btnGhost" disabled={busy} onClick={doDecline}>Decline</button>
+          <button className="tsg__btnPrimary" disabled={busy} onClick={doAccept}>
+            Accept Invite
+          </button>
+          <button className="tsg__btnGhost" disabled={busy} onClick={confirmDecline}>
+            Decline
+          </button>
         </div>
       )}
+
+      {myStatus === "pending" && data.status === "scheduled" && isPast && (
+        <div className="tsg__inviteeNote tsg__inviteeNote--past">
+          The scheduled start time has passed, so you can no longer respond to
+          this invite. It will move to History automatically.
+        </div>
+      )}
+
+      {myStatus === "accepted" &&
+        data.status === "scheduled" &&
+        !roomOpened && (
+          <div className="tsg__inviteeBar">
+            <span className="tsg__inviteeNote tsg__inviteeNote--inline">
+              You're in. We'll notify you when the host opens the room.
+            </span>
+            <button
+              className="tsg__btnGhost"
+              disabled={busy}
+              onClick={confirmUnaccept}
+            >
+              Cancel attendance
+            </button>
+          </div>
+      )}
+
       {myStatus === "declined" && (
         <div className="tsg__inviteeNote">
           You declined this study group invite.
         </div>
       )}
+
+      <ConfirmDialog
+        dialog={dlg ? { ...dlg, busy } : null}
+        onClose={() => (busy ? null : setDlg(null))}
+      />
     </div>
   );
 }

@@ -37,6 +37,13 @@ const studyGroupService = {
     return transformStudyGroup(res.data);
   },
 
+  // Teacher (or student) who previously accepted flips back to pending.
+  // Allowed any time before the room actually opens.
+  async unacceptInvite(sessionId) {
+    const res = await api.post(`/sessions/study-groups/${sessionId}/unaccept/`);
+    return transformStudyGroup(res.data);
+  },
+
   async joinRoom(sessionId) {
     const res = await api.post(`/sessions/study-groups/${sessionId}/join/`);
     return res.data;
@@ -81,11 +88,32 @@ function transformStudyGroup(sg) {
   };
 }
 
+// Extract the user-friendly message out of an axios error response.
+// Handles DRF field errors, {"error": "..."}, {"detail": "..."}, and
+// simple string responses.
+export function extractApiError(err, fallback = "Something went wrong.") {
+  const data = err?.response?.data;
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (data.error) return data.error;
+  if (data.detail) return data.detail;
+  if (typeof data === "object") {
+    const parts = [];
+    for (const [k, v] of Object.entries(data)) {
+      const text = Array.isArray(v) ? v.join(" ") : String(v);
+      parts.push(k === "non_field_errors" ? text : `${k}: ${text}`);
+    }
+    if (parts.length) return parts.join(" \u2022 ");
+  }
+  return fallback;
+}
+
 export const {
   getMyStudyGroups,
   getDetail,
   acceptInvite,
   declineInvite,
+  unacceptInvite,
   joinRoom,
 } = studyGroupService;
 
