@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import api from "../api/apiClient";
 import "../styles/upload-recording.css";
@@ -9,10 +9,13 @@ const STEPS = ["Details", "Video", "Upload"];
 export default function UploadRecording() {
   const navigate = useNavigate();
   const { subjectId } = useParams();
+  const location = useLocation();
+  const prefill = location.state || {};
 
   const [step, setStep] = useState(0);
-  const [topic, setTopic] = useState("");
-  const [sessionDate, setSessionDate] = useState("");
+  const [topic, setTopic] = useState(prefill.title || "");
+  const [sessionDate, setSessionDate] = useState(prefill.date || "");
+  const [liveSessionId] = useState(prefill.live_session_id || null);
   const [videoFile, setVideoFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -98,6 +101,7 @@ export default function UploadRecording() {
         title: topic,
         session_date: sessionDate,
         video_id: videoId,
+        ...(liveSessionId ? { live_session_id: liveSessionId } : {}),
       });
 
       setUploadDone(true);
