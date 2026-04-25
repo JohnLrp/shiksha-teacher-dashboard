@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FaRegFile, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";   // npm i uuid
+// No external dep — crypto.randomUUID() is built into all modern browsers
 import api from "../api/apiClient";
 import "../styles/create-assignment.css";
 
@@ -16,7 +16,7 @@ export default function CreateAssignment() {
 
   // One UUID per form session — survives re-renders, changes only on mount
   // so double-clicking Submit sends the same key and the backend deduplicates.
-  const idempotencyKey = useMemo(() => uuidv4(), []);
+  const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
 
   const [chapters, setChapters]     = useState([]);
   const [chapterId, setChapterId]   = useState(editData?.chapter_id || editData?.chapter?.id || "");
