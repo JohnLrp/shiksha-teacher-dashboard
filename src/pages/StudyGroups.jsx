@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import studyGroupService, { extractApiError } from "../api/studyGroupService";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/teacherStudyGroups.css";
 
 function formatDate(d) {
@@ -209,12 +210,13 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
         </div>
       )}
 
-      {data.status === "expired" && !roomOpened && (
+      {((data.status === "expired" && !roomOpened) ||
+        (data.status === "scheduled" && isPast && !roomOpened)) && (
         <div className="tsg__cancelBanner tsg__cancelBanner--muted">
           <strong>Not attended.</strong>
           <span className="tsg__cancelBannerReason">
-            The room was never opened, so this study group has been moved to
-            History.
+            The scheduled time has passed and nobody opened the room, so this
+            study group has been moved to History.
           </span>
         </div>
       )}
@@ -314,7 +316,8 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
         !roomOpened && (
           <div className="tsg__inviteeBar">
             <span className="tsg__inviteeNote tsg__inviteeNote--inline">
-              You're in. We'll notify you when the host opens the room.
+              You're in. The room is ready - anyone in the group can open it,
+              and the timer only starts once the first person joins.
             </span>
             <button
               className="tsg__btnGhost"
@@ -345,15 +348,13 @@ export default function StudyGroups() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
 
-  useEffect(() => {
-    import("../api/apiClient").then(({ default: api }) => {
-      api.get("/accounts/me/")
-        .then((res) => setCurrentUserId(res.data?.id || null))
-        .catch(() => setCurrentUserId(null));
-    });
-  }, []);
+  // Use the shared AuthContext so currentUserId is the same identity the
+  // backend used when issuing the invite. The previous ad-hoc /accounts/me/
+  // fetch could lose to the initial render and leave myInvite unmatched,
+  // hiding the Accept/Decline buttons on the teacher dashboard.
+  const { user } = useAuth();
+  const currentUserId = user?.id ? String(user.id) : null;
 
   const loadGroups = useCallback(async (target = tab) => {
     setLoading(true);
