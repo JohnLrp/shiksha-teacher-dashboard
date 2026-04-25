@@ -1,7 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { FiSearch } from "react-icons/fi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import api from "../api/apiClient";
 import "../styles/assignments.css";
 
@@ -21,6 +23,8 @@ export default function Assignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState(null);   // which row is mid-delete
+  const [confirmId, setConfirmId] = useState(null);     // which row has confirm open
 
   const backPath = `/teacher/classes/${subjectId}`;
 
@@ -43,6 +47,30 @@ export default function Assignments() {
       a.title.toLowerCase().includes(search.toLowerCase()) ||
       a.chapter_name?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // ── Delete ────────────────────────────────────────────────────────────
+  const handleDeleteConfirm = async (assignmentId) => {
+    setDeletingId(assignmentId);
+    try {
+      await api.delete(`/assignments/teacher/${assignmentId}/delete/`);
+      setAssignments((prev) => prev.filter((a) => a.id !== assignmentId));
+      toast.success("Assignment deleted.");
+    } catch (err) {
+      const msg = err?.response?.data?.detail || "Delete failed.";
+      toast.error(msg);
+    } finally {
+      setDeletingId(null);
+      setConfirmId(null);
+    }
+  };
+
+  // ── Edit — navigate to create page with assignment pre-filled ─────────
+  const handleEdit = (assignment) => {
+    navigate(
+      `/teacher/classes/${subjectId}/assignments/create`,
+      { state: assignment }
+    );
+  };
 
   if (loading) return <div className="assignments-loading">Loading assignments...</div>;
 
@@ -113,14 +141,60 @@ export default function Assignments() {
                 </span>
               </div>
 
-              <button
-                className="assignment-view-btn"
-                onClick={() =>
-                  navigate(`/teacher/classes/${subjectId}/assignments/${assignment.id}/submissions`)
-                }
-              >
-                View
-              </button>
+              {/* ── Action buttons ─────────────────────────────────── */}
+              <div className="assignment-row-actions">
+
+                <button
+                  className="assignment-view-btn"
+                  onClick={() =>
+                    navigate(`/teacher/classes/${subjectId}/assignments/${assignment.id}/submissions`)
+                  }
+                >
+                  View
+                </button>
+
+                <button
+                  className="assignment-edit-btn"
+                  title="Edit assignment"
+                  onClick={() => handleEdit(assignment)}
+                >
+                  <FiEdit2 size={14} />
+                </button>
+
+                {/* Delete — shows inline confirm to prevent accidents */}
+                {confirmId === assignment.id ? (
+                  <div className="assignment-delete-confirm">
+                    <span className="assignment-delete-confirm-text">Delete?</span>
+                    <button
+                      className="assignment-delete-confirm-yes"
+                      disabled={deletingId === assignment.id}
+                      onClick={() => handleDeleteConfirm(assignment.id)}
+                    >
+                      {deletingId === assignment.id ? "…" : "Yes"}
+                    </button>
+                    <button
+                      className="assignment-delete-confirm-no"
+                      onClick={() => setConfirmId(null)}
+                    >
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="assignment-delete-btn"
+                    title={
+                      assignment.total_submissions > 0
+                        ? "Cannot delete — has submissions"
+                        : "Delete assignment"
+                    }
+                    disabled={assignment.total_submissions > 0}
+                    onClick={() => setConfirmId(assignment.id)}
+                  >
+                    <FiTrash2 size={14} />
+                  </button>
+                )}
+
+              </div>
 
             </div>
           ))}

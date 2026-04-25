@@ -297,3 +297,109 @@
 
   .assignment-view-btn { width: 100%; align-self: stretch; text-align: center; }
 }
+/* ─────────────────────────────────────────────────────────────
+   APPEND these rules to your existing assignments.css file
+   ───────────────────────────────────────────────────────────── */
+
+/* Row action group — wraps View + Edit + Delete */
+.assignment-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Edit button */
+.assignment-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #b2d8d8;
+  background: transparent;
+  color: #0f6e56;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.assignment-edit-btn:hover {
+  background: #e1f5ee;
+  border-color: #1d9e75;
+}
+
+/* Delete button (icon only) */
+.assignment-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #f5c4b3;
+  background: transparent;
+  color: #993c1d;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.assignment-delete-btn:hover:not(:disabled) {
+  background: #faece7;
+  border-color: #d85a30;
+}
+.assignment-delete-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Inline confirm strip */
+.assignment-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: adc-in 0.15s ease;
+}
+@keyframes adc-in {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.assignment-delete-confirm-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #993c1d;
+  white-space: nowrap;
+}
+
+.assignment-delete-confirm-yes {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: none;
+  background: #d85a30;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.assignment-delete-confirm-yes:hover {
+  background: #993c1d;
+}
+.assignment-delete-confirm-yes:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.assignment-delete-confirm-no {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid #b2d8d8;
+  background: transparent;
+  color: #4a4a4a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.assignment-delete-confirm-no:hover {
+  background: #f0f0f0;
+}
