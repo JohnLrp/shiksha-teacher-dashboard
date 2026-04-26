@@ -1,0 +1,108 @@
+/* ────────────────────────────────────────────────────────────
+   ConfirmDialog (Teacher) — centered confirmation prompt.
+   Isolated under the tcd__* namespace.
+   ──────────────────────────────────────────────────────────── */
+
+.tcd__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: tcd__fade 0.14s ease-out;
+}
+
+@keyframes tcd__fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes tcd__pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.tcd__dialog {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow:
+    0 20px 48px -12px rgba(15, 23, 42, 0.35),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+  padding: 22px 24px 18px;
+  width: min(420px, calc(100vw - 32px));
+  max-width: 420px;
+  animation: tcd__pop 0.18s ease-out;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.tcd__title {
+  margin: 0 0 8px 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.tcd__message {
+  margin: 0 0 18px 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tcd__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tcd__btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.15s ease;
+  min-width: 92px;
+}
+
+.tcd__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tcd__btn--ghost {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.tcd__btn--ghost:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.tcd__btn--primary {
+  background: #3b5c7c;
+  border-color: #3b5c7c;
+  color: #ffffff;
+}
+.tcd__btn--primary:hover:not(:disabled) {
+  background: #2b4560;
+  border-color: #2b4560;
+}
+
+.tcd__btn--danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+.tcd__btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
