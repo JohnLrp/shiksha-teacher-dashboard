@@ -8,6 +8,7 @@ export default function LiveSessionDetail() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [attendance, setAttendance] = useState([]);
+  const [recording, setRecording] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +17,7 @@ export default function LiveSessionDetail() {
         const res = await api.get("/livestream/sessions/" + id + "/detail/");
         setSession(res.data.session);
         setAttendance(res.data.attendance || []);
+        setRecording(res.data.recording || null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -117,6 +119,61 @@ export default function LiveSessionDetail() {
           No attendance records for this session.
         </div>
       )}
+
+      <div style={{
+        background: "var(--card-bg, #1e293b)", borderRadius: 12,
+        padding: 24, marginTop: 20, color: "var(--text, #e2e8f0)",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 16 }}>Session Recording</h3>
+          {!recording && session?.computed_status === "COMPLETED" && (
+            <button
+              onClick={() => navigate(
+                "/teacher/classes/" + session.subject_id + "/session-recordings/upload",
+                { state: { live_session_id: id, title: session.title, date: new Date(session.start_time).toISOString().split("T")[0] } }
+              )}
+              style={{
+                padding: "8px 16px", borderRadius: 8, border: "none",
+                background: "#0d9488", color: "#fff", cursor: "pointer",
+                fontSize: 13, fontWeight: 600,
+              }}
+            >
+              + Upload Recording
+            </button>
+          )}
+        </div>
+        {recording ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {recording.thumbnail_url && (
+              <img src={recording.thumbnail_url} alt={recording.title}
+                style={{ width: 120, height: 70, objectFit: "cover", borderRadius: 8 }} />
+            )}
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>{recording.title}</p>
+              <p style={{ margin: 0, fontSize: 12, color: "#64748b" }}>
+                {recording.status === 4 ? "Ready" : "Processing..."}
+              </p>
+            </div>
+            {recording.status === 4 && (
+              <button
+                onClick={() => navigate(
+                  "/teacher/classes/" + session.subject_id +
+                  "/session-recordings/" + recording.id + "/" + recording.bunny_video_id
+                )}
+                style={{
+                  padding: "8px 16px", borderRadius: 8, border: "none",
+                  background: "#1e40af", color: "#fff", cursor: "pointer",
+                  fontSize: 13, fontWeight: 600,
+                }}
+              >
+                Watch
+              </button>
+            )}
+          </div>
+        ) : (
+          <p style={{ color: "#64748b", margin: 0, fontSize: 13 }}>No recording uploaded yet.</p>
+        )}
+      </div>
     </div>
   );
 }

@@ -55,7 +55,9 @@ function transformStudyGroup(sg) {
   return {
     ...sg,
     id: sg.id,
+    subjectId: sg.subject_id || null,
     subjectName: sg.subject_name,
+    courseId: sg.course_id || null,
     courseTitle: sg.course_title,
     topic: sg.topic,
     hostName: sg.host_name || "",
