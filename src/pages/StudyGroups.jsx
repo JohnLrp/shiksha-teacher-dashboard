@@ -83,13 +83,14 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
   useEffect(() => { setData(group); }, [group]);
 
-  const myInvite = data.invites.find(
+  const invitesList = Array.isArray(data.invites) ? data.invites : [];
+  const myInvite = invitesList.find(
     (i) => currentUserId && String(i.userId) === String(currentUserId)
   );
   const myStatus = myInvite?.status || null;
-  const accepted = data.invites.filter((i) => i.status === "accepted");
-  const pending = data.invites.filter((i) => i.status === "pending");
-  const declined = data.invites.filter((i) => i.status === "declined");
+  const accepted = invitesList.filter((i) => i.status === "accepted");
+  const pending = invitesList.filter((i) => i.status === "pending");
+  const declined = invitesList.filter((i) => i.status === "declined");
 
   // Response-window: can the teacher still Accept/Decline? Must be BEFORE
   // scheduled start time (mirrors backend gating in study_group_views.py).
@@ -105,10 +106,10 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const isPast = scheduledAt ? scheduledAt.getTime() <= Date.now() : false;
   const roomOpened = Boolean(data.roomStartedAt);
 
-  const canJoin =
-    myStatus === "accepted" &&
-    (data.status === "live" ||
-      (data.status === "scheduled" && accepted.length >= 1));
+  // Teachers can never start the room — only the host can. So Join is
+  // gated on the host having actually opened the room (roomOpened) AND
+  // the teacher having accepted their own invite (per-invitee accept).
+  const canJoin = myStatus === "accepted" && data.status === "live" && roomOpened;
 
   const doAccept = async () => {
     setBusy(true); setErr("");
@@ -316,8 +317,8 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
         !roomOpened && (
           <div className="tsg__inviteeBar">
             <span className="tsg__inviteeNote tsg__inviteeNote--inline">
-              You're in. The room is ready - anyone in the group can open it,
-              and the timer only starts once the first person joins.
+              You're in. Waiting for the host to start the room — only the
+              host can open it. You'll be able to join once they do.
             </span>
             <button
               className="tsg__btnGhost"
