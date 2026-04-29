@@ -61,27 +61,39 @@ export default function NotificationBell() {
   };
 
   const handleNotifClick = (notif) => {
-    const { type, subject_id, id, is_private_session } = notif;
+    const { type, subject_id, id, is_private_session, is_study_group } = notif;
     if (id) markOneRead(id);
 
-    // Private session notifications always go to /private-sessions
-    // regardless of which side (student or teacher) — the page handles both.
+    // Teacher app is mounted under /teacher — every navigate() must include
+    // that prefix or it falls through to the root RedirectToMainLogin and
+    // the user lands on a blank page.
+
+    // Private session: teacher's page is at /teacher/private-sessions.
     if (is_private_session || type === "PRIVATE_SESSION") {
-      navigate("/private-sessions");
+      navigate("/teacher/private-sessions");
+      setOpen(false);
+      return;
+    }
+
+    // Study group notifications come over the wire as type === "SESSION" with
+    // the is_study_group flag (set in study_group_views._notify_user). Route
+    // them to the Study Groups page instead of /teacher/live-sessions.
+    if (is_study_group) {
+      navigate("/teacher/study-groups");
       setOpen(false);
       return;
     }
 
     if (subject_id) {
-      if (type === "ASSIGNMENT") navigate(`/subjects/${subject_id}/assignments`);
-      else if (type === "QUIZ")  navigate(`/subjects/quiz/${subject_id}`);
-      else if (type === "SESSION") navigate(`/live-sessions`);
-      else                       navigate(`/subjects/${subject_id}`);
+      if (type === "ASSIGNMENT")   navigate(`/teacher/classes/${subject_id}/assignments`);
+      else if (type === "QUIZ")    navigate(`/teacher/classes/${subject_id}/quizzes`);
+      else if (type === "SESSION") navigate(`/teacher/classes/${subject_id}/live-sessions`);
+      else                         navigate(`/teacher/classes/${subject_id}`);
     } else {
       const fallback = {
-        ASSIGNMENT: "/assignments",
-        QUIZ:       "/subjects/quiz",
-        SESSION:    "/live-sessions",
+        ASSIGNMENT: "/teacher/dashboard",
+        QUIZ:       "/teacher/dashboard",
+        SESSION:    "/teacher/live-sessions",
       };
       if (fallback[type]) navigate(fallback[type]);
     }
