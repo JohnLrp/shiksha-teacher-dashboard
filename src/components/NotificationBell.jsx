@@ -1,6 +1,12 @@
 // ============================================================
-// SHARED — src/components/NotificationBell.jsx
-// Used by BOTH student and teacher apps.
+// TEACHER-DASHBOARD — src/components/NotificationBell.jsx
+//
+// NOTE: this file and the student dashboard's NotificationBell.jsx
+// share the same render markup but have INTENTIONALLY DIVERGENT
+// click handlers, because the teacher app is mounted under /teacher
+// while the student app routes live at root. If you change handler
+// behaviour here, mirror the equivalent change in
+// shiksha-student-dashboard/src/components/NotificationBell.jsx.
 // ============================================================
 
 import { useRef, useState, useEffect } from "react";
@@ -85,17 +91,22 @@ export default function NotificationBell() {
     }
 
     if (subject_id) {
-      if (type === "ASSIGNMENT")   navigate(`/teacher/classes/${subject_id}/assignments`);
-      else if (type === "QUIZ")    navigate(`/teacher/classes/${subject_id}/quizzes`);
-      else if (type === "SESSION") navigate(`/teacher/classes/${subject_id}/live-sessions`);
-      else                         navigate(`/teacher/classes/${subject_id}`);
+      if (type === "ASSIGNMENT")      navigate(`/teacher/classes/${subject_id}/assignments`);
+      else if (type === "QUIZ")       navigate(`/teacher/classes/${subject_id}/quizzes`);
+      else if (type === "SUBMISSION") navigate(`/teacher/classes/${subject_id}/assignments`);
+      else if (type === "SESSION")    navigate(`/teacher/classes/${subject_id}/live-sessions`);
+      else                            navigate(`/teacher/classes/${subject_id}`);
     } else {
+      // No subject_id — always navigate somewhere so the click is never
+      // a no-op (avoids the blank-handler equivalent of the original
+      // root-redirect bug).
       const fallback = {
         ASSIGNMENT: "/teacher/dashboard",
         QUIZ:       "/teacher/dashboard",
+        SUBMISSION: "/teacher/dashboard",
         SESSION:    "/teacher/live-sessions",
       };
-      if (fallback[type]) navigate(fallback[type]);
+      navigate(fallback[type] || "/teacher/dashboard");
     }
     setOpen(false);
   };

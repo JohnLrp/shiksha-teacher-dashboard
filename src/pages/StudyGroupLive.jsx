@@ -2,15 +2,18 @@
  * FILE: TEACHER_UI/src/pages/StudyGroupLive.jsx
  *
  * Teacher enters a student-hosted study group's LiveKit room.
- * Reuses TeacherPrivateClassroomUI. Overlays a countdown banner
- * showing remaining duration of the group.
+ * Uses StudyGroupClassroomUI — a peer-only UI with no host/teacher
+ * power controls (no mute-individual, no mute-all, no remove, no
+ * end-for-all). Per product rule: in a Study Group, NO ONE — not
+ * even the host — has in-room authority. Overlays a countdown
+ * banner showing remaining duration of the group.
  */
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import studyGroupService, { extractApiError } from "../api/studyGroupService";
-import TeacherPrivateClassroomUI from "../components/live/TeacherPrivateClassroomUI";
+import StudyGroupClassroomUI from "../components/live/StudyGroupClassroomUI";
 import "../styles/privateSessions.css";
 import "../styles/teacherStudyGroups.css";
 
@@ -151,8 +154,8 @@ export default function StudyGroupLive() {
         </span>
       </div>
 
-      <TeacherPrivateClassroomUI
-        role="teacher"
+      <StudyGroupClassroomUI
+        role={(livekitData.role || "teacher").toLowerCase()}
         session={{
           ...sessionData,
           subject: sessionData?.subjectName,
