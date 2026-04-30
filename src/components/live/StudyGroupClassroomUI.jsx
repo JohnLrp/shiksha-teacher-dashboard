@@ -13,17 +13,20 @@
  *   * No "End for All" button (clicking Leave just disconnects the
  *     local participant — peers stay in the room)
  *   * No FORCE_MUTE / FORCE_DISCONNECT senders. We still LISTEN for
- *     those events as a safety net (in case a future moderator role
- *     is added) but never send them.
- *   * No chat: the chat REST + WS endpoints are private-session only
- *     today (POST /sessions/<id>/chat/send/ resolves PrivateSession ids
- *     and would 404 for a study-group session id). Until a study-group
- *     chat backend lands, the sidebar shows participants only.
+ *     those events as victim handlers (safety net for any future
+ *     moderator role) but never send them.
+ *
+ * Chat: ENABLED via the study-group chat endpoints
+ * (/sessions/study-groups/<id>/chat/[/send] + WS /ws/study-group/<id>/chat/).
+ * Messages persist in DB only while the room is live — backend
+ * _end_study_group_internal bulk-deletes them on session end.
  *
  * Props:
- *   role    — "host" | "teacher" | "student" — does not change behaviour;
- *             only used for the avatar pill label
- *   session — { id, subject, topic, ... }
+ *   role        — "host" | "teacher" | "student"
+ *   session     — { id, subject, topic, ... }
+ *   chatConfig  — { restGetPath, restPostPath, wsPath } — required for
+ *                 chat to work. Passed in by StudyGroupLive.jsx.
+ *   onLeave     — optional cb fired after disconnect.
  */
 
 import {
@@ -37,6 +40,9 @@ import { Track } from "livekit-client";
 import { useState, useEffect, useCallback } from "react";
 
 import "./privateClassroom.css";
+import ChatPanel from "./ChatPanel";
+import api from "../../api/apiClient";
+import { useAuth } from "../../contexts/AuthContext";
 import soundManager from "../../utils/soundManager";
 
 /* ═══════════════════════════════════════════════════════════
@@ -206,13 +212,26 @@ function ParticipantsList({ participants, localId, raisedHands }) {
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════ */
 
-export default function StudyGroupClassroomUI({ role, session }) {
+export default function StudyGroupClassroomUI({
+  role,
+  session,
+  chatConfig,
+  onLeave,
+}) {
   const room = useRoomContext();
+  const { user } = useAuth();
+  const myUserId = user?.id ? String(user.id) : null;
   const { localParticipant } = useLocalParticipant();
   const participants = useParticipants();
   const timer = useTimer();
   const { toasts, show } = useToast();
 
+  // chatConfig is required for chat. Without it the sidebar still works
+  // (participants only) — gates below check `chatConfig` before opening
+  // the REST/WS connections.
+  const noChat = !chatConfig;
+
+  const [sidebarTab, setSidebarTab] = useState(noChat ? "participants" : "chat");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -220,8 +239,103 @@ export default function StudyGroupClassroomUI({ role, session }) {
   const [handRaised, setHandRaised] = useState(false);
   const [raisedHands, setRaisedHands] = useState({});
   const [pinnedIds, setPinnedIds] = useState(new Set());
+  const [chatMessages, setChatMessages] = useState([]);
   const [soundMuted, setSoundMuted] = useState(soundManager.isMuted());
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const prevParticipantCountRef = useState({ current: null })[0];
+
+  // ── Load persisted chat messages on mount ──
+  useEffect(() => {
+    if (noChat || !session?.id) return;
+    api.get(chatConfig.restGetPath).then((res) => {
+      const msgs = (res.data || []).map((m) => {
+        const isMe = myUserId && String(m.sender_id) === myUserId;
+        return {
+          id: m.id,
+          sender: m.sender_name,
+          text: m.message,
+          isTeacher: m.sender_role === "teacher",
+          isMe,
+          time: new Date(m.created_at),
+        };
+      });
+      setChatMessages(msgs);
+    }).catch(() => {});
+  }, [session?.id, myUserId, noChat, chatConfig?.restGetPath]);
+
+  // ── WebSocket for real-time chat (auto-reconnect + token auth) ──
+  useEffect(() => {
+    if (noChat || !session?.id) return;
+    let ws = null;
+    let reconnectTimer = null;
+    let unmounted = false;
+
+    const connect = () => {
+      if (unmounted) return;
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsHost = import.meta.env.VITE_WS_HOST || window.location.host;
+      const token = localStorage.getItem("access") || sessionStorage.getItem("access") || "";
+      const wsUrl = `${protocol}//${wsHost}${chatConfig.wsPath}${token ? `?token=${token}` : ""}`;
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+          try {
+            const { data } = JSON.parse(event.data);
+            if (data) {
+              setChatMessages((prev) => {
+                if (prev.some((m) => m.id === data.id)) return prev;
+                const isMe = myUserId && String(data.sender_id) === myUserId;
+                if (!isMe) soundManager.messageReceive();
+                return [...prev, {
+                  id: data.id,
+                  sender: data.sender_name,
+                  text: data.message,
+                  isTeacher: data.sender_role === "teacher",
+                  isMe,
+                  time: new Date(data.created_at),
+                }];
+              });
+            }
+          } catch {}
+        };
+        ws.onclose = () => {
+          if (!unmounted) reconnectTimer = setTimeout(connect, 3000);
+        };
+        ws.onerror = () => ws.close();
+      } catch {}
+    };
+
+    connect();
+    return () => {
+      unmounted = true;
+      clearTimeout(reconnectTimer);
+      if (ws) ws.close();
+    };
+  }, [session?.id, myUserId, noChat, chatConfig?.wsPath]);
+
+  // ── Send a chat message ──
+  const sendChatMessage = async (text) => {
+    soundManager.messageSend();
+    if (noChat) return;
+    try {
+      const res = await api.post(chatConfig.restPostPath, { message: text });
+      const msg = res.data;
+      setChatMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, {
+          id: msg.id,
+          sender: "You",
+          text: msg.message,
+          isMe: true,
+          isTeacher: role === "teacher",
+          time: new Date(msg.created_at),
+        }];
+      });
+    } catch (e) {
+      console.error("Failed to send message:", e);
+      setChatMessages((prev) => [...prev, { sender: "You", text, isMe: true, time: new Date() }]);
+    }
+  };
 
   // ── Participant join/leave sound detection ──
   useEffect(() => {
@@ -332,12 +446,24 @@ export default function StudyGroupClassroomUI({ role, session }) {
     show(next ? "Hand raised 🖐" : "Hand lowered", "info");
   };
 
-  const leaveRoom = async () => {
-    if (window.confirm("Leave study group?")) {
-      show("You left", "info");
-      setTimeout(async () => { await room.disconnect(); }, 600);
-    }
+  // Leave button opens an in-room confirmation modal (peer action — does
+  // NOT end the room for anyone else). Modal markup is appended near the
+  // root return below.
+  const leaveRoom = () => {
+    soundManager.buttonClick();
+    setShowLeaveConfirm(true);
   };
+
+  const confirmLeave = async () => {
+    setShowLeaveConfirm(false);
+    show("You left", "info");
+    setTimeout(async () => {
+      await room.disconnect();
+      if (typeof onLeave === "function") onLeave();
+    }, 400);
+  };
+
+  const cancelLeave = () => setShowLeaveConfirm(false);
 
   // ── Pin logic ──
   const togglePin = (identity) => {
@@ -465,12 +591,35 @@ export default function StudyGroupClassroomUI({ role, session }) {
                 🖥️
               </button>
               <button
-                className={`pvt-ctrl-btn ${sidebarOpen ? "pvt-ctrl-active" : ""}`}
-                onClick={() => setSidebarOpen((o) => !o)}
+                className={`pvt-ctrl-btn ${sidebarOpen && sidebarTab === "participants" ? "pvt-ctrl-active" : ""}`}
+                onClick={() => {
+                  if (sidebarOpen && sidebarTab === "participants") {
+                    setSidebarOpen(false);
+                  } else {
+                    setSidebarTab("participants");
+                    setSidebarOpen(true);
+                  }
+                }}
                 title="Participants"
               >
                 👥
               </button>
+              {!noChat && (
+                <button
+                  className={`pvt-ctrl-btn ${sidebarTab === "chat" && sidebarOpen ? "pvt-ctrl-active" : ""}`}
+                  onClick={() => {
+                    if (sidebarTab === "chat" && sidebarOpen) {
+                      setSidebarOpen(false);
+                    } else {
+                      setSidebarTab("chat");
+                      setSidebarOpen(true);
+                    }
+                  }}
+                  title="Chat"
+                >
+                  💬
+                </button>
+              )}
             </div>
             <div className="pvt-ctrl-right">
               <button
@@ -485,24 +634,83 @@ export default function StudyGroupClassroomUI({ role, session }) {
           </div>
         </div>
 
-        {/* ── Sidebar — participants only (no chat in study groups yet) ── */}
+        {/* ── Sidebar — participants + chat tabs ── */}
         {sidebarOpen && (
           <div className="pvt-sidebar">
             <div className="pvt-sidebar-tabs">
-              <button className="pvt-sidebar-tab active">
+              <button
+                className={`pvt-sidebar-tab ${sidebarTab === "participants" ? "active" : ""}`}
+                onClick={() => setSidebarTab("participants")}
+              >
                 Participants ({participants.length})
               </button>
+              {!noChat && (
+                <button
+                  className={`pvt-sidebar-tab ${sidebarTab === "chat" ? "active" : ""}`}
+                  onClick={() => setSidebarTab("chat")}
+                >
+                  Chat
+                </button>
+              )}
             </div>
             <div className="pvt-sidebar-body">
-              <ParticipantsList
-                participants={participants}
-                localId={localParticipant.identity}
-                raisedHands={raisedHands}
-              />
+              {sidebarTab === "participants" || noChat ? (
+                <ParticipantsList
+                  participants={participants}
+                  localId={localParticipant.identity}
+                  raisedHands={raisedHands}
+                />
+              ) : (
+                <ChatPanel
+                  role={role}
+                  messages={chatMessages}
+                  onSendMessage={sendChatMessage}
+                />
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Leave-confirmation modal ── */}
+      {showLeaveConfirm && (
+        <div
+          className="pvt-leave-modal-overlay"
+          onClick={cancelLeave}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pvt-leave-title"
+        >
+          <div
+            className="pvt-leave-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="pvt-leave-title" className="pvt-leave-title">
+              Leave this room?
+            </h3>
+            <p className="pvt-leave-body">
+              You can rejoin while the session is still live.
+            </p>
+            <div className="pvt-leave-actions">
+              <button
+                type="button"
+                className="pvt-leave-btn-cancel"
+                onClick={cancelLeave}
+                autoFocus
+              >
+                Stay
+              </button>
+              <button
+                type="button"
+                className="pvt-leave-btn-confirm"
+                onClick={confirmLeave}
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Toasts ── */}
       <div className="pvt-toast-wrap">

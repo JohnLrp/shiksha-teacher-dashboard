@@ -73,14 +73,25 @@
 .tsg__card--expired   { border-left-color: #94a3b8; opacity: 0.85; }
 .tsg__card--live      { border-left-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,0.18); }
 
+/* tsg__cardTop:
+   align-items is flex-start so when the subject wraps to multiple lines the
+   status pill stays a fixed compact size at the top right rather than
+   vertically centering against a tall block (mirror of sg__cardTop). */
 .tsg__cardTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 4px;
 }
-.tsg__cardSubject { font-weight: 700; color: #0f172a; font-size: 16px; }
+.tsg__cardSubject {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
 .tsg__cardCourse  { color: #64748b; font-size: 12px; margin-bottom: 6px; }
 .tsg__cardTopic   { font-style: italic; color: #475569; font-size: 14px; margin-bottom: 10px; }
 
@@ -116,17 +127,46 @@
 .tsg__countChip--accepted { background: #dcfce7; color: #166534; }
 .tsg__countChip--pending  { background: #fef3c7; color: #92400e; }
 
+/* tsg__statusPill:
+   inline-flex + fixed height + flex-shrink:0 + align-self:flex-start make the
+   pill render IDENTICALLY regardless of card content length. Mirror of
+   sg__statusPill — see studyGroups.css for the rationale. */
 .tsg__statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
-  padding: 3px 8px;
+  line-height: 1;
+  height: 22px;
+  padding: 0 10px;
   border-radius: 999px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  flex-grow: 0;
+  align-self: flex-start;
+  box-sizing: border-box;
 }
 .tsg__statusPill--scheduled { background: #e0e7ff; color: #3730a3; }
 .tsg__statusPill--live      { background: #fee2e2; color: #991b1b; }
 .tsg__statusPill--completed { background: #dcfce7; color: #166534; }
 .tsg__statusPill--cancelled { background: #fee2e2; color: #991b1b; }
 .tsg__statusPill--expired   { background: #e5e7eb; color: #475569; }
+
+/* CSS-rendered red dot for live state (replaces the 🔴 emoji). */
+.tsg__statusPill--live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+  animation: tsg__livePulse 1.4s ease-in-out infinite;
+}
+@keyframes tsg__livePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
 
 .tsg__loading, .tsg__empty {
   text-align: center;
@@ -352,10 +392,20 @@
 
 /* Live room banner */
 .tsgLive__banner {
+  /* Centering via margin auto rather than `left:50%; transform:...`
+     because the LiveKit room wrapper applies its own transform —
+     when fixed-positioning resolves against that wrapper instead of
+     the viewport, and the banner has display:flex with no explicit
+     width, it balloons to fill the wrapper. width:max-content +
+     max-width caps shape this defensively. */
   position: fixed;
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: max-content;
+  max-width: min(90vw, 600px);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -367,6 +417,8 @@
   z-index: 100;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 .tsgLive__bannerBadge {
   background: #fff;
@@ -382,4 +434,29 @@
   padding: 2px 10px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   MOBILE WEB (≤ 600px) — does NOT alter desktop appearance. */
+@media (max-width: 600px) {
+  .tsg__page { padding: 12px 12px 32px; }
+  .tsg__grid { grid-template-columns: 1fr; gap: 12px; }
+  .tsg__card { padding: 14px; }
+  .tsg__cardSubject { font-size: 15px; }
+  .tsg__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .tsg__tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tsg__tab { padding: 8px 14px; font-size: 13px; white-space: nowrap; }
+  .tsg__detail { padding: 16px; }
+  .tsgLive__banner {
+    top: 8px;
+    max-width: min(96vw, 600px);
+    font-size: 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .tsgLive__bannerSubject { display: none; }
 }

@@ -161,6 +161,11 @@ export default function StudyGroupLive() {
           subject: sessionData?.subjectName,
           topic: sessionData?.topic,
         }}
+        chatConfig={{
+          restGetPath:  `/sessions/study-groups/${id}/chat/`,
+          restPostPath: `/sessions/study-groups/${id}/chat/send/`,
+          wsPath:       `/ws/study-group/${id}/chat/`,
+        }}
       />
       <RoomAudioRenderer />
     </LiveKitRoom>

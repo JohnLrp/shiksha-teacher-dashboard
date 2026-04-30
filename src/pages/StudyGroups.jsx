@@ -34,8 +34,11 @@ function formatTime(t) {
 }
 
 function statusLabel(st) {
+  // For the "live" state, the leading red dot is rendered by CSS (::before
+  // on .tsg__statusPill--live) so the pill stays the same shape across
+  // browsers/OS. Mirror of the student dashboard's statusLabel.
   const m = {
-    scheduled: "📅 Scheduled", live: "🔴 Live",
+    scheduled: "📅 Scheduled", live: "Live",
     completed: "✔ Completed", cancelled: "✗ Cancelled", expired: "⏰ Expired",
   };
   return m[st] || st;
@@ -409,6 +412,17 @@ export default function StudyGroups() {
           {tab === "invites" && "No pending study group invitations."}
           {tab === "upcoming" && "No upcoming study groups."}
           {tab === "history" && "No past study groups yet."}
+        </div>
+      ) : (
+        <div className="tsg__grid">
+          {groups.map((g) => (
+            <Card key={g.id} group={g} onOpen={setSelected} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
         </div>
       ) : (
         <div className="tsg__grid">
