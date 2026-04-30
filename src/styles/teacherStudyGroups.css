@@ -390,50 +390,61 @@
   font-size: 13px;
 }
 
-/* Live room banner */
+/* Live room banner — small, top-center pill */
 .tsgLive__banner {
-  /* Centering via margin auto rather than `left:50%; transform:...`
-     because the LiveKit room wrapper applies its own transform —
-     when fixed-positioning resolves against that wrapper instead of
-     the viewport, and the banner has display:flex with no explicit
-     width, it balloons to fill the wrapper. width:max-content +
-     max-width caps shape this defensively. */
   position: fixed;
-  top: 12px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: max-content;
-  max-width: min(90vw, 600px);
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: min(90vw, 520px);
+  height: 32px;
   box-sizing: border-box;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  background: rgba(59, 92, 124, 0.95);
+  gap: 8px;
+  padding: 0 12px;
+  background: rgba(15, 23, 42, 0.85);
   color: #fff;
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
   font-weight: 600;
-  z-index: 100;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1;
+  z-index: 9999;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   pointer-events: none;
   white-space: nowrap;
+  overflow: hidden;
 }
 .tsgLive__bannerBadge {
-  background: #fff;
-  color: #3b5c7c;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  background: #3b5c7c;
+  color: #fff;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.4px;
+  line-height: 1;
+}
+.tsgLive__bannerSubject {
+  font-size: 12px;
+  opacity: 0.92;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tsgLive__bannerCountdown {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 2px 10px;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 8px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  line-height: 1;
 }
 
 /* ============================================================

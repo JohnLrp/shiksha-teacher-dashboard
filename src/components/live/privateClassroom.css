@@ -196,6 +196,51 @@
 .pvt-tile:hover .pvt-pin-btn { opacity: 1; }
 .pvt-pin-active { opacity: 1; background: rgba(79,126,247,0.3); color: #4f7ef7; }
 
+/* ── Fullscreen button (sits left of pin button on screen-share tile) ── */
+.pvt-fullscreen-btn {
+  position: absolute;
+  top: 8px; right: 44px;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: #cfd6e4;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 10;
+  font-family: inherit;
+}
+.pvt-tile:hover .pvt-fullscreen-btn { opacity: 1; }
+.pvt-fullscreen-btn:hover { background: rgba(79,126,247,0.3); color: #4f7ef7; }
+
+/* Always show controls on a spotlighted tile so users can find the
+   exit-fullscreen / unpin affordance without hover. */
+.pvt-tile-pinned .pvt-pin-btn,
+.pvt-tile-pinned .pvt-fullscreen-btn { opacity: 1; }
+
+/* Click-to-spotlight cue */
+.pvt-tile { cursor: pointer; }
+
+/* When a tile is the actual fullscreen element, force the video to
+   cover the full viewport and stretch the tile container to match. */
+.pvt-tile:fullscreen,
+.pvt-tile:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+.pvt-tile:fullscreen video,
+.pvt-tile:-webkit-full-screen video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+
 /* ── Muted bar ── */
 .pvt-muted-bar {
   position: absolute;

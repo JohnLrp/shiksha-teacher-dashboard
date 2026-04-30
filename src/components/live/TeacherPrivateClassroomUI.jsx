@@ -298,8 +298,16 @@ export default function TeacherPrivateClassroomUI({ session, onEndSession }) {
 
     const connect = () => {
       if (unmounted) return;
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsHost = import.meta.env.VITE_WS_HOST || window.location.host;
+      // Reach the backend WS host explicitly — dashboards run on a
+      // different host than the API, so `window.location.host` here
+      // would be e.g. teacher.shikshacom.com which has no WS route.
+      const isLocalDev =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      const wsHost =
+        import.meta.env.VITE_WS_HOST ||
+        (isLocalDev ? window.location.host : "api.shikshacom.com");
+      const protocol = isLocalDev && window.location.protocol !== "https:" ? "ws:" : "wss:";
       const token = localStorage.getItem("access") || sessionStorage.getItem("access") || "";
       const wsUrl = `${protocol}//${wsHost}/ws/private-session/${session.id}/chat/${token ? `?token=${token}` : ""}`;
       try {
