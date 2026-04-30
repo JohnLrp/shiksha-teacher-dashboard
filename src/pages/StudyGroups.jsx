@@ -423,14 +423,3 @@ export default function StudyGroups() {
     </div>
   );
 }
-        </div>
-      ) : (
-        <div className="tsg__grid">
-          {groups.map((g) => (
-            <Card key={g.id} group={g} onOpen={setSelected} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
