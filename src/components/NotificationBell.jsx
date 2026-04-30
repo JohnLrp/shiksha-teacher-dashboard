@@ -93,7 +93,19 @@ export default function NotificationBell() {
     if (subject_id) {
       if (type === "ASSIGNMENT")      navigate(`/teacher/classes/${subject_id}/assignments`);
       else if (type === "QUIZ")       navigate(`/teacher/classes/${subject_id}/quizzes`);
-      else if (type === "SUBMISSION") navigate(`/teacher/classes/${subject_id}/assignments`);
+      else if (type === "SUBMISSION") {
+        // SUBMISSION carries the PARENT object id in `id`. For an assignment
+        // submission that's the assignment id; for a quiz submission it's the
+        // quiz id. Backend marks quiz submissions with subtype="quiz_submission"
+        // (activity/signals.py:quiz_submitted) so we can route correctly.
+        if (notif.subtype === "quiz_submission") {
+          navigate(`/teacher/classes/${subject_id}/quizzes`);
+        } else if (id) {
+          navigate(`/teacher/classes/${subject_id}/assignments/${id}/submissions`);
+        } else {
+          navigate(`/teacher/classes/${subject_id}/assignments`);
+        }
+      }
       else if (type === "SESSION")    navigate(`/teacher/classes/${subject_id}/live-sessions`);
       else                            navigate(`/teacher/classes/${subject_id}`);
     } else {

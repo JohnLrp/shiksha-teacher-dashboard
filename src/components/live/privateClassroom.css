@@ -751,3 +751,97 @@
 }
 .chat-send-btn:hover { background: #3d6ee0; transform: scale(1.05); }
 .chat-send-btn:active { transform: scale(0.95); }
+
+/* ──────────────────────────────────────────────────────────────────
+   LEAVE-CONFIRMATION MODAL (mirror of student dashboard)
+   Centered overlay with Stay / Leave buttons, replaces window.confirm().
+   ────────────────────────────────────────────────────────────── */
+.pvt-leave-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+  animation: pvt-leave-overlay-in 0.15s ease-out;
+}
+@keyframes pvt-leave-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.pvt-leave-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 360px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: pvt-leave-modal-in 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes pvt-leave-modal-in {
+  from { transform: translateY(8px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.pvt-leave-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.pvt-leave-body {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.4;
+}
+.pvt-leave-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: stretch;
+}
+.pvt-leave-btn-cancel,
+.pvt-leave-btn-confirm {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.12s, transform 0.04s;
+}
+.pvt-leave-btn-cancel {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+.pvt-leave-btn-cancel:hover { background: #e2e8f0; }
+.pvt-leave-btn-cancel:active { transform: scale(0.98); }
+.pvt-leave-btn-confirm {
+  background: #dc2626;
+  color: #fff;
+}
+.pvt-leave-btn-confirm:hover { background: #b91c1c; }
+.pvt-leave-btn-confirm:active { transform: scale(0.98); }
+.pvt-leave-btn-cancel:focus-visible,
+.pvt-leave-btn-confirm:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .pvt-leave-modal {
+    max-width: 92vw;
+    padding: 18px 18px 14px;
+  }
+  .pvt-leave-title { font-size: 17px; }
+  .pvt-leave-body  { font-size: 13px; }
+  .pvt-leave-btn-cancel,
+  .pvt-leave-btn-confirm {
+    padding: 11px 14px;
+    font-size: 14px;
+  }
+}
