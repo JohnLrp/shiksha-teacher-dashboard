@@ -48,6 +48,29 @@ const studyGroupService = {
     const res = await api.post(`/sessions/study-groups/${sessionId}/join/`);
     return res.data;
   },
+
+  // ─────────────────────────────────────────────
+  // History cleanup (per-user soft delete)
+  // ─────────────────────────────────────────────
+
+  // Hide a single past session from MY history view. Doesn't touch the
+  // session itself — the host and other participants still see it.
+  async hideFromHistory(sessionId) {
+    const res = await api.post(`/sessions/study-groups/${sessionId}/hide/`);
+    return res.data;
+  },
+
+  // Bulk-hide history entries. Call shapes:
+  //   clearHistory({ all: true })            → hide all my history
+  //   clearHistory({ sessionIds: ["uuid"] }) → hide only the listed set
+  async clearHistory({ all = false, sessionIds = null } = {}) {
+    const body = all ? { all: true } : { session_ids: sessionIds || [] };
+    const res = await api.post(
+      "/sessions/study-groups/history/clear/",
+      body,
+    );
+    return res.data;
+  },
 };
 
 function transformStudyGroup(sg) {
@@ -105,7 +128,7 @@ export function extractApiError(err, fallback = "Something went wrong.") {
       const text = Array.isArray(v) ? v.join(" ") : String(v);
       parts.push(k === "non_field_errors" ? text : `${k}: ${text}`);
     }
-    if (parts.length) return parts.join(" \u2022 ");
+    if (parts.length) return parts.join(" • ");
   }
   return fallback;
 }
@@ -117,6 +140,8 @@ export const {
   declineInvite,
   unacceptInvite,
   joinRoom,
+  hideFromHistory,
+  clearHistory,
 } = studyGroupService;
 
 export default studyGroupService;
