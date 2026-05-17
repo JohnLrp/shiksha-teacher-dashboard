@@ -199,6 +199,86 @@
   cursor: pointer;
 }
 .tsg__btnGhost:hover { background: #f8fafc; }
+.tsg__btnGhost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Danger variants used by the History "Clear" controls. Mirrors the
+   student dashboard's sg__btnDanger / sg__btnDangerGhost pair. */
+.tsg__btnDanger {
+  padding: 10px 20px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnDanger:hover:not(:disabled) { background: #b91c1c; }
+.tsg__btnDanger:disabled { background: #fca5a5; cursor: not-allowed; }
+
+.tsg__btnDangerGhost {
+  padding: 10px 20px;
+  background: transparent;
+  color: #b91c1c;
+  border: 2px solid #fecaca;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnDangerGhost:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+.tsg__btnDangerGhost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* History-tab cleanup toolbar — sits between the tab row and the grid. */
+.tsg__historyTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 4px 18px;
+  margin-bottom: 4px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.tsg__historyToolsLabel {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+/* Selection-mode card affordances. Top-left checkbox so it doesn't fight
+   the existing status pill on the right. Slate-blue "selected" outline
+   reads as "checked" rather than "live". */
+.tsg__card { position: relative; }
+.tsg__card--selectMode { cursor: pointer; }
+.tsg__card--selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
+}
+.tsg__cardSelectBox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  z-index: 2;
+}
+.tsg__cardSelectBox--on {
+  background: #2563eb;
+  border-color: #2563eb;
+}
 
 /* Detail */
 .tsg__detail {
