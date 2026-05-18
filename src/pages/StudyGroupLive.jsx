@@ -144,16 +144,6 @@ export default function StudyGroupLive() {
       audio={true}
       onDisconnected={() => navigate("/teacher/study-groups")}
     >
-      <div className="tsgLive__banner">
-        <span className="tsgLive__bannerBadge">STUDY GROUP</span>
-        <span className="tsgLive__bannerSubject">
-          {sessionData?.subjectName || "Study Group"}
-        </span>
-        <span className="tsgLive__bannerCountdown">
-          ⏳ {formatCountdown(remainingMs)} left
-        </span>
-      </div>
-
       <StudyGroupClassroomUI
         role={(livekitData.role || "teacher").toLowerCase()}
         session={{
@@ -166,6 +156,12 @@ export default function StudyGroupLive() {
           restPostPath: `/sessions/study-groups/${id}/chat/send/`,
           wsPath:       `/ws/study-group/${id}/chat/`,
         }}
+        /* Study-group integration props — see component for full
+           notes. Replaces the old position:fixed banner (which was
+           prone to drifting mid-page on the student side). */
+        studyGroup={true}
+        studyGroupRemainingMs={remainingMs}
+        autoSpotlightLocal={true}
       />
       <RoomAudioRenderer />
     </LiveKitRoom>
