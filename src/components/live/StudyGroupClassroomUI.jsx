@@ -45,6 +45,17 @@ import api from "../../api/apiClient";
 import { useAuth } from "../../contexts/AuthContext";
 import soundManager from "../../utils/soundManager";
 
+/* Local helper — formats a remaining-time number (ms) as MM:SS.
+   Mirrors the helper in pages/StudyGroupLive.jsx; kept inline so the
+   classroom UI is self-contained when callers pass remainingMs. */
+function formatRemaining(ms) {
+  if (ms == null || ms < 0) return "--:--";
+  const total = Math.floor(ms / 1000);
+  const mm = String(Math.floor(total / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
 /* ═══════════════════════════════════════════════════════════
    HOOKS
 ═══════════════════════════════════════════════════════════ */
@@ -260,6 +271,15 @@ export default function StudyGroupClassroomUI({
   session,
   chatConfig,
   onLeave,
+  // Study-group integration props — see PrivateClassroomUI for full
+  // notes. studyGroup=true renders the STUDY GROUP pill in the
+  // topbar; studyGroupRemainingMs powers the ⏳ MM:SS-left chip;
+  // autoSpotlightLocal pins the local tile on first render so the
+  // layout starts in spotlight (avoids the half-page videoless
+  // tile that used to dominate pvt-grid-2).
+  studyGroup = false,
+  studyGroupRemainingMs = null,
+  autoSpotlightLocal = false,
 }) {
   const room = useRoomContext();
   const { user } = useAuth();
@@ -282,10 +302,29 @@ export default function StudyGroupClassroomUI({
   const [handRaised, setHandRaised] = useState(false);
   const [raisedHands, setRaisedHands] = useState({});
   const [pinnedIds, setPinnedIds] = useState(new Set());
+  // Tracks whether we have already applied the one-shot auto-spotlight
+  // so we don't fight a user's later unpin. Stays false if
+  // autoSpotlightLocal is false (the default).
+  const autoSpotlightAppliedRef = useRef(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [soundMuted, setSoundMuted] = useState(soundManager.isMuted());
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const prevParticipantCountRef = useState({ current: null })[0];
+
+  // ── One-shot auto-spotlight for study-group rooms ──
+  // When autoSpotlightLocal=true, pin the local participant the first
+  // time we have an identity, so the layout switches to
+  // pvt-screen-layout (large main + 180px strip) instead of an even
+  // pvt-grid-2 share. Fixes the half-page "membrane" the videoless
+  // host tile used to create on the student side.
+  useEffect(() => {
+    if (!autoSpotlightLocal) return;
+    if (autoSpotlightAppliedRef.current) return;
+    const id = localParticipant?.identity;
+    if (!id) return;
+    setPinnedIds(new Set([id]));
+    autoSpotlightAppliedRef.current = true;
+  }, [autoSpotlightLocal, localParticipant?.identity]);
 
   // ── Load persisted chat messages on mount ──
   useEffect(() => {
@@ -553,12 +592,27 @@ export default function StudyGroupClassroomUI({
   return (
     <div className="pvt-room">
       {/* ── Top Bar ── */}
+      {/* ── Top Bar ──
+          Study-group badge and ⏳ remaining-time chip are inlined
+          here instead of the old position:fixed .tsgLive__banner so
+          they stay in normal flow and can't drift into the video
+          tiles when an ancestor creates a containing block. */}
       <div className="pvt-topbar">
         <div className="pvt-topbar-left">
+          {studyGroup && (
+            <span className="pvt-sg-badge" title="Study Group session">
+              STUDY GROUP
+            </span>
+          )}
           <div className="pvt-session-name">{session?.subject || "Study Group"}</div>
           <div className="pvt-session-sub">{session?.topic || session?.subject || "Study Group"}</div>
         </div>
         <div className="pvt-topbar-right">
+          {studyGroup && studyGroupRemainingMs != null && (
+            <span className="pvt-sg-countdown" title="Time remaining for this study group">
+              ⏳ {formatRemaining(studyGroupRemainingMs)} left
+            </span>
+          )}
           <span className="pvt-timer">⏱ {timer}</span>
           <span className="pvt-count">👥 {participants.length}</span>
         </div>
