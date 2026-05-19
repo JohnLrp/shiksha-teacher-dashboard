@@ -1,6 +1,12 @@
 // ============================================================
-// SHARED — src/components/NotificationBell.jsx
-// Used by BOTH student and teacher apps.
+// TEACHER-DASHBOARD — src/components/NotificationBell.jsx
+//
+// NOTE: this file and the student dashboard's NotificationBell.jsx
+// share the same render markup but have INTENTIONALLY DIVERGENT
+// click handlers, because the teacher app is mounted under /teacher
+// while the student app routes live at root. If you change handler
+// behaviour here, mirror the equivalent change in
+// shiksha-student-dashboard/src/components/NotificationBell.jsx.
 // ============================================================
 
 import { useRef, useState, useEffect } from "react";
@@ -61,29 +67,58 @@ export default function NotificationBell() {
   };
 
   const handleNotifClick = (notif) => {
-    const { type, subject_id, id, is_private_session } = notif;
+    const { type, subject_id, id, is_private_session, is_study_group } = notif;
     if (id) markOneRead(id);
 
-    // Private session notifications always go to /private-sessions
-    // regardless of which side (student or teacher) — the page handles both.
+    // Teacher app is mounted under /teacher — every navigate() must include
+    // that prefix or it falls through to the root RedirectToMainLogin and
+    // the user lands on a blank page.
+
+    // Private session: teacher's page is at /teacher/private-sessions.
     if (is_private_session || type === "PRIVATE_SESSION") {
-      navigate("/private-sessions");
+      navigate("/teacher/private-sessions");
+      setOpen(false);
+      return;
+    }
+
+    // Study group notifications come over the wire as type === "SESSION" with
+    // the is_study_group flag (set in study_group_views._notify_user). Route
+    // them to the Study Groups page instead of /teacher/live-sessions.
+    if (is_study_group) {
+      navigate("/teacher/study-groups");
       setOpen(false);
       return;
     }
 
     if (subject_id) {
-      if (type === "ASSIGNMENT") navigate(`/subjects/${subject_id}/assignments`);
-      else if (type === "QUIZ")  navigate(`/subjects/quiz/${subject_id}`);
-      else if (type === "SESSION") navigate(`/live-sessions`);
-      else                       navigate(`/subjects/${subject_id}`);
+      if (type === "ASSIGNMENT")      navigate(`/teacher/classes/${subject_id}/assignments`);
+      else if (type === "QUIZ")       navigate(`/teacher/classes/${subject_id}/quizzes`);
+      else if (type === "SUBMISSION") {
+        // SUBMISSION carries the PARENT object id in `id`. For an assignment
+        // submission that's the assignment id; for a quiz submission it's the
+        // quiz id. Backend marks quiz submissions with subtype="quiz_submission"
+        // (activity/signals.py:quiz_submitted) so we can route correctly.
+        if (notif.subtype === "quiz_submission") {
+          navigate(`/teacher/classes/${subject_id}/quizzes`);
+        } else if (id) {
+          navigate(`/teacher/classes/${subject_id}/assignments/${id}/submissions`);
+        } else {
+          navigate(`/teacher/classes/${subject_id}/assignments`);
+        }
+      }
+      else if (type === "SESSION")    navigate(`/teacher/classes/${subject_id}/live-sessions`);
+      else                            navigate(`/teacher/classes/${subject_id}`);
     } else {
+      // No subject_id — always navigate somewhere so the click is never
+      // a no-op (avoids the blank-handler equivalent of the original
+      // root-redirect bug).
       const fallback = {
-        ASSIGNMENT: "/assignments",
-        QUIZ:       "/subjects/quiz",
-        SESSION:    "/live-sessions",
+        ASSIGNMENT: "/teacher/dashboard",
+        QUIZ:       "/teacher/dashboard",
+        SUBMISSION: "/teacher/dashboard",
+        SESSION:    "/teacher/live-sessions",
       };
-      if (fallback[type]) navigate(fallback[type]);
+      navigate(fallback[type] || "/teacher/dashboard");
     }
     setOpen(false);
   };

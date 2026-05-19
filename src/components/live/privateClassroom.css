@@ -29,11 +29,46 @@
   gap: 12px;
 }
 
-.pvt-topbar-left { display: flex; flex-direction: column; }
+.pvt-topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 .pvt-session-name { font-size: 14px; font-weight: 700; color: #e8eaf2; }
 .pvt-session-sub { font-size: 11px; color: #6b7591; margin-top: 1px; }
 
+/* Study-group pill in the topbar-left. Replaces the old floating
+   .tsgLive__banner so the badge can't drift into the video tiles.
+   Navy brand colour to match the teacher dashboard accent. */
+.pvt-sg-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  background: #3b5c7c;
+  color: #fff;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+  margin-bottom: 1px;
+}
+
 .pvt-topbar-right { display: flex; align-items: center; gap: 10px; }
+/* Study-group remaining-time chip — sits next to .pvt-timer. */
+.pvt-sg-countdown {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+  font-variant-numeric: tabular-nums;
+  background: rgba(59, 92, 124, 0.30);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 92, 124, 0.65);
+}
 .pvt-timer {
   font-size: 13px; font-weight: 600; color: #a0aec0;
   font-variant-numeric: tabular-nums;
@@ -195,6 +230,51 @@
 }
 .pvt-tile:hover .pvt-pin-btn { opacity: 1; }
 .pvt-pin-active { opacity: 1; background: rgba(79,126,247,0.3); color: #4f7ef7; }
+
+/* ── Fullscreen button (sits left of pin button on screen-share tile) ── */
+.pvt-fullscreen-btn {
+  position: absolute;
+  top: 8px; right: 44px;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: #cfd6e4;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 10;
+  font-family: inherit;
+}
+.pvt-tile:hover .pvt-fullscreen-btn { opacity: 1; }
+.pvt-fullscreen-btn:hover { background: rgba(79,126,247,0.3); color: #4f7ef7; }
+
+/* Always show controls on a spotlighted tile so users can find the
+   exit-fullscreen / unpin affordance without hover. */
+.pvt-tile-pinned .pvt-pin-btn,
+.pvt-tile-pinned .pvt-fullscreen-btn { opacity: 1; }
+
+/* Click-to-spotlight cue */
+.pvt-tile { cursor: pointer; }
+
+/* When a tile is the actual fullscreen element, force the video to
+   cover the full viewport and stretch the tile container to match. */
+.pvt-tile:fullscreen,
+.pvt-tile:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+.pvt-tile:fullscreen video,
+.pvt-tile:-webkit-full-screen video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
 
 /* ── Muted bar ── */
 .pvt-muted-bar {
@@ -751,3 +831,144 @@
 }
 .chat-send-btn:hover { background: #3d6ee0; transform: scale(1.05); }
 .chat-send-btn:active { transform: scale(0.95); }
+
+/* ──────────────────────────────────────────────────────────────────
+   LEAVE-CONFIRMATION MODAL (mirror of student dashboard)
+   Centered overlay with Stay / Leave buttons, replaces window.confirm().
+   ────────────────────────────────────────────────────────────── */
+.pvt-leave-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+  animation: pvt-leave-overlay-in 0.15s ease-out;
+}
+@keyframes pvt-leave-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.pvt-leave-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 360px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: pvt-leave-modal-in 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@keyframes pvt-leave-modal-in {
+  from { transform: translateY(8px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.pvt-leave-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.pvt-leave-body {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.4;
+}
+.pvt-leave-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: stretch;
+}
+.pvt-leave-btn-cancel,
+.pvt-leave-btn-confirm {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.12s, transform 0.04s;
+}
+.pvt-leave-btn-cancel {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+.pvt-leave-btn-cancel:hover { background: #e2e8f0; }
+.pvt-leave-btn-cancel:active { transform: scale(0.98); }
+.pvt-leave-btn-confirm {
+  background: #dc2626;
+  color: #fff;
+}
+.pvt-leave-btn-confirm:hover { background: #b91c1c; }
+.pvt-leave-btn-confirm:active { transform: scale(0.98); }
+.pvt-leave-btn-cancel:focus-visible,
+.pvt-leave-btn-confirm:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .pvt-leave-modal {
+    max-width: 92vw;
+    padding: 18px 18px 14px;
+  }
+  .pvt-leave-title { font-size: 17px; }
+  .pvt-leave-body  { font-size: 13px; }
+  .pvt-leave-btn-cancel,
+  .pvt-leave-btn-confirm {
+    padding: 11px 14px;
+    font-size: 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Chat readability overrides
+
+   The dashboard-wide live.css (loaded in main.jsx) declares
+   .chat-bubble with a near-white background (#f2f7f7) and
+   sets .chat-input-area on a light --panel. That collided with
+   this file's chat-text rule (color: #e8eaf2 near-white) and
+   the input's near-white color, producing white-on-white text
+   on incoming bubbles and in the typing field. These rules
+   raise specificity by scoping under .chat-panel so they win
+   regardless of stylesheet load order.
+
+   - Incoming bubbles: solid dark background, keep the existing
+     near-white text. Outgoing 'me' bubbles are NOT touched —
+     their teal/blue brand background still wins via the
+     .chat-bubble.me-bubble rule already in live.css.
+   - Chat input field: change ONLY the typed-text colour to a
+     dark slate so it's readable against the light input bg
+     live.css gives the input. Background, border, padding, and
+     focus styles intentionally left alone — per user request.
+   ═══════════════════════════════════════════════════════════ */
+
+.chat-panel .chat-bubble {
+  background: #1f2937;
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+}
+.chat-panel .chat-bubble .chat-text {
+  color: #f8fafc;
+}
+.chat-panel .chat-bubble .chat-name {
+  color: rgba(255, 255, 255, 0.78);
+}
+.chat-panel .chat-bubble .chat-time {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Typed-text colour fix for the chat input. Only the font
+   colour is changed; the input bg/border/padding stay as
+   inherited from live.css and the existing rule above. */
+.chat-panel .chat-input-area input {
+  color: #0f172a;
+}
+.chat-panel .chat-input-area input::placeholder {
+  color: #64748b;
+}

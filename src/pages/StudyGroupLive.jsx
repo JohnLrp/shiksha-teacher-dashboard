@@ -2,15 +2,18 @@
  * FILE: TEACHER_UI/src/pages/StudyGroupLive.jsx
  *
  * Teacher enters a student-hosted study group's LiveKit room.
- * Reuses TeacherPrivateClassroomUI. Overlays a countdown banner
- * showing remaining duration of the group.
+ * Uses StudyGroupClassroomUI — a peer-only UI with no host/teacher
+ * power controls (no mute-individual, no mute-all, no remove, no
+ * end-for-all). Per product rule: in a Study Group, NO ONE — not
+ * even the host — has in-room authority. Overlays a countdown
+ * banner showing remaining duration of the group.
  */
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import studyGroupService, { extractApiError } from "../api/studyGroupService";
-import TeacherPrivateClassroomUI from "../components/live/TeacherPrivateClassroomUI";
+import StudyGroupClassroomUI from "../components/live/StudyGroupClassroomUI";
 import "../styles/privateSessions.css";
 import "../styles/teacherStudyGroups.css";
 
@@ -141,23 +144,24 @@ export default function StudyGroupLive() {
       audio={true}
       onDisconnected={() => navigate("/teacher/study-groups")}
     >
-      <div className="tsgLive__banner">
-        <span className="tsgLive__bannerBadge">STUDY GROUP</span>
-        <span className="tsgLive__bannerSubject">
-          {sessionData?.subjectName || "Study Group"}
-        </span>
-        <span className="tsgLive__bannerCountdown">
-          ⏳ {formatCountdown(remainingMs)} left
-        </span>
-      </div>
-
-      <TeacherPrivateClassroomUI
-        role="teacher"
+      <StudyGroupClassroomUI
+        role={(livekitData.role || "teacher").toLowerCase()}
         session={{
           ...sessionData,
           subject: sessionData?.subjectName,
           topic: sessionData?.topic,
         }}
+        chatConfig={{
+          restGetPath:  `/sessions/study-groups/${id}/chat/`,
+          restPostPath: `/sessions/study-groups/${id}/chat/send/`,
+          wsPath:       `/ws/study-group/${id}/chat/`,
+        }}
+        /* Study-group integration props — see component for full
+           notes. Replaces the old position:fixed banner (which was
+           prone to drifting mid-page on the student side). */
+        studyGroup={true}
+        studyGroupRemainingMs={remainingMs}
+        autoSpotlightLocal={true}
       />
       <RoomAudioRenderer />
     </LiveKitRoom>

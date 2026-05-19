@@ -73,14 +73,25 @@
 .tsg__card--expired   { border-left-color: #94a3b8; opacity: 0.85; }
 .tsg__card--live      { border-left-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,0.18); }
 
+/* tsg__cardTop:
+   align-items is flex-start so when the subject wraps to multiple lines the
+   status pill stays a fixed compact size at the top right rather than
+   vertically centering against a tall block (mirror of sg__cardTop). */
 .tsg__cardTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 4px;
 }
-.tsg__cardSubject { font-weight: 700; color: #0f172a; font-size: 16px; }
+.tsg__cardSubject {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
 .tsg__cardCourse  { color: #64748b; font-size: 12px; margin-bottom: 6px; }
 .tsg__cardTopic   { font-style: italic; color: #475569; font-size: 14px; margin-bottom: 10px; }
 
@@ -116,17 +127,46 @@
 .tsg__countChip--accepted { background: #dcfce7; color: #166534; }
 .tsg__countChip--pending  { background: #fef3c7; color: #92400e; }
 
+/* tsg__statusPill:
+   inline-flex + fixed height + flex-shrink:0 + align-self:flex-start make the
+   pill render IDENTICALLY regardless of card content length. Mirror of
+   sg__statusPill — see studyGroups.css for the rationale. */
 .tsg__statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
-  padding: 3px 8px;
+  line-height: 1;
+  height: 22px;
+  padding: 0 10px;
   border-radius: 999px;
   font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  flex-grow: 0;
+  align-self: flex-start;
+  box-sizing: border-box;
 }
 .tsg__statusPill--scheduled { background: #e0e7ff; color: #3730a3; }
 .tsg__statusPill--live      { background: #fee2e2; color: #991b1b; }
 .tsg__statusPill--completed { background: #dcfce7; color: #166534; }
 .tsg__statusPill--cancelled { background: #fee2e2; color: #991b1b; }
 .tsg__statusPill--expired   { background: #e5e7eb; color: #475569; }
+
+/* CSS-rendered red dot for live state (replaces the 🔴 emoji). */
+.tsg__statusPill--live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+  animation: tsg__livePulse 1.4s ease-in-out infinite;
+}
+@keyframes tsg__livePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
 
 .tsg__loading, .tsg__empty {
   text-align: center;
@@ -159,6 +199,86 @@
   cursor: pointer;
 }
 .tsg__btnGhost:hover { background: #f8fafc; }
+.tsg__btnGhost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Danger variants used by the History "Clear" controls. Mirrors the
+   student dashboard's sg__btnDanger / sg__btnDangerGhost pair. */
+.tsg__btnDanger {
+  padding: 10px 20px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnDanger:hover:not(:disabled) { background: #b91c1c; }
+.tsg__btnDanger:disabled { background: #fca5a5; cursor: not-allowed; }
+
+.tsg__btnDangerGhost {
+  padding: 10px 20px;
+  background: transparent;
+  color: #b91c1c;
+  border: 2px solid #fecaca;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tsg__btnDangerGhost:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+.tsg__btnDangerGhost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* History-tab cleanup toolbar — sits between the tab row and the grid. */
+.tsg__historyTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 4px 18px;
+  margin-bottom: 4px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.tsg__historyToolsLabel {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+/* Selection-mode card affordances. Top-left checkbox so it doesn't fight
+   the existing status pill on the right. Slate-blue "selected" outline
+   reads as "checked" rather than "live". */
+.tsg__card { position: relative; }
+.tsg__card--selectMode { cursor: pointer; }
+.tsg__card--selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
+}
+.tsg__cardSelectBox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  z-index: 2;
+}
+.tsg__cardSelectBox--on {
+  background: #2563eb;
+  border-color: #2563eb;
+}
 
 /* Detail */
 .tsg__detail {
@@ -350,36 +470,84 @@
   font-size: 13px;
 }
 
-/* Live room banner */
+/* Live room banner — small, top-center pill */
 .tsgLive__banner {
   position: fixed;
-  top: 12px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
+  width: auto;
+  max-width: min(90vw, 520px);
+  height: 32px;
+  box-sizing: border-box;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  background: rgba(59, 92, 124, 0.95);
+  gap: 8px;
+  padding: 0 12px;
+  background: rgba(15, 23, 42, 0.85);
   color: #fff;
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
   font-weight: 600;
-  z-index: 100;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1;
+  z-index: 9999;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .tsgLive__bannerBadge {
-  background: #fff;
-  color: #3b5c7c;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  background: #3b5c7c;
+  color: #fff;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.4px;
+  line-height: 1;
+}
+.tsgLive__bannerSubject {
+  font-size: 12px;
+  opacity: 0.92;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tsgLive__bannerCountdown {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 2px 10px;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 8px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* ============================================================
+   MOBILE WEB (≤ 600px) — does NOT alter desktop appearance. */
+@media (max-width: 600px) {
+  .tsg__page { padding: 12px 12px 32px; }
+  .tsg__grid { grid-template-columns: 1fr; gap: 12px; }
+  .tsg__card { padding: 14px; }
+  .tsg__cardSubject { font-size: 15px; }
+  .tsg__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .tsg__tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tsg__tab { padding: 8px 14px; font-size: 13px; white-space: nowrap; }
+  .tsg__detail { padding: 16px; }
+  .tsgLive__banner {
+    top: 8px;
+    max-width: min(96vw, 600px);
+    font-size: 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .tsgLive__bannerSubject { display: none; }
 }
