@@ -104,7 +104,7 @@
   padding: 12px 20px;
   border-radius: 0 0 16px 16px;
   border: 2px solid var(--ShikshaCom-App-Secondary---700, #415B7E);
-  min-height: 72px;
+  height: 9%;
 }
 .cb-timer {
   font-size: 15px;
@@ -140,8 +140,8 @@
 .cb-btn:hover { transform: translateY(-2px); }
 
 .cb-icon {
-  width: 40px;
-  height: 40px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: #2d3340;
   color: #ffffff;
@@ -663,8 +663,8 @@
 
 /* AVATAR (circle with image / initial) */
 .ppl-avatar {
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.25);
@@ -694,7 +694,7 @@
 }
 
 .ppl-name {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -718,12 +718,45 @@
 }
 
 .ppl-mic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.9;
+  flex-shrink: 0;
+  border: none;
+  transition: background 0.15s ease, transform 0.12s ease;
 }
+
+.ppl-mic--on {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.ppl-mic--off {
+  background: rgba(248, 81, 73, 0.55);
+}
+
+/* Clickable variant (teacher only on student rows) */
+.ppl-mic--btn {
+  cursor: pointer;
+}
+
+.ppl-mic--btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+
+.ppl-mic--btn.ppl-mic--off:hover {
+  background: rgba(248, 81, 73, 0.85);
+}
+
+.ppl-mic--btn:active {
+  transform: scale(0.95);
+}
+
 
 /* 3-DOT MENU BUTTON */
 .ppl-menu-wrap {
