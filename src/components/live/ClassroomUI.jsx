@@ -24,6 +24,10 @@ export default function ClassroomUI({
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
 
+  // 🔥 Force re-render when any participant's mic/cam/track changes
+  const [, setTick] = useState(0);
+  const bump = () => setTick((t) => t + 1);
+
   const containerRef = useRef(null);
   const room = useRoomContext();
 
@@ -77,6 +81,33 @@ export default function ClassroomUI({
       document.removeEventListener("webkitfullscreenchange", onFSChange);
     };
   }, []);
+
+  /* ───── RE-RENDER ON PARTICIPANT TRACK CHANGES ─────
+     LiveKit doesn't auto-trigger React re-renders when a remote
+     participant mutes/unmutes — so we force one by bumping a tick.
+  */
+  useEffect(() => {
+    if (!room) return;
+
+    const events = [
+      "trackMuted",
+      "trackUnmuted",
+      "trackPublished",
+      "trackUnpublished",
+      "trackSubscribed",
+      "trackUnsubscribed",
+      "participantConnected",
+      "participantDisconnected",
+      "localTrackPublished",
+      "localTrackUnpublished",
+    ];
+
+    events.forEach((evt) => room.on(evt, bump));
+
+    return () => {
+      events.forEach((evt) => room.off(evt, bump));
+    };
+  }, [room]);
 
   /* ───── REMOTE RAISE HAND ───── */
   useEffect(() => {
