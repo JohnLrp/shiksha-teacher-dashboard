@@ -3,8 +3,6 @@ import {
   useLocalParticipant,
 } from "@livekit/components-react";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import api from "../../api/apiClient";
 
 export default function ControlBar({ onLeave, role, activePanel, onTogglePanel }) {
   const isPresenter = role === "PRESENTER";
@@ -12,16 +10,12 @@ export default function ControlBar({ onLeave, role, activePanel, onTogglePanel }
 
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
-  const { id: sessionId } = useParams();
 
   const [micOn, setMicOn] = useState(false);
   const [videoOn, setVideoOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
   const [canUnmute, setCanUnmute] = useState(false);
   const [canVideo, setCanVideo] = useState(false);
-
-  const [paused, setPaused] = useState(false);
-  const [pauseLoading, setPauseLoading] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const startRef = useRef(Date.now());
@@ -85,21 +79,6 @@ export default function ControlBar({ onLeave, role, activePanel, onTogglePanel }
     }
   };
 
-  /* ── pause / resume (teacher only) ── */
-  const handlePauseResume = async () => {
-    if (!sessionId) return;
-    setPauseLoading(true);
-    try {
-      const res = await api.post(`/livestream/sessions/${sessionId}/pause/`);
-      setPaused(res.data.status === "PAUSED");
-    } catch (err) {
-      console.error("Pause error:", err);
-      alert(err?.response?.data?.detail || "Failed to pause session.");
-    } finally {
-      setPauseLoading(false);
-    }
-  };
-
   /* ── teacher commands (student listens) ── */
   useEffect(() => {
     if (!isStudent) return;
@@ -144,7 +123,6 @@ export default function ControlBar({ onLeave, role, activePanel, onTogglePanel }
           setVideoOn(false);
         }
         if (msg.type === "kick") {
-          // Teacher kicked us
           alert("You have been removed from the session by the teacher.");
           room.disconnect();
           if (onLeave) onLeave();
@@ -231,42 +209,17 @@ export default function ControlBar({ onLeave, role, activePanel, onTogglePanel }
           <span className="cb-label">Screen</span>
         </button>
 
-        {/* Pause/Resume — teacher only — replaces "Other" */}
-        {isPresenter ? (
-          <button
-            className="cb-btn"
-            onClick={handlePauseResume}
-            disabled={pauseLoading}
-            title={paused ? "Resume session" : "Pause session"}
-          >
-            <div className={`cb-icon ${paused ? "cb-icon--active" : ""}`}>
-              {paused ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="6 4 20 12 6 20 6 4"/>
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="4" width="4" height="16"/>
-                  <rect x="14" y="4" width="4" height="16"/>
-                </svg>
-              )}
-            </div>
-            <span className="cb-label">
-              {pauseLoading ? "..." : paused ? "Resume" : "Pause"}
-            </span>
-          </button>
-        ) : (
-          <button className="cb-btn" title="More options">
-            <div className="cb-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="5" r="1"/>
-                <circle cx="12" cy="12" r="1"/>
-                <circle cx="12" cy="19" r="1"/>
-              </svg>
-            </div>
-            <span className="cb-label">Other</span>
-          </button>
-        )}
+        {/* Other — same as student, no dropdown */}
+        <button className="cb-btn" title="More options">
+          <div className="cb-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="5" r="1"/>
+              <circle cx="12" cy="12" r="1"/>
+              <circle cx="12" cy="19" r="1"/>
+            </svg>
+          </div>
+          <span className="cb-label">Other</span>
+        </button>
 
         {/* Leave */}
         <button className="cb-btn" onClick={leaveRoom} title="Leave class">

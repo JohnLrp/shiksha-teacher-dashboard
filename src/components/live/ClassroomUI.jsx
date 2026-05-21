@@ -7,9 +7,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "../../styles/live.css";
 import useLiveSessionChat from "../../hooks/useLiveSessionChat";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
-import { HiMicrophone, HiVideoCamera } from "react-icons/hi2";
-import { HiOutlineHand } from "react-icons/hi";
-import { MdPersonRemove } from "react-icons/md";
+import { HiDotsVertical } from "react-icons/hi";
 
 export default function ClassroomUI({
   role,
@@ -23,10 +21,8 @@ export default function ClassroomUI({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [activePanel, setActivePanel] = useState(null);
-
-  // Track which students have mic/camera allowed (teacher-side cache)
-  const [allowedMics, setAllowedMics] = useState({});
-  const [allowedCams, setAllowedCams] = useState({});
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
 
   const containerRef = useRef(null);
   const room = useRoomContext();
@@ -40,7 +36,19 @@ export default function ClassroomUI({
   /* ───── PANEL TOGGLE ───── */
   const togglePanel = (panel) => {
     setActivePanel((current) => (current === panel ? null : panel));
+    setOpenMenuId(null);
   };
+
+  /* ───── Close menu on outside click ───── */
+  useEffect(() => {
+    const onClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenuId(null);
+      }
+    };
+    if (openMenuId) document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [openMenuId]);
 
   /* ───── FULLSCREEN ───── */
   const toggleFullscreen = async () => {
@@ -108,7 +116,7 @@ export default function ClassroomUI({
     return () => room.off("dataReceived", handleData);
   }, [room, isPresenter]);
 
-  /* ───── TEACHER ACTIONS: send commands to a student ───── */
+  /* ───── TEACHER ACTIONS ───── */
   const sendToStudent = async (identity, msgObj) => {
     try {
       const encoder = new TextEncoder();
@@ -122,31 +130,6 @@ export default function ClassroomUI({
     }
   };
 
-  /* ── Toggle student MIC ── */
-  const toggleStudentMic = async (identity, isMicOn) => {
-    if (isMicOn) {
-      // Currently on → force mute
-      await sendToStudent(identity, { type: "force-mute" });
-      setAllowedMics((prev) => ({ ...prev, [identity]: false }));
-    } else {
-      // Currently off → force unmute
-      await sendToStudent(identity, { type: "force-unmute" });
-      setAllowedMics((prev) => ({ ...prev, [identity]: true }));
-    }
-  };
-
-  /* ── Toggle student CAMERA ── */
-  const toggleStudentCamera = async (identity, isCamOn) => {
-    if (isCamOn) {
-      await sendToStudent(identity, { type: "force-camera-off" });
-      setAllowedCams((prev) => ({ ...prev, [identity]: false }));
-    } else {
-      await sendToStudent(identity, { type: "force-camera-on" });
-      setAllowedCams((prev) => ({ ...prev, [identity]: true }));
-    }
-  };
-
-  /* ── Lower a student's hand ── */
   const lowerStudentHand = async (identity) => {
     await sendToStudent(identity, { type: "lower-hand" });
     setRaisedHands((prev) => {
@@ -154,21 +137,17 @@ export default function ClassroomUI({
       delete updated[identity];
       return updated;
     });
+    setOpenMenuId(null);
   };
 
-  /* ── Kick a student ── */
-  const kickStudent = async (identity) => {
-    if (!window.confirm(`Remove ${identity} from the session?`)) return;
+  const kickStudent = async (identity, name) => {
+    if (!window.confirm(`Remove ${name || identity} from the session?`)) return;
     try {
-      // Send a "kick" message - student side should handle disconnect
       await sendToStudent(identity, { type: "kick" });
-
-      // Also use LiveKit server API if available (you may need backend support)
-      // For now we just disconnect them via data message
-      console.log(`Kicked ${identity}`);
     } catch (err) {
       console.error("Kick error:", err);
     }
+    setOpenMenuId(null);
   };
 
   /* ───── TRACKS ───── */
@@ -201,8 +180,8 @@ export default function ClassroomUI({
     );
   }
 
-  /* ── Build participants list with live mic/cam state ── */
-  const participantsList = room.remoteParticipants
+  /* ── Build participants list ── */
+  const remoteParticipants = room.remoteParticipants
     ? Array.from(room.remoteParticipants.values()).map((p) => ({
         identity: p.identity,
         name: p.name || p.identity,
@@ -210,8 +189,42 @@ export default function ClassroomUI({
         micOn: p.isMicrophoneEnabled,
         camOn: p.isCameraEnabled,
         handRaised: !!raisedHands[p.identity],
+        isTeacher: false,
+        isMe: false,
       }))
     : [];
+
+  const localId = room.localParticipant?.identity;
+  const localName = room.localParticipant?.name || localId || "You";
+
+  // Build unified list — teacher at top (dark navy), then me, then peers
+  let peopleList = [];
+
+  if (isPresenter) {
+    peopleList.push({
+      identity: localId,
+      name: localName,
+      role: "Teacher",
+      micOn: room.localParticipant?.isMicrophoneEnabled,
+      camOn: room.localParticipant?.isCameraEnabled,
+      handRaised: false,
+      isTeacher: true,
+      isMe: true,
+    });
+    peopleList = peopleList.concat(remoteParticipants);
+  } else {
+    peopleList.push({
+      identity: localId,
+      name: "You",
+      role: "Student",
+      micOn: room.localParticipant?.isMicrophoneEnabled,
+      camOn: room.localParticipant?.isCameraEnabled,
+      handRaised: false,
+      isTeacher: false,
+      isMe: true,
+    });
+    peopleList = peopleList.concat(remoteParticipants);
+  }
 
   /* ───── MAIN UI ───── */
   return (
@@ -285,77 +298,97 @@ export default function ClassroomUI({
               role={role}
               messages={chatMessages}
               onSendMessage={sendMessage}
-              participants={participantsList}
+              participants={peopleList}
             />
           )}
 
           {activePanel === "people" && (
-            <div className="side-panel">
-              <div className="side-panel__header">
-                <h3>People ({participantsList.length})</h3>
-                <button
-                  className="side-panel__close"
-                  onClick={() => setActivePanel(null)}
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
+            <div className="ppl-panel">
+              {/* HEADER */}
+              <div className="ppl-header">
+                Participants ({peopleList.length})
               </div>
-              <div className="side-panel__body">
-                {participantsList.length === 0 ? (
-                  <p className="side-panel__empty">No participants yet.</p>
+
+              {/* LIST */}
+              <div className="ppl-list">
+                {peopleList.length === 0 ? (
+                  <p className="ppl-empty">No participants yet.</p>
                 ) : (
-                  participantsList.map((p, i) => (
+                  peopleList.map((p, i) => (
                     <div
-                      className={`side-panel__row ${p.handRaised ? "side-panel__row--raised" : ""}`}
                       key={p.identity || i}
+                      className={
+                        "ppl-card" +
+                        (p.isTeacher ? " ppl-card--teacher" : "")
+                      }
                     >
-                      <div className="side-panel__avatar">
-                        {p.name?.charAt(0)?.toUpperCase() || "?"}
-                      </div>
-                      <div className="side-panel__info">
-                        <div className="side-panel__name">
-                          {p.name}
-                          {p.handRaised && <span className="raised-hand-icon"> ✋</span>}
-                        </div>
-                        <div className="side-panel__role">{p.role}</div>
+                      <div className="ppl-avatar">
+                        {p.avatarUrl ? (
+                          <img src={p.avatarUrl} alt={p.name} />
+                        ) : (
+                          p.name?.charAt(0)?.toUpperCase() || "?"
+                        )}
                       </div>
 
-                      {/* TEACHER-ONLY ACTIONS */}
-                      {isPresenter && (
-                        <div className="side-panel__actions">
-                          {p.handRaised && (
-                            <button
-                              className="sp-action sp-action--warn"
-                              title="Lower hand"
-                              onClick={() => lowerStudentHand(p.identity)}
-                            >
-                              <HiOutlineHand size={14} />
-                            </button>
-                          )}
-                          <button
-                            className={`sp-action ${p.micOn ? "sp-action--on" : "sp-action--off"}`}
-                            title={p.micOn ? "Mute student" : "Unmute student"}
-                            onClick={() => toggleStudentMic(p.identity, p.micOn)}
-                          >
-                            <HiMicrophone size={14} />
-                          </button>
-                          <button
-                            className={`sp-action ${p.camOn ? "sp-action--on" : "sp-action--off"}`}
-                            title={p.camOn ? "Turn off camera" : "Turn on camera"}
-                            onClick={() => toggleStudentCamera(p.identity, p.camOn)}
-                          >
-                            <HiVideoCamera size={14} />
-                          </button>
-                          <button
-                            className="sp-action sp-action--kick"
-                            title="Remove student"
-                            onClick={() => kickStudent(p.identity)}
-                          >
-                            <MdPersonRemove size={14} />
-                          </button>
+                      <div className="ppl-info">
+                        <div className="ppl-name">
+                          {p.isMe ? "You" : p.name}
                         </div>
-                      )}
+                        <div className="ppl-role">{p.role}</div>
+                      </div>
+
+                      <div className="ppl-actions">
+                        {/* MIC ICON (indicator only) */}
+                        <div className="ppl-mic">
+                          {p.micOn ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                              <line x1="12" y1="19" x2="12" y2="23"/>
+                              <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="1" y1="1" x2="23" y2="23"/>
+                              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                              <line x1="12" y1="19" x2="12" y2="23"/>
+                              <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                          )}
+                        </div>
+
+                        {/* 3-DOT MENU — teacher only, never on self, never on teacher row */}
+                        {isPresenter && !p.isMe && !p.isTeacher && (
+                          <div
+                            className="ppl-menu-wrap"
+                            ref={openMenuId === p.identity ? menuRef : null}
+                          >
+                            <button
+                              className="ppl-menu-btn"
+                              onClick={() =>
+                                setOpenMenuId(
+                                  openMenuId === p.identity ? null : p.identity
+                                )
+                              }
+                              title="More options"
+                            >
+                              <HiDotsVertical size={16} />
+                            </button>
+
+                            {openMenuId === p.identity && (
+                              <div className="ppl-menu">
+                                <button
+                                  className="ppl-menu-item ppl-menu-item--danger"
+                                  onClick={() => kickStudent(p.identity, p.name)}
+                                >
+                                  Kick from session
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
@@ -389,7 +422,7 @@ export default function ClassroomUI({
                 <div className="side-panel__field">
                   <div className="side-panel__field-label">Participants</div>
                   <div className="side-panel__field-value">
-                    {participantsList.length + 1}
+                    {peopleList.length}
                   </div>
                 </div>
               </div>
