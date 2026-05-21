@@ -605,3 +605,118 @@
     height: 34px;
   }
 }
+
+/* ============================================================
+   TEACHER-SPECIFIC ADDITIONS — append to live.css
+   ============================================================ */
+
+/* ── People panel: teacher action buttons (mic / cam / lower / kick) ── */
+.side-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sp-action {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.sp-action:hover {
+  transform: translateY(-1px);
+}
+
+.sp-action--on {
+  background: rgba(0, 95, 111, 0.12);
+  color: #005f6f;
+}
+
+.sp-action--off {
+  background: rgba(248, 81, 73, 0.12);
+  color: #ef4444;
+}
+
+.sp-action--warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.sp-action--warn:hover {
+  background: #fde68a;
+}
+
+.sp-action--kick {
+  background: rgba(248, 81, 73, 0.10);
+  color: #ef4444;
+}
+
+.sp-action--kick:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* ── Highlight a row whose hand is raised ── */
+.side-panel__row--raised {
+  background: #fff8e1 !important;
+  border: 1px solid #fbbf24;
+}
+
+.raised-hand-icon {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+/* ── Toast: "Lower" button inside raise-hand toast ── */
+.rh-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rh-toast-btn {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.rh-toast-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================
+   TEACHER LAYOUT — LIVE SESSION FULLSCREEN MODE
+   (add to your layout.css)
+   ============================================================ */
+
+.teacher-layout--live {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.teacher-content--live {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: 14px;
+  overflow: hidden;
+}

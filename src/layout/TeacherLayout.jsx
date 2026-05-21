@@ -23,9 +23,24 @@ export default function TeacherLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Hide sidebar + header + top tabs in live session view
+  const isLiveSession = location.pathname.startsWith("/live/");
+
   const isClassesPage = location.pathname.startsWith("/teacher/classes");
   const hideTopSliderOnMobile = isMobile && isClassesPage;
 
+  // ───── LIVE SESSION FULLSCREEN MODE ─────
+  if (isLiveSession) {
+    return (
+      <div className="teacher-layout teacher-layout--live">
+        <div className="teacher-content teacher-content--live">
+          <Outlet context={{ active, setActive }} />
+        </div>
+      </div>
+    );
+  }
+
+  // ───── NORMAL LAYOUT ─────
   return (
     <div className="teacher-layout">
       <Sidebar
