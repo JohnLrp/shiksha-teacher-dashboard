@@ -21,6 +21,37 @@ function readCache(id) {
   }
 }
 
+/* ── Fullscreen wrapper styles (kills scroll) ── */
+const fullscreenWrap = {
+  width: "100vw",
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  background: "#c9dde1",
+  boxSizing: "border-box",
+  padding: "14px",
+};
+
+const liveKitWrap = {
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+};
+
+const centerMsg = {
+  width: "100vw",
+  height: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexDirection: "column",
+  gap: 16,
+  background: "#c9dde1",
+};
+
 export default function TeacherLiveSession() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -65,17 +96,39 @@ export default function TeacherLiveSession() {
     navigate(-1);
   };
 
-  if (loading) return <div style={{ padding: 20 }}>Connecting...</div>;
+  if (loading) {
+    return (
+      <div style={centerMsg}>
+        <p style={{ fontSize: 16, color: "#102a2a", margin: 0 }}>
+          Connecting...
+        </p>
+      </div>
+    );
+  }
 
   if (error || !sessionData?.token) {
     return (
-      <div style={{ padding: 20 }}>
-        <p>{error || "Session unavailable"}</p>
-        <button onClick={() => {
-          sessionStorage.removeItem(cacheKey(id));
-          joiningRef.current = false;
-          window.location.reload();
-        }}>
+      <div style={centerMsg}>
+        <p style={{ fontSize: 16, color: "#102a2a", margin: 0 }}>
+          {error || "Session unavailable"}
+        </p>
+        <button
+          onClick={() => {
+            sessionStorage.removeItem(cacheKey(id));
+            joiningRef.current = false;
+            window.location.reload();
+          }}
+          style={{
+            padding: "10px 24px",
+            borderRadius: 999,
+            border: "none",
+            background: "#005f6f",
+            color: "#fff",
+            cursor: "pointer",
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
           Retry
         </button>
       </div>
@@ -83,19 +136,22 @@ export default function TeacherLiveSession() {
   }
 
   return (
-    <LiveKitRoom
-      serverUrl={sessionData.livekit_url}
-      token={sessionData.token}
-      connect={true}
-      video
-      audio
-    >
-      <ClassroomUI
-        role={sessionData.role}
-        sessionId={id}
-        onLeave={handleLeave}
-      />
-      <RoomAudioRenderer />
-    </LiveKitRoom>
+    <div style={fullscreenWrap}>
+      <LiveKitRoom
+        serverUrl={sessionData.livekit_url}
+        token={sessionData.token}
+        connect={true}
+        video
+        audio
+        style={liveKitWrap}
+      >
+        <ClassroomUI
+          role={sessionData.role}
+          sessionId={id}
+          onLeave={handleLeave}
+        />
+        <RoomAudioRenderer />
+      </LiveKitRoom>
+    </div>
   );
 }
