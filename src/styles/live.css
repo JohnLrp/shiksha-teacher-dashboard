@@ -1,616 +1,513 @@
+/* ============================================================
+   LIVE SESSION — Unified CSS (Teacher + Student)
+   Replace your old teacher live.css with this entire file.
+   ============================================================ */
 
-:root{
-  --panel: #ffffff;
-  --stroke: rgba(0,0,0,.10);
-  --shadow: 0 14px 30px rgba(0,0,0,.12);
-  --shadow2: 0 10px 20px rgba(0,0,0,.08);
-  --dark: #0b1620;
-  --brand: #0b5b5b;
-  --brand-soft: #eef6f6;
-  --text: #102a2a;
-  --muted: rgba(16,42,42,.65);
-  --danger: #d92d20;
-  --danger-hover: #b42318;
-  --warn: #f5b301;
-  --warn-bg: #fff8e1;
-  --r20: 20px;
-  --r16: 16px;
-  --r14: 14px;
-  --r12: 12px;
+:root {
+  --ls-bg: #c9dde1;
+  --ls-surface: #161b22;
+  --ls-text: #e6edf3;
+  --ls-muted: rgba(230,237,243,.5);
+  --ls-red: #f85149;
+  --ls-red-dim: rgba(248,81,73,.15);
+  --ls-shadow: 0 8px 32px rgba(0,0,0,.4);
+  --ls-shadow-sm: 0 4px 16px rgba(0,0,0,.06);
 }
 
-/* PARENT LAYOUT FIX */
 
-.studentLayout__right{
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.studentLayout__page:has(.classroom-layout){
+.classroom-layout {
   flex: 1;
   min-height: 0;
-  overflow: hidden !important;
-  display: flex !important;
-  padding: 14px !important;
-}
-
-.lk-room-container{
-  flex: 1;
-  min-height: 0;
-  display: flex;
-}
-
-/*MAIN CLASSROOM LAYOUT*/
-
-.classroom-layout{
-  flex: 1;
-  min-height: 0;
+  min-width: 0;
+  width: 100%;
   height: 100%;
   display: grid;
   grid-template-columns: 1fr 360px;
+  grid-template-rows: 1fr;
   gap: 14px;
   align-items: stretch;
-  overflow: hidden;
-  position: relative;
 }
 
-.main-stage{
+.classroom-main {
   min-height: 0;
-  position: relative;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   overflow: hidden;
 }
 
-.main-stage.full-width{
-  grid-column: 1 / -1;
+.main-stage {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  background: #0a0a0a;
 }
 
-.main-stage video{
+.main-stage video {
   width: 100%;
   height: 100%;
-  min-height: 0;
   object-fit: cover;
-  background: var(--dark);
-  border-radius: var(--r20);
-  box-shadow: var(--shadow);
+  background: #000;
+  display: block;
 }
 
-/* Screen share: fit content instead of cropping */
-.main-stage video.lk-screen-share{
+.main-stage video.lk-screen-share {
   object-fit: contain;
 }
 
-/* Picture-in-picture camera overlay during screen share */
-.pip-camera{
+.pip-camera {
   position: absolute;
-  bottom: 90px;
-  right: 16px;
-  width: 180px;
+  bottom: 18px;
+  right: 18px;
+  width: 190px;
   height: 120px;
-  border-radius: var(--r14);
+  border-radius: 16px;
   overflow: hidden;
+  border: 2px solid rgba(255,255,255,.2);
   box-shadow: 0 8px 24px rgba(0,0,0,.35);
-  border: 2px solid rgba(255,255,255,.25);
-  z-index: 25;
-  cursor: grab;
-  transition: transform 0.15s;
+  z-index: 30;
 }
 
-.pip-camera:hover{
-  transform: scale(1.04);
-}
-
-.pip-camera video{
+.pip-camera video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0 !important;
 }
 
-/* Top-right icon buttons overlaid on video */
-.video-overlay-actions{
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 30;
-  display: flex;
-  gap: 8px;
-}
 
-.ov-btn{
-  width: 38px;
-  height: 38px;
-  border: none;
-  background: rgba(15,23,32,0.68);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  transition: background 0.2s, transform 0.15s;
-}
 
-.ov-btn:hover{
-  background: rgba(15,23,32,0.88);
-  transform: scale(1.08);
-}
-
-/* Raise-hand toast notifications */
-.rh-toasts{
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.rh-toast{
-  background: rgba(245,179,1,0.96);
-  color: #102a2a;
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-  backdrop-filter: blur(6px);
-  animation: rhToastIn 0.3s ease;
-}
-
-@keyframes rhToastIn{
-  from{ opacity: 0; transform: translateX(-16px); }
-  to{ opacity: 1; transform: translateX(0); }
-}
-
-/* Fullscreen mode — classroom fills entire screen */
-.classroom-layout.fs-mode{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  width: 100vw;
-  height: 100vh;
-  background: var(--dark);
-  gap: 0;
-  border-radius: 0;
-}
-
-.classroom-layout.fs-mode .main-stage video{
-  border-radius: 0;
-}
-
-.classroom-layout.fs-mode .right-sidebar{
-  border-radius: 0;
-  border-top: none;
-  border-bottom: none;
-  border-right: none;
-  border-left: 1px solid rgba(255,255,255,0.08);
-}
-
-/* RIGHT SIDEBAR*/
-
-.right-sidebar{
+.right-sidebar {
   min-height: 0;
-  background: var(--panel);
-  border: 1px solid var(--stroke);
-  border-radius: var(--r20);
-  box-shadow: var(--shadow2);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.right-sidebar > :first-child{
-  padding: 12px;
-  max-height: 220px;
-  overflow: auto;
-  border-bottom: 1px solid var(--stroke);
-}
-
-.right-sidebar > :last-child{
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* WAITING SCREEN*/
-
-.waiting-screen{
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.waiting-screen h2{
-  background: var(--panel);
-  border: 1px solid var(--stroke);
-  border-radius: var(--r16);
-  padding: 16px 18px;
-  box-shadow: var(--shadow2);
-  color: var(--text);
-  margin: 0;
-}
-
-/*  PARTICIPANTS PANEL */
-
-.participants-wrapper{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.participants-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #f3f8f8;
-  border: 1px solid rgba(0,0,0,.06);
-  cursor: pointer;
-  user-select: none;
-  font-weight: 900;
-  color: var(--text);
-}
-
-.participants-row{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 180px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.participant-card{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 10px;
-  border-radius: var(--r14);
-  background: #ffffff;
-  border: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 8px 16px rgba(0,0,0,.05);
-}
-
-.participant-card.hand-raised{
-  border: 1px solid var(--warn);
-  background: var(--warn-bg);
-  box-shadow: 0 6px 16px rgba(245,179,1,.18);
-}
-
-.participant-avatar{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  color: #fff;
-  background: var(--brand);
-  flex-shrink: 0;
-}
-
-.participant-name{
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.raised-hand-icon{
-  margin-left: 8px;
-  font-size: 16px;
-}
-
-/* Mute button in participant card */
-.participant-mute-btn{
-  margin-left: auto;
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 8px;
-  background: #f9fafb;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.participant-mute-btn:hover{
-  background: #fee2e2;
-  transform: scale(1.08);
-}
-
-/* CHAT PANEL*/
-
-.chat-panel{
+  min-width: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  overflow: hidden;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-.chat-messages{
+
+.control-bar {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 20px;
+  border-radius: 0 0 16px 16px;
+  border: 2px solid var(--ShikshaCom-App-Secondary---700, #415B7E);
+  min-height: 72px;
+  background: #ffffff;
+}
+.cb-timer {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+}
+
+.cb-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
   flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 12px;
-  background: linear-gradient(180deg, #ffffff, #f6fbfb);
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.cb-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.cb-btn:hover { transform: translateY(-2px); }
+
+.cb-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2d3340;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.cb-icon--off    { background: #2d3340; color: #ffffff; }
+.cb-icon--active { background: rgba(0,95,111,.18); color: #005f6f; }
+
+/* Leave — solid red circle */
+.cb-icon--leave  { background: #ef4444; color: #ffffff; }
+
+.cb-label {
+  font-size: 11px;
+  color: #27292e;
+  font-weight: 600;
+}
+
+.cb-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cb-side-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: #27292E;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color 0.15s ease;
+}
+
+.cb-side-btn span {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.cb-side-btn:hover { color: #005f6f; }
+
+.cb-side-btn--active {
+  color: #005f6f;
+}
+
+.cb-side-btn--active span {
+  font-weight: 700;
+}
+
+.chat-raise-hand-wrap {
+  position: absolute;
+  right: 14px;
+  bottom: 100px;
+  z-index: 300;
+}
+
+.raise-hand-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: #f59e0b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(245,158,11,.3);
+}
+
+
+.ls-paused {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: #0d1117;
+  color: #e8eaf2;
+  gap: 16px;
+  text-align: center;
+  padding: 24px;
+  border-radius: 20px;
+}
+
+.ls-paused__icon {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.ls-paused h2 { margin: 0; font-weight: 600; }
+.ls-paused p { color: #6b7591; margin: 0; font-size: 14px; }
+
+
+.waiting-screen {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d1117;
+  border-radius: 20px;
+}
+
+.waiting-card {
+  padding: 40px 48px;
+  border-radius: 20px;
+  background: #161b22;
+  text-align: center;
+  box-shadow: var(--ls-shadow);
+}
+
+.waiting-card h2 { margin-top: 18px; color: white; }
+.waiting-card p { color: rgba(255,255,255,.6); }
+
+.waiting-pulse {
+  width: 52px;
+  height: 52px;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(0,95,111,.2);
+  border: 2px solid #0ea5a5;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50%     { transform: scale(1.12); opacity: .6; }
+}
+
+.rh-toasts {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.chat-empty{
+.rh-toast {
+  background: rgba(0,0,0,.8);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 999px;
   font-size: 13px;
-  color: var(--muted);
-  text-align: center;
-  margin-top: 20px;
-}
-
-/* Row alignment */
-.chat-row{
+  backdrop-filter: blur(12px);
   display: flex;
-}
-.chat-row.me{
-  justify-content: flex-end;
-}
-.chat-row.other{
-  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
 }
 
-.chat-bubble{
-  max-width: 82%;
-  background: #f2f7f7;
-  border: 1px solid rgba(0,0,0,.06);
-  border-radius: 14px;
-  padding: 8px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.05);
-  color: var(--text);
-}
-
-/* My messages — teal */
-.chat-bubble.me-bubble{
-  background: var(--brand);
-  color: #fff;
-  border-color: transparent;
-}
-
-/* Teacher messages — deep teal/blue */
-.chat-bubble.teacher-bubble{
-  background: #0369a1;
-  color: #fff;
-  border-color: transparent;
-}
-
-.chat-name{
-  display: block;
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--muted);
-  margin-bottom: 3px;
-  letter-spacing: 0.2px;
-}
-
-.chat-bubble.me-bubble .chat-name,
-.chat-bubble.teacher-bubble .chat-name{
-  color: rgba(255,255,255,0.75);
-}
-
-.teacher-tag{
+.rh-toast-btn {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
   font-weight: 600;
-  opacity: 0.85;
-}
-
-.chat-text{
-  font-size: 13px;
-  line-height: 1.45;
-  word-break: break-word;
-}
-
-.chat-time{
-  font-size: 10px;
-  opacity: 0.55;
-  margin-top: 4px;
-  text-align: right;
-}
-
-.chat-input-area{
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 10px 12px;
-  border-top: 1px solid var(--stroke);
-  background: var(--panel);
-}
-
-.chat-input-area input{
-  flex: 1;
-  padding: 11px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.14);
-  outline: none;
-  font-size: 13px;
-}
-
-.chat-input-area input:focus{
-  border-color: rgba(11,91,91,.45);
-  box-shadow: 0 0 0 4px rgba(11,91,91,.10);
-}
-
-.chat-input-area button{
-  border: none;
   cursor: pointer;
-  border-radius: 999px;
-  padding: 10px 12px;
-  font-weight: 900;
-  background: var(--brand-soft);
+  transition: background 0.15s ease;
+}
+
+.rh-toast-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+
+.video-fs-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.chat-input-area button:last-child{
-  background: var(--brand);
-  color: #fff;
-  padding: 10px 14px;
-}
-
-/* raise hand button */
-.raise-hand-btn{
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: #fff7e6;
   cursor: pointer;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  transition: 0.2s ease;
+}
+
+.video-fs-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+  transform: scale(1.06);
+}
+
+
+.classroom-layout.fs-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  padding: 14px;
+  background: #c9dde1;
+  box-sizing: border-box;
+}
+
+.classroom-layout.fs-mode .video-fs-btn {
+  bottom: 18px;
+  right: 18px;
+}
+
+
+.classroom-layout.panel-closed {
+  grid-template-columns: 1fr;
+}
+
+
+.side-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.side-panel__header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
 
-.raise-hand-btn:hover{
-  transform: translateY(-1px);
-  background: #fef3c7;
-}
-
-/* TEACHER / LIVE CONTROLS*/
-
-.control-bar,
-.teacher-controls{
-  position: absolute;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(15, 23, 32, 0.78);
-  backdrop-filter: blur(10px);
-  border-radius: 999px;
-  z-index: 40;
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
-}
-
-/* works for buttons inside both control-bar and teacher-controls */
-.control-bar button,
-.teacher-controls .control-btn{
-  border: none;
-  outline: none;
-  min-width: 90px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  color: #fff;
-  font-size: 13px;
+.side-panel__header h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 700;
+  color: #111827;
+}
+
+.side-panel__close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  transition: background 0.18s ease;
 }
 
-.control-bar button:hover,
-.teacher-controls .control-btn:hover{
-  background: rgba(255,255,255,0.22);
-  transform: translateY(-1px);
+.side-panel__close:hover {
+  background: #e5e7eb;
+  color: #111827;
 }
 
-.control-bar button:active,
-.teacher-controls .control-btn:active{
-  transform: translateY(0);
+.side-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* off state */
-.control-btn.off{
-  background: #8b0000 !important;
+.side-panel__empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  margin-top: 20px;
 }
 
-/* leave button */
-.control-bar button:last-child,
-.teacher-controls .end-call-btn{
-  background: var(--danger);
+/* People row */
+.side-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 12px;
 }
 
-.control-bar button:last-child:hover,
-.teacher-controls .end-call-btn:hover{
-  background: var(--danger-hover);
+.side-panel__row--raised {
+  background: #fff8e1;
+  border: 1px solid #fbbf24;
 }
 
-@media (max-width: 900px){
-  .classroom-layout{
-    grid-template-columns: 1fr;
-  }
-
-  .right-sidebar{
-    position: fixed;
-    right: 14px;
-    top: 74px;
-    width: min(380px, 92vw);
-    height: calc(100vh - 94px);
-    z-index: 50;
-  }
+.side-panel__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #005f6f;
+  color: #ffffff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-@media (max-width: 768px){
-  .control-bar,
-  .teacher-controls{
-    bottom: 14px;
-    width: calc(100% - 24px);
-    max-width: 520px;
-    padding: 10px;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    border-radius: 18px;
-  }
+.side-panel__info {
+  flex: 1;
+  min-width: 0;
+}
 
-  .control-bar button,
-  .teacher-controls .control-btn{
-    min-width: 90px;
-    height: 40px;
-    font-size: 13px;
-    padding: 0 12px;
-  }
+.side-panel__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
 
-  .video-overlay-actions{
-    top: 10px;
-    right: 10px;
-  }
+.side-panel__role {
+  font-size: 12px;
+  color: #6b7280;
+}
 
-  .ov-btn{
-    width: 34px;
-    height: 34px;
-  }
+.raised-hand-icon {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+/* Info field */
+.side-panel__field {
+  padding: 12px 14px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.side-panel__field-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.side-panel__field-value {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+  word-break: break-all;
 }
 
 /* ============================================================
-   TEACHER-SPECIFIC ADDITIONS — append to live.css
+   TEACHER-SPECIFIC — People panel actions (mic / cam / kick)
    ============================================================ */
 
-/* ── People panel: teacher action buttons (mic / cam / lower / kick) ── */
 .side-panel__actions {
   display: flex;
   align-items: center;
@@ -666,57 +563,35 @@
   color: #ffffff;
 }
 
-/* ── Highlight a row whose hand is raised ── */
-.side-panel__row--raised {
-  background: #fff8e1 !important;
-  border: 1px solid #fbbf24;
-}
-
-.raised-hand-icon {
-  font-size: 14px;
-  margin-left: 4px;
-}
-
-/* ── Toast: "Lower" button inside raise-hand toast ── */
-.rh-toast {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.rh-toast-btn {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.rh-toast-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 /* ============================================================
-   TEACHER LAYOUT — LIVE SESSION FULLSCREEN MODE
-   (add to your layout.css)
+   RESPONSIVE
    ============================================================ */
 
-.teacher-layout--live {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+@media (max-width: 768px) {
+  .classroom-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 8px;
+  }
+
+  .classroom-main { gap: 8px; }
+
+  .control-bar {
+    padding: 8px 10px;
+    min-height: 60px;
+  }
+
+  .cb-center { gap: 10px; }
+  .cb-right { gap: 8px; }
+  .cb-icon { width: 34px; height: 34px; }
+  .cb-label, .cb-side-btn span { font-size: 10px; }
+
+  .pip-camera { width: 100px; height: 66px; right: 10px; bottom: 10px; }
 }
 
-.teacher-content--live {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  padding: 14px;
-  overflow: hidden;
+@media (max-width: 480px) {
+  .main-stage { border-radius: 14px; }
+  .control-bar { border-radius: 14px; padding: 6px 8px; }
+  .cb-icon { width: 30px; height: 30px; }
+  .cb-timer { font-size: 12px; min-width: 60px; }
 }
