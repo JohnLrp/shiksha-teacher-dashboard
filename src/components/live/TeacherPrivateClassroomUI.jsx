@@ -403,102 +403,81 @@ export default function TeacherPrivateSessionUI({
   /* ───────────────────────────────────────────── */
   /* MAIN UI */
   /* ───────────────────────────────────────────── */
+return (
+  <div className="pvt-room" ref={containerRef}>
+    {/* RAISE HAND TOASTS */}
 
-  return (
-    <div
-      className={
-        "classroom-layout" +
-        (isFullscreen
-          ? " fs-mode"
-          : "") +
-        (!activePanel
-          ? " panel-closed"
-          : "")
-      }
-      ref={containerRef}
-    >
-      {/* RAISE HAND TOASTS */}
+    {raiseHandToasts.length > 0 && (
+      <div className="rh-toasts">
+        {raiseHandToasts.map((t) => (
+          <div key={t.id} className="rh-toast">
+            <span>
+              ✋ <strong>{t.displayName}</strong> raised hand
+            </span>
 
-      {raiseHandToasts.length > 0 && (
-        <div className="rh-toasts">
-          {raiseHandToasts.map((t) => (
-            <div
-              key={t.id}
-              className="rh-toast"
+            <button
+              className="rh-toast-btn"
+              onClick={() =>
+                lowerStudentHand(t.identity)
+              }
             >
-              <span>
-                ✋{" "}
-                <strong>
-                  {t.displayName}
-                </strong>{" "}
-                raised hand
-              </span>
+              Lower
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
 
-              <button
-                className="rh-toast-btn"
-                onClick={() =>
-                  lowerStudentHand(
-                    t.identity
-                  )
-                }
-              >
-                Lower
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+    {/* MAIN */}
 
-      {/* LEFT */}
+    <div className="pvt-main">
+      {/* VIDEO AREA */}
 
-      <div className="classroom-main">
-        {/* VIDEO */}
+      <div className="pvt-video-area">
+        <div className="pvt-video-grid pvt-grid-1">
+          <div className="pvt-tile">
+            <VideoTrack trackRef={mainTrack} />
 
-        <div className="main-stage">
-          <VideoTrack trackRef={mainTrack} />
-
-          {pipTrack && (
-            <div className="pip-camera">
-              <VideoTrack
-                trackRef={pipTrack}
-              />
-            </div>
-          )}
-
-          <TeacherControls
-            sessionId={sessionId}
-            onLeave={onLeave}
-          />
-
-          <button
-            className="video-fs-btn"
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? (
-              <MdFullscreenExit
-                size={22}
-              />
-            ) : (
-              <MdFullscreen size={22} />
+            {pipTrack && (
+              <div className="pip-camera">
+                <VideoTrack trackRef={pipTrack} />
+              </div>
             )}
-          </button>
-        </div>
 
+            <TeacherControls
+              sessionId={sessionId}
+              onLeave={onLeave}
+            />
+
+            <button
+              className="pvt-fullscreen-btn"
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? (
+                <MdFullscreenExit size={22} />
+              ) : (
+                <MdFullscreen size={22} />
+              )}
+            </button>
+          </div>
+        </div>
 
         {/* CONTROL BAR */}
 
-        <ControlBar
-          onLeave={onLeave}
-          role={role}
-          activePanel={activePanel}
-          onTogglePanel={togglePanel}
-        />
+        <div className="pvt-controls">
+          <ControlBar
+            onLeave={onLeave}
+            role={role}
+            activePanel={activePanel}
+            onTogglePanel={togglePanel}
+          />
+        </div>
       </div>
 
       {/* SIDEBAR */}
 
       {activePanel && (
-        <div className="right-sidebar">
+        <div className="pvt-sidebar">
           {activePanel === "chat" && (
             <ChatPanel
               role={role}
@@ -511,8 +490,7 @@ export default function TeacherPrivateSessionUI({
           {activePanel === "people" && (
             <div className="ppl-panel">
               <div className="ppl-header">
-                Participants (
-                {peopleList.length})
+                Participants ({peopleList.length})
               </div>
 
               <div className="ppl-list">
@@ -552,9 +530,7 @@ export default function TeacherPrivateSessionUI({
                             : "ppl-mic--off"
                         }`}
                       >
-                        {p.micOn
-                          ? "🎤"
-                          : "🔇"}
+                        {p.micOn ? "🎤" : "🔇"}
                       </div>
 
                       {!p.isTeacher &&
@@ -579,9 +555,7 @@ export default function TeacherPrivateSessionUI({
                                 )
                               }
                             >
-                              <HiDotsVertical
-                                size={16}
-                              />
+                              <HiDotsVertical size={16} />
                             </button>
 
                             {openMenuId ===
@@ -638,5 +612,6 @@ export default function TeacherPrivateSessionUI({
         </div>
       )}
     </div>
-  );
+  </div>
+);
 }
