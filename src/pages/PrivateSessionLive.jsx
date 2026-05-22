@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import privateSessionService from "../api/privateSessionService";
-import TeacherPrivateSessionUI from "../components/live/TeacherPrivateSessionUI";
+import TeacherPrivateClassroomUI from "../components/live/TeacherPrivateSessionUI";
 import "../styles/privateSessions.css";
 
 /* ── Same fullscreen wrapper as TeacherLiveSession ── */
@@ -159,7 +159,7 @@ export default function PrivateSessionLive() {
         style={liveKitWrap}
         onDisconnected={() => navigate("/teacher/private-sessions")}
       >
-        <TeacherPrivateSessionUI
+        <TeacherPrivateClassroomUI
           role="PRESENTER"
           sessionId={id}
           onLeave={handleLeave}
