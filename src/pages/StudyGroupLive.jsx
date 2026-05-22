@@ -142,7 +142,7 @@ export default function StudyGroupLive() {
         onDisconnected={() => navigate("/teacher/study-groups")}
       >
         <StudyGroupClassroomUI
-          role={(livekitData.role || "teacher").toLowerCase()}
+          role="PRESENTER"
           session={{
             ...sessionData,
             id,
