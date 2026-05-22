@@ -404,8 +404,15 @@ export default function TeacherPrivateSessionUI({
   /* MAIN UI */
   /* ───────────────────────────────────────────── */
 return (
-  <div className="pvt-room" ref={containerRef}>
-    {/* RAISE HAND TOASTS */}
+  <div
+    className={
+      "classroom-layout" +
+      (isFullscreen ? " fs-mode" : "") +
+      (!activePanel ? " panel-closed" : "")
+    }
+    ref={containerRef}
+  >
+    {/* TOASTS */}
 
     {raiseHandToasts.length > 0 && (
       <div className="rh-toasts">
@@ -428,190 +435,184 @@ return (
       </div>
     )}
 
-    {/* MAIN */}
+    {/* LEFT SIDE */}
 
-    <div className="pvt-main">
-      {/* VIDEO AREA */}
+    <div className="classroom-main">
+      {/* VIDEO */}
 
-      <div className="pvt-video-area">
-        <div className="pvt-video-grid pvt-grid-1">
-          <div className="pvt-tile">
-            <VideoTrack trackRef={mainTrack} />
+      <div className="main-stage">
+        <VideoTrack trackRef={mainTrack} />
 
-            {pipTrack && (
-              <div className="pip-camera">
-                <VideoTrack trackRef={pipTrack} />
-              </div>
-            )}
-
-            <TeacherControls
-              sessionId={sessionId}
-              onLeave={onLeave}
-            />
-
-            <button
-              className="pvt-fullscreen-btn"
-              onClick={toggleFullscreen}
-            >
-              {isFullscreen ? (
-                <MdFullscreenExit size={22} />
-              ) : (
-                <MdFullscreen size={22} />
-              )}
-            </button>
+        {pipTrack && (
+          <div className="pip-camera">
+            <VideoTrack trackRef={pipTrack} />
           </div>
-        </div>
+        )}
 
-        {/* CONTROL BAR */}
+        <TeacherControls
+          sessionId={sessionId}
+          onLeave={onLeave}
+        />
 
-        <div className="pvt-controls">
-          <ControlBar
-            onLeave={onLeave}
-            role={role}
-            activePanel={activePanel}
-            onTogglePanel={togglePanel}
-          />
-        </div>
+        <button
+          className="video-fs-btn"
+          onClick={toggleFullscreen}
+        >
+          {isFullscreen ? (
+            <MdFullscreenExit size={22} />
+          ) : (
+            <MdFullscreen size={22} />
+          )}
+        </button>
       </div>
 
-      {/* SIDEBAR */}
+      {/* CONTROL BAR */}
 
-      {activePanel && (
-        <div className="pvt-sidebar">
-          {activePanel === "chat" && (
-            <ChatPanel
-              role={role}
-              messages={chatMessages}
-              onSendMessage={sendMessage}
-              participants={peopleList}
-            />
-          )}
+      <ControlBar
+        onLeave={onLeave}
+        role={role}
+        activePanel={activePanel}
+        onTogglePanel={togglePanel}
+      />
+    </div>
 
-          {activePanel === "people" && (
-            <div className="ppl-panel">
-              <div className="ppl-header">
-                Participants ({peopleList.length})
-              </div>
+    {/* RIGHT SIDEBAR */}
 
-              <div className="ppl-list">
-                {peopleList.map((p) => (
-                  <div
-                    key={p.identity}
-                    className={
-                      "ppl-card" +
-                      (p.isTeacher
-                        ? " ppl-card--teacher"
-                        : "")
-                    }
-                  >
-                    <div className="ppl-avatar">
-                      {p.name
-                        ?.charAt(0)
-                        ?.toUpperCase()}
+    {activePanel && (
+      <div className="right-sidebar">
+        {activePanel === "chat" && (
+          <ChatPanel
+            role={role}
+            messages={chatMessages}
+            onSendMessage={sendMessage}
+            participants={peopleList}
+          />
+        )}
+
+        {activePanel === "people" && (
+          <div className="ppl-panel">
+            <div className="ppl-header">
+              Participants ({peopleList.length})
+            </div>
+
+            <div className="ppl-list">
+              {peopleList.map((p) => (
+                <div
+                  key={p.identity}
+                  className={
+                    "ppl-card" +
+                    (p.isTeacher
+                      ? " ppl-card--teacher"
+                      : "")
+                  }
+                >
+                  <div className="ppl-avatar">
+                    {p.name
+                      ?.charAt(0)
+                      ?.toUpperCase()}
+                  </div>
+
+                  <div className="ppl-info">
+                    <div className="ppl-name">
+                      {p.isMe
+                        ? "You"
+                        : p.name}
                     </div>
 
-                    <div className="ppl-info">
-                      <div className="ppl-name">
-                        {p.isMe
-                          ? "You"
-                          : p.name}
-                      </div>
+                    <div className="ppl-role">
+                      {p.role}
+                    </div>
+                  </div>
 
-                      <div className="ppl-role">
-                        {p.role}
-                      </div>
+                  <div className="ppl-actions">
+                    <div
+                      className={`ppl-mic ${
+                        p.micOn
+                          ? "ppl-mic--on"
+                          : "ppl-mic--off"
+                      }`}
+                    >
+                      {p.micOn ? "🎤" : "🔇"}
                     </div>
 
-                    <div className="ppl-actions">
-                      <div
-                        className={`ppl-mic ${
-                          p.micOn
-                            ? "ppl-mic--on"
-                            : "ppl-mic--off"
-                        }`}
-                      >
-                        {p.micOn ? "🎤" : "🔇"}
-                      </div>
-
-                      {!p.isTeacher &&
-                        !p.isMe && (
-                          <div
-                            className="ppl-menu-wrap"
-                            ref={
-                              openMenuId ===
-                              p.identity
-                                ? menuRef
-                                : null
+                    {!p.isTeacher &&
+                      !p.isMe && (
+                        <div
+                          className="ppl-menu-wrap"
+                          ref={
+                            openMenuId ===
+                            p.identity
+                              ? menuRef
+                              : null
+                          }
+                        >
+                          <button
+                            className="ppl-menu-btn"
+                            onClick={() =>
+                              setOpenMenuId(
+                                openMenuId ===
+                                  p.identity
+                                  ? null
+                                  : p.identity
+                              )
                             }
                           >
-                            <button
-                              className="ppl-menu-btn"
-                              onClick={() =>
-                                setOpenMenuId(
-                                  openMenuId ===
-                                    p.identity
-                                    ? null
-                                    : p.identity
-                                )
-                              }
-                            >
-                              <HiDotsVertical size={16} />
-                            </button>
+                            <HiDotsVertical size={16} />
+                          </button>
 
-                            {openMenuId ===
-                              p.identity && (
-                              <div className="ppl-menu">
+                          {openMenuId ===
+                            p.identity && (
+                            <div className="ppl-menu">
+                              <button
+                                className="ppl-menu-item"
+                                onClick={() =>
+                                  toggleStudentMic(
+                                    p.identity,
+                                    p.micOn
+                                  )
+                                }
+                              >
+                                {p.micOn
+                                  ? "Mute Student"
+                                  : "Unmute Student"}
+                              </button>
+
+                              {p.handRaised && (
                                 <button
                                   className="ppl-menu-item"
                                   onClick={() =>
-                                    toggleStudentMic(
-                                      p.identity,
-                                      p.micOn
+                                    lowerStudentHand(
+                                      p.identity
                                     )
                                   }
                                 >
-                                  {p.micOn
-                                    ? "Mute Student"
-                                    : "Unmute Student"}
+                                  Lower Hand
                                 </button>
+                              )}
 
-                                {p.handRaised && (
-                                  <button
-                                    className="ppl-menu-item"
-                                    onClick={() =>
-                                      lowerStudentHand(
-                                        p.identity
-                                      )
-                                    }
-                                  >
-                                    Lower Hand
-                                  </button>
-                                )}
-
-                                <button
-                                  className="ppl-menu-item ppl-menu-item--danger"
-                                  onClick={() =>
-                                    kickStudent(
-                                      p.identity,
-                                      p.name
-                                    )
-                                  }
-                                >
-                                  Kick from Session
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                    </div>
+                              <button
+                                className="ppl-menu-item ppl-menu-item--danger"
+                                onClick={() =>
+                                  kickStudent(
+                                    p.identity,
+                                    p.name
+                                  )
+                                }
+                              >
+                                Kick from Session
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          </div>
+        )}
+      </div>
+    )}
   </div>
 );
 }
