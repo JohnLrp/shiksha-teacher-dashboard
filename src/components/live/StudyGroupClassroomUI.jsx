@@ -17,7 +17,7 @@ import {
 import { Track } from "livekit-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import "./privateClassroom.css";
+import "../../styles/live.css";
 import ChatPanel from "./ChatPanel";
 import api from "../../api/apiClient";
 import { useAuth } from "../../contexts/AuthContext";
