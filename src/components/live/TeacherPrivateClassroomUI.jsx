@@ -8,7 +8,7 @@ import ChatPanel from "./ChatPanel";
 import TeacherControls from "./TeacherControls";
 import ControlBar from "./ControlBar";
 import React, { useState, useRef, useEffect } from "react";
-import "../../styles/live.css";
+import "../../styles/privateClassroom.css";
 import useLiveSessionChat from "../../hooks/useLiveSessionChat";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { HiDotsVertical } from "react-icons/hi";
@@ -484,23 +484,6 @@ export default function TeacherPrivateSessionUI({
           </button>
         </div>
 
-        {/* PRIVATE ACTIONS */}
-
-        <div className="teacher-private-actions">
-          <button
-            className="teacher-private-btn"
-            onClick={muteAllStudents}
-          >
-            🔇 Mute All
-          </button>
-
-          <button
-            className="teacher-private-btn teacher-private-btn-danger"
-            onClick={endSessionForAll}
-          >
-            End for All
-          </button>
-        </div>
 
         {/* CONTROL BAR */}
 

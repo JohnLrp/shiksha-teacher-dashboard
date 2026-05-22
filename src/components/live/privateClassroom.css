@@ -1,700 +1,335 @@
 /* =====================================================
-   privateClassroom.css — Teacher UI
-   Dark theme for private session room UI.
-   BASE STYLES COPIED FROM STUDENT privateClassroom.css
-   + Teacher-specific additions at bottom.
-   Scoped with pvt- prefix to avoid conflicts.
+   privateClassroom.css
+   Teacher Private Session UI
+   Exact ClassroomUI-style fullscreen layout
    ===================================================== */
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
 
 .pvt-room {
   display: flex;
   flex-direction: column;
-  height: 100vh;
   width: 100%;
-  background: #0d1117;
-  color: #e8eaf2;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 100vh;
+  background: #0f172a;
+  color: white;
   overflow: hidden;
+  font-family: Inter, sans-serif;
 }
 
-/* ── Top Bar ── */
-.pvt-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: #161b27;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
-  gap: 12px;
-}
+/* ========================================
+   MAIN LAYOUT
+======================================== */
 
-.pvt-topbar-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.pvt-session-name { font-size: 14px; font-weight: 700; color: #e8eaf2; }
-.pvt-session-sub { font-size: 11px; color: #6b7591; margin-top: 1px; }
-
-/* Study-group pill in the topbar-left. Replaces the old floating
-   .tsgLive__banner so the badge can't drift into the video tiles.
-   Navy brand colour to match the teacher dashboard accent. */
-.pvt-sg-badge {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  background: #3b5c7c;
-  color: #fff;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
-  margin-bottom: 1px;
-}
-
-.pvt-topbar-right { display: flex; align-items: center; gap: 10px; }
-/* Study-group remaining-time chip — sits next to .pvt-timer. */
-.pvt-sg-countdown {
-  display: inline-flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: #cbd5e1;
-  font-variant-numeric: tabular-nums;
-  background: rgba(59, 92, 124, 0.30);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(59, 92, 124, 0.65);
-}
-.pvt-timer {
-  font-size: 13px; font-weight: 600; color: #a0aec0;
-  font-variant-numeric: tabular-nums;
-  background: rgba(255,255,255,0.06);
-  padding: 5px 12px; border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.pvt-count {
-  font-size: 12px; color: #e8eaf2; font-weight: 600;
-  background: rgba(255,255,255,0.12);
-  padding: 4px 10px; border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.22);
-}
-
-/* ── Main Layout ── */
 .pvt-main {
-  display: flex;
   flex: 1;
+  display: flex;
   overflow: hidden;
+  min-height: 0;
 }
 
 .pvt-video-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 14px;
+  padding: 10px;
   gap: 10px;
   overflow: hidden;
-  min-width: 0;
+  min-height: 0;
 }
 
-/* ── Video Grid ── */
+/* ========================================
+   VIDEO GRID
+======================================== */
+
 .pvt-video-grid {
   flex: 1;
   display: grid;
-  gap: 8px;
-  overflow: hidden;
-  align-content: center;
-  justify-content: center;
+  gap: 10px;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
-/* Google Meet-style grid — tiles always fill evenly, no irregular shapes */
-.pvt-grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-.pvt-grid-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-.pvt-grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.pvt-grid-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
-.pvt-grid-9 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
-.pvt-grid-many { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); grid-auto-rows: 1fr; }
+/* grid layouts */
 
-/* ── Video Tile ── */
+.pvt-grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.pvt-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pvt-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pvt-grid-6 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pvt-grid-many {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* ========================================
+   VIDEO TILE
+======================================== */
+
 .pvt-tile {
-  background: #1a2035;
-  border-radius: 12px;
   position: relative;
+  background: #111827;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1.5px solid rgba(255,255,255,0.07);
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
 }
 
 .pvt-tile video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: #111827;
+  object-fit: cover;
+  background: black;
 }
 
-.pvt-tile-sm {
-  width: 100%;
-  height: 130px;
-  flex-shrink: 0;
-  border-radius: 8px;
-}
+/* ========================================
+   TILE LABEL
+======================================== */
 
 .pvt-tile-label {
   position: absolute;
-  bottom: 10px; left: 10px;
-  display: flex; align-items: center; gap: 6px;
+  left: 12px;
+  bottom: 12px;
   background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(4px);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px; font-weight: 500; color: #e8eaf2;
+  padding: 6px 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  z-index: 10;
 }
 
 .pvt-host-badge {
+  background: #2563eb;
+  padding: 2px 7px;
+  border-radius: 999px;
   font-size: 10px;
-  background: #4f7ef7;
-  color: white;
-  padding: 1px 6px;
-  border-radius: 4px;
   font-weight: 600;
-  margin-left: 4px;
 }
 
-/* ── Placeholder (cam off) ── */
-.pvt-placeholder {
-  width: 100%; height: 100%;
-  background: #111827;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-}
+/* ========================================
+   FULLSCREEN BUTTON
+======================================== */
 
-.pvt-placeholder-avatar {
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  background: #2a9da8;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; font-weight: 800; color: white;
-}
-
-.pvt-placeholder-name {
-  font-size: 12px; color: #6b7591;
-}
-
-/* ── Speaking / Pinned tile borders ── */
-.pvt-tile-speaking {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
-}
-
-.pvt-tile-pinned {
-  border-color: #4f7ef7;
-  box-shadow: 0 0 0 2px rgba(79,126,247,0.3);
-}
-
-.pvt-speaking-dot {
-  color: #22c55e;
-  font-size: 8px;
-  animation: pvt-pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pvt-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* ── Pin button ── */
-.pvt-pin-btn {
-  position: absolute;
-  top: 8px; right: 8px;
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  border: none;
-  background: rgba(0,0,0,0.45);
-  color: #a0aec0;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
-  z-index: 10;
-}
-.pvt-tile:hover .pvt-pin-btn { opacity: 1; }
-.pvt-pin-active { opacity: 1; background: rgba(79,126,247,0.3); color: #4f7ef7; }
-
-/* ── Fullscreen button (sits left of pin button on screen-share tile) ── */
 .pvt-fullscreen-btn {
   position: absolute;
-  top: 8px; right: 44px;
-  width: 28px; height: 28px;
-  border-radius: 6px;
+  right: 12px;
+  top: 12px;
+  width: 36px;
+  height: 36px;
   border: none;
-  background: rgba(0,0,0,0.45);
-  color: #cfd6e4;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
-  z-index: 10;
-  font-family: inherit;
-}
-.pvt-tile:hover .pvt-fullscreen-btn { opacity: 1; }
-.pvt-fullscreen-btn:hover { background: rgba(79,126,247,0.3); color: #4f7ef7; }
-
-/* Always show controls on a spotlighted tile so users can find the
-   exit-fullscreen / unpin affordance without hover. */
-.pvt-tile-pinned .pvt-pin-btn,
-.pvt-tile-pinned .pvt-fullscreen-btn { opacity: 1; }
-
-/* Click-to-spotlight cue */
-.pvt-tile { cursor: pointer; }
-
-/* When a tile is the actual fullscreen element, force the video to
-   cover the full viewport and stretch the tile container to match. */
-.pvt-tile:fullscreen,
-.pvt-tile:-webkit-full-screen {
-  width: 100vw;
-  height: 100vh;
-  border-radius: 0;
-  background: #000;
-}
-.pvt-tile:fullscreen video,
-.pvt-tile:-webkit-full-screen video {
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
-}
-
-/* ── Muted bar ── */
-.pvt-muted-bar {
-  position: absolute;
-  top: 10px; left: 10px;
-  background: rgba(245,101,101,0.85);
-  color: white;
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 11px; font-weight: 600;
-  z-index: 5;
-}
-
-/* ── Raised hand indicator ── */
-.pvt-hand-indicator {
-  position: absolute;
-  top: 10px; right: 42px;
-  font-size: 22px;
-  animation: pvt-hand-wave 0.6s ease-in-out infinite alternate;
-  z-index: 5;
-}
-
-@keyframes pvt-hand-wave {
-  from { transform: rotate(-12deg); }
-  to { transform: rotate(12deg); }
-}
-
-/* ── Raised hand banner ── */
-.pvt-hand-banner {
-  background: rgba(234,179,8,0.15);
-  color: #eab308;
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  border-bottom: 1px solid rgba(234,179,8,0.2);
-  flex-shrink: 0;
-}
-
-/* ── Screen share tile override — contain to show full screen ── */
-.pvt-tile-screenshare video {
-  object-fit: contain;
-}
-
-/* ── Screen Share / Spotlight Layout ── */
-.pvt-screen-layout {
-  flex: 1;
-  display: flex;
-  gap: 6px;
-  overflow: hidden;
-  height: 100%;
-}
-
-.pvt-screen-main {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
   border-radius: 10px;
-  overflow: hidden;
-  border: 2px solid #4f7ef7;
-  background: #0d1117;
-}
-
-.pvt-screen-main video {
-  width: 100%; height: 100%;
-  object-fit: contain;
-}
-
-.pvt-screen-strip {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 180px;
-  flex-shrink: 0;
-  overflow-y: auto;
-}
-
-/* ── Control Bar ── */
-.pvt-controls {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  cursor: pointer;
+  z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: #161b27;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
-  gap: 10px;
-}
-
-.pvt-ctrl-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pvt-ctrl-center {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
   justify-content: center;
 }
 
-.pvt-ctrl-right {
+.pvt-fullscreen-btn:hover {
+  background: rgba(37,99,235,0.5);
+}
+
+/* ========================================
+   PIN BUTTON
+======================================== */
+
+.pvt-pin-btn {
+  position: absolute;
+  right: 56px;
+  top: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  cursor: pointer;
+  z-index: 20;
+}
+
+.pvt-pin-btn:hover {
+  background: rgba(37,99,235,0.5);
+}
+
+/* ========================================
+   CONTROLS BAR
+======================================== */
+
+.pvt-controls {
+  height: 72px;
+  min-height: 72px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 14px;
+  background: #111827;
+  border-radius: 18px;
+  padding: 8px 18px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
 }
+
+/* ========================================
+   CONTROL BUTTON
+======================================== */
 
 .pvt-ctrl-btn {
-  width: 48px; height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   border: none;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  transition: all 0.15s;
-  background: rgba(255,255,255,0.1);
-  color: #e8eaf2;
-  flex-shrink: 0;
-}
-
-.pvt-ctrl-btn:hover { background: rgba(255,255,255,0.16); }
-
-.pvt-ctrl-off {
-  background: #f56565;
+  background: rgba(255,255,255,0.08);
   color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  font-size: 18px;
 }
-.pvt-ctrl-off:hover { background: #e04040; }
+
+.pvt-ctrl-btn:hover {
+  background: rgba(255,255,255,0.16);
+}
 
 .pvt-ctrl-active {
-  background: rgba(79,126,247,0.2);
-  color: #4f7ef7;
-  border: 1px solid rgba(79,126,247,0.3);
+  background: #2563eb;
 }
-.pvt-ctrl-active:hover { background: rgba(79,126,247,0.3); }
+
+.pvt-ctrl-off {
+  background: #dc2626;
+}
+
+.pvt-ctrl-off:hover {
+  background: #b91c1c;
+}
+
+/* ========================================
+   LEAVE BUTTON
+======================================== */
 
 .pvt-leave-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0 20px; height: 48px;
-  border-radius: 24px; border: none; cursor: pointer;
-  background: rgba(245,101,101,0.15);
-  color: #f56565;
-  border: 1px solid rgba(245,101,101,0.3);
-  font-size: 13px; font-weight: 600;
-  white-space: nowrap; flex-shrink: 0;
-  font-family: inherit;
-  transition: all 0.15s;
-}
-.pvt-leave-btn:hover { background: #f56565; color: white; }
-
-.pvt-end-btn {
-  background: rgba(245,101,101,0.2);
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* ── Sidebar ── */
+.pvt-leave-btn:hover {
+  background: #b91c1c;
+}
+
+/* ========================================
+   SIDEBAR
+======================================== */
+
 .pvt-sidebar {
-  width: 300px;
-  background: #161b27;
+  width: 320px;
+  background: #111827;
   border-left: 1px solid rgba(255,255,255,0.08);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   overflow: hidden;
 }
 
 .pvt-sidebar-tabs {
   display: flex;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
 }
 
 .pvt-sidebar-tab {
-  flex: 1; padding: 12px 8px;
-  background: none; border: none; cursor: pointer;
-  font-size: 13px; font-weight: 500;
-  color: #6b7591;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
-  font-family: inherit;
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  padding: 14px;
+  cursor: pointer;
+  font-weight: 500;
 }
-.pvt-sidebar-tab.active { color: #4f7ef7; border-bottom-color: #4f7ef7; }
+
+.pvt-sidebar-tab.active {
+  color: white;
+  border-bottom: 2px solid #2563eb;
+}
 
 .pvt-sidebar-body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
 }
-.pvt-sidebar-body::-webkit-scrollbar { width: 4px; }
-.pvt-sidebar-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-/* ── Participants List ── */
-.pvt-participants-list {
-  display: flex;
-  flex-direction: column;
-}
+/* ========================================
+   PARTICIPANTS
+======================================== */
 
 .pvt-participant-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 
 .pvt-participant-avatar {
-  width: 34px; height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #2a9da8;
-  display: flex; align-items: center; justify-content: center;
-  color: white; font-weight: 700; font-size: 13px; flex-shrink: 0;
+  background: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
-.pvt-participant-info { flex: 1; min-width: 0; }
+.pvt-participant-info {
+  flex: 1;
+}
+
 .pvt-participant-name {
-  font-size: 13px; font-weight: 500; color: #e8eaf2;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.pvt-participant-role { font-size: 11px; color: #6b7591; margin-top: 1px; }
-.pvt-participant-icons { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-
-/* ── Toast Notifications ── */
-.pvt-toast-wrap {
-  position: fixed;
-  top: 70px; right: 20px;
-  display: flex; flex-direction: column;
-  gap: 8px;
-  z-index: 500;
-  pointer-events: none;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.pvt-toast {
-  background: #1e2435;
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 13px; font-weight: 500;
-  color: #e8eaf2;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  animation: pvt-toast-in 0.25s ease;
+.pvt-participant-role {
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-.pvt-toast-warn {
-  border-color: rgba(245,101,101,0.3);
-  color: #f56565;
-}
+/* ========================================
+   CHAT
+======================================== */
 
-@keyframes pvt-toast-in {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes pvt-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .pvt-sidebar { display: none; }
-  .pvt-ctrl-btn { width: 42px; height: 42px; font-size: 16px; }
-  .pvt-controls { padding: 10px 12px; gap: 6px; }
-  .pvt-topbar { padding: 10px 14px; }
-  .pvt-video-area { padding: 10px; gap: 8px; }
-  .pvt-leave-btn { padding: 0 14px; font-size: 12px; }
-}
-
-@media (max-width: 480px) {
-  .pvt-ctrl-btn { width: 38px; height: 38px; font-size: 15px; }
-  .pvt-grid-2 { grid-template-columns: 1fr; }
-  .pvt-timer { display: none; }
-}
-
-/* ══════════════════════════════════════════════════════
-   TEACHER-SPECIFIC ADDITIONS
-   (these do NOT exist in Student CSS)
-   ══════════════════════════════════════════════════════ */
-
-/* ── Tile host actions (hover to show on student tiles) ── */
-.pvt-tile-host-actions {
-  position: absolute;
-  top: 8px; left: 8px;
-  display: flex; gap: 4px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 15;
-}
-.pvt-tile:hover .pvt-tile-host-actions { opacity: 1; }
-
-.pvt-tile-action-btn {
-  width: 28px; height: 28px;
-  border-radius: 6px; border: none;
-  background: rgba(0,0,0,0.5);
-  color: #e8eaf2;
-  cursor: pointer; font-size: 13px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.pvt-tile-action-btn:hover { background: rgba(245,101,101,0.8); color: white; }
-.pvt-tile-action-remove { background: rgba(245,101,101,0.3); color: #f56565; }
-.pvt-tile-action-remove:hover { background: #f56565; color: white; }
-
-/* ── Mute All button ── */
-.pvt-mute-all-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0 16px; height: 42px;
-  border-radius: 21px; border: 1px solid rgba(245,101,101,0.3);
-  background: rgba(245,101,101,0.12);
-  color: #f56565;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer; white-space: nowrap;
-  font-family: inherit;
-  transition: all 0.15s;
-}
-.pvt-mute-all-btn:hover { background: rgba(245,101,101,0.3); }
-
-/* ── Participant list host actions ── */
-.pvt-participant-host-actions {
-  display: flex; gap: 4px;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.pvt-participant-item:hover .pvt-participant-host-actions { opacity: 1; }
-
-.pvt-participant-action-btn {
-  width: 26px; height: 26px;
-  border-radius: 6px; border: none;
-  background: rgba(255,255,255,0.08);
-  color: #8b93b0;
-  cursor: pointer; font-size: 12px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.pvt-participant-action-btn:hover { background: rgba(245,101,101,0.2); color: #f56565; }
-.pvt-participant-action-remove:hover { background: #f56565; color: white; }
-
-/* ── Recording badge ── */
-.pvt-rec-badge {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600; color: #f56565;
-  background: rgba(245,101,101,0.12);
-  padding: 4px 10px; border-radius: 20px;
-  border: 1px solid rgba(245,101,101,0.2);
-}
-.pvt-rec-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #f56565;
-  animation: pvt-rec-pulse 1.2s ease-in-out infinite;
-}
-@keyframes pvt-rec-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-/* ── Remove participant modal ── */
-.pvt-remove-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 600;
-  backdrop-filter: blur(3px);
-  animation: pvt-fade-in 0.15s ease;
-}
-
-.pvt-remove-modal {
-  background: #1e2435;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 28px 32px;
-  width: 100%; max-width: 300px;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-  animation: pvt-modal-pop 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-
-@keyframes pvt-modal-pop {
-  from { opacity: 0; transform: scale(0.88) translateY(10px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.pvt-remove-avatar {
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  background: #2a9da8;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 800; color: white;
-  margin-bottom: 4px;
-}
-
-.pvt-remove-title { font-size: 15px; font-weight: 700; color: #e8eaf2; text-align: center; }
-.pvt-remove-name { font-size: 13px; font-weight: 600; color: #4f7ef7; text-align: center; }
-.pvt-remove-sub { font-size: 12px; color: #6b7591; text-align: center; line-height: 1.5; margin-bottom: 6px; }
-
-.pvt-remove-actions { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
-
-.pvt-remove-cancel {
-  flex: 1; padding: 9px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: #8b93b0;
-  font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
-  transition: all 0.15s;
-}
-.pvt-remove-cancel:hover { background: rgba(255,255,255,0.1); color: #e8eaf2; }
-
-.pvt-remove-confirm {
-  flex: 1; padding: 9px;
-  border-radius: 10px; border: none;
-  background: #f56565; color: white;
-  font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-  transition: background 0.15s;
-}
-.pvt-remove-confirm:hover { background: #e04040; }
-
-/* ── Chat Panel — scroll fix ───────────────────────────── */
 .chat-panel {
   display: flex;
   flex-direction: column;
@@ -702,273 +337,100 @@
   overflow: hidden;
 }
 
-.chat-header {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #6b7591;
-  padding: 12px 16px 8px;
-  flex-shrink: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-}
-
-/* Thin scrollbar for chat */
-.chat-messages::-webkit-scrollbar { width: 4px; }
-.chat-messages::-webkit-scrollbar-track { background: transparent; }
-.chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
-}
-
-.chat-empty {
-  text-align: center;
-  color: #6b7591;
-  font-size: 13px;
-  margin-top: 20px;
+  gap: 10px;
 }
 
 .chat-row {
   display: flex;
 }
-.chat-row.me { justify-content: flex-end; }
-.chat-row.other { justify-content: flex-start; }
+
+.chat-row.me {
+  justify-content: flex-end;
+}
 
 .chat-bubble {
   max-width: 78%;
-  background: rgba(255,255,255,0.07);
-  border-radius: 12px 12px 12px 2px;
-  padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  background: #1e293b;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: white;
 }
 
 .me-bubble {
-  background: rgba(79,126,247,0.25);
-  border-radius: 12px 12px 2px 12px;
-}
-
-.teacher-bubble {
-  background: rgba(42,157,168,0.2);
-  border-left: 2px solid #2a9da8;
+  background: #2563eb;
 }
 
 .chat-name {
-  font-size: 10px;
-  font-weight: 700;
-  color: #6b7591;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 11px;
+  margin-bottom: 4px;
+  opacity: 0.7;
 }
-
-.me-bubble .chat-name { color: #7da3f7; }
-.teacher-bubble .chat-name { color: #2a9da8; }
 
 .chat-text {
-  font-size: 13px;
-  color: #e8eaf2;
+  font-size: 14px;
   line-height: 1.5;
-  word-break: break-word;
-}
-
-.chat-time {
-  font-size: 10px;
-  color: #4a5568;
-  text-align: right;
-  margin-top: 2px;
 }
 
 .chat-input-area {
   display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
-  background: #161b27;
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 .chat-input-area input {
   flex: 1;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 8px 14px;
-  font-size: 13px;
-  color: #e8eaf2;
+  height: 42px;
+  border-radius: 999px;
+  border: none;
+  padding: 0 16px;
   outline: none;
-  font-family: inherit;
-  transition: border-color 0.15s;
+  font-size: 14px;
 }
-
-.chat-input-area input::placeholder { color: #4a5568; }
-.chat-input-area input:focus { border-color: rgba(79,126,247,0.4); }
 
 .chat-send-btn {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
-  background: #4f7ef7;
+  background: #2563eb;
   color: white;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
-}
-.chat-send-btn:hover { background: #3d6ee0; transform: scale(1.05); }
-.chat-send-btn:active { transform: scale(0.95); }
-
-/* ──────────────────────────────────────────────────────────────────
-   LEAVE-CONFIRMATION MODAL (mirror of student dashboard)
-   Centered overlay with Stay / Leave buttons, replaces window.confirm().
-   ────────────────────────────────────────────────────────────── */
-.pvt-leave-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 9999;
-  animation: pvt-leave-overlay-in 0.15s ease-out;
-}
-@keyframes pvt-leave-overlay-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.pvt-leave-modal {
-  background: #fff;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 360px;
-  padding: 22px 22px 18px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
-  text-align: center;
-  animation: pvt-leave-modal-in 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
-}
-@keyframes pvt-leave-modal-in {
-  from { transform: translateY(8px) scale(0.97); opacity: 0; }
-  to   { transform: translateY(0) scale(1); opacity: 1; }
-}
-.pvt-leave-title {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.pvt-leave-body {
-  margin: 0 0 18px;
-  font-size: 14px;
-  color: #475569;
-  line-height: 1.4;
-}
-.pvt-leave-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: stretch;
-}
-.pvt-leave-btn-cancel,
-.pvt-leave-btn-confirm {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: background 0.12s, transform 0.04s;
-}
-.pvt-leave-btn-cancel {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
-}
-.pvt-leave-btn-cancel:hover { background: #e2e8f0; }
-.pvt-leave-btn-cancel:active { transform: scale(0.98); }
-.pvt-leave-btn-confirm {
-  background: #dc2626;
-  color: #fff;
-}
-.pvt-leave-btn-confirm:hover { background: #b91c1c; }
-.pvt-leave-btn-confirm:active { transform: scale(0.98); }
-.pvt-leave-btn-cancel:focus-visible,
-.pvt-leave-btn-confirm:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
 }
 
-@media (max-width: 480px) {
-  .pvt-leave-modal {
-    max-width: 92vw;
-    padding: 18px 18px 14px;
+/* ========================================
+   NO PAGE SCROLLBAR
+======================================== */
+
+.pvt-room,
+.pvt-main,
+.pvt-video-area,
+.pvt-video-grid {
+  overflow: hidden !important;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+  .pvt-sidebar {
+    display: none;
   }
-  .pvt-leave-title { font-size: 17px; }
-  .pvt-leave-body  { font-size: 13px; }
-  .pvt-leave-btn-cancel,
-  .pvt-leave-btn-confirm {
-    padding: 11px 14px;
-    font-size: 14px;
+
+  .pvt-controls {
+    gap: 10px;
+    padding: 8px;
   }
-}
 
-/* ═══════════════════════════════════════════════════════════
-   Chat readability overrides
-
-   The dashboard-wide live.css (loaded in main.jsx) declares
-   .chat-bubble with a near-white background (#f2f7f7) and
-   sets .chat-input-area on a light --panel. That collided with
-   this file's chat-text rule (color: #e8eaf2 near-white) and
-   the input's near-white color, producing white-on-white text
-   on incoming bubbles and in the typing field. These rules
-   raise specificity by scoping under .chat-panel so they win
-   regardless of stylesheet load order.
-
-   - Incoming bubbles: solid dark background, keep the existing
-     near-white text. Outgoing 'me' bubbles are NOT touched —
-     their teal/blue brand background still wins via the
-     .chat-bubble.me-bubble rule already in live.css.
-   - Chat input field: change ONLY the typed-text colour to a
-     dark slate so it's readable against the light input bg
-     live.css gives the input. Background, border, padding, and
-     focus styles intentionally left alone — per user request.
-   ═══════════════════════════════════════════════════════════ */
-
-.chat-panel .chat-bubble {
-  background: #1f2937;
-  border-color: rgba(255, 255, 255, 0.06);
-  color: #f8fafc;
-}
-.chat-panel .chat-bubble .chat-text {
-  color: #f8fafc;
-}
-.chat-panel .chat-bubble .chat-name {
-  color: rgba(255, 255, 255, 0.78);
-}
-.chat-panel .chat-bubble .chat-time {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-/* Typed-text colour fix for the chat input. Only the font
-   colour is changed; the input bg/border/padding stay as
-   inherited from live.css and the existing rule above. */
-.chat-panel .chat-input-area input {
-  color: #0f172a;
-}
-.chat-panel .chat-input-area input::placeholder {
-  color: #64748b;
+  .pvt-ctrl-btn {
+    width: 46px;
+    height: 46px;
+  }
 }
