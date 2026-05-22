@@ -2,31 +2,9 @@
  * FILE: TEACHER_DASHBOARD/src/components/live/StudyGroupClassroomUI.jsx
  *
  * Peer-only classroom UI for a teacher who has joined a student-hosted
- * Study Group room. Mirrors the student PrivateClassroomUI's layout
- * and feel — same dark theme via privateClassroom.css — but deliberately
- * has NO power controls (no mute-individual, no mute-all, no remove,
- * no end-for-all). Per product rule: in a Study Group nobody — not
- * even the host — gets in-room authority.
- *
- * Differences vs the teacher's TeacherPrivateClassroomUI:
- *   * No teacher-only sidebar/menu actions
- *   * No "End for All" button (clicking Leave just disconnects the
- *     local participant — peers stay in the room)
- *   * No FORCE_MUTE / FORCE_DISCONNECT senders. We still LISTEN for
- *     those events as victim handlers (safety net for any future
- *     moderator role) but never send them.
- *
- * Chat: ENABLED via the study-group chat endpoints
- * (/sessions/study-groups/<id>/chat/[/send] + WS /ws/study-group/<id>/chat/).
- * Messages persist in DB only while the room is live — backend
- * _end_study_group_internal bulk-deletes them on session end.
- *
- * Props:
- *   role        — "host" | "teacher" | "student"
- *   session     — { id, subject, topic, ... }
- *   chatConfig  — { restGetPath, restPostPath, wsPath } — required for
- *                 chat to work. Passed in by StudyGroupLive.jsx.
- *   onLeave     — optional cb fired after disconnect.
+ * Study Group room. Visual layout now matches the Live Session (ClassroomUI)
+ * — light #c9dde1 background, white panels, teal accents, same control bar
+ * structure. No teacher power controls (no mute-individual, no remove, etc.)
  */
 
 import {
@@ -45,9 +23,6 @@ import api from "../../api/apiClient";
 import { useAuth } from "../../contexts/AuthContext";
 import soundManager from "../../utils/soundManager";
 
-/* Local helper — formats a remaining-time number (ms) as MM:SS.
-   Mirrors the helper in pages/StudyGroupLive.jsx; kept inline so the
-   classroom UI is self-contained when callers pass remainingMs. */
 function formatRemaining(ms) {
   if (ms == null || ms < 0) return "--:--";
   const total = Math.floor(ms / 1000);
@@ -105,16 +80,13 @@ function Tile({ track, localId, pinned, onPin, raisedHands, large, isScreenShare
   const isLocal = p.identity === localId;
   let metadata = {};
   try { metadata = JSON.parse(p.metadata || "{}"); } catch {}
-  const remoteRole = metadata.role; // "host" | "teacher" | "student"
+  const remoteRole = metadata.role;
   const isMuted = !p.isMicrophoneEnabled;
   const isCamOff = !p.isCameraEnabled;
   const hasHand = raisedHands[p.identity];
 
-  // Click-to-spotlight: clicking the tile toggles pin (priority view).
-  // Clicking a spotlighted tile zooms it back out to the grid.
   const handleTileClick = () => onPin(p.identity);
 
-  // Fullscreen toggle for screen-share tiles (and any tile, optionally).
   const tileRef = useRef(null);
   const enterFullscreen = (e) => {
     e.stopPropagation();
@@ -123,9 +95,7 @@ function Tile({ track, localId, pinned, onPin, raisedHands, large, isScreenShare
     if (document.fullscreenElement) {
       document.exitFullscreen?.();
     } else {
-      (el.requestFullscreen ||
-        el.webkitRequestFullscreen ||
-        el.msRequestFullscreen)?.call(el);
+      (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el);
     }
   };
 
@@ -143,14 +113,7 @@ function Tile({ track, localId, pinned, onPin, raisedHands, large, isScreenShare
         <div className="pvt-tile-label">
           🖥️ {isLocal ? `${name} (You)` : name}'s Screen
         </div>
-        <button
-          className="pvt-fullscreen-btn"
-          onClick={enterFullscreen}
-          title="Fullscreen"
-          type="button"
-        >
-          ⛶
-        </button>
+        <button className="pvt-fullscreen-btn" onClick={enterFullscreen} title="Fullscreen" type="button">⛶</button>
         <button
           className={`pvt-pin-btn ${pinned ? "pvt-pin-active" : ""}`}
           onClick={(e) => { e.stopPropagation(); onPin(p.identity); }}
@@ -222,7 +185,7 @@ function ParticipantPlaceholder({ name, large }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PARTICIPANTS LIST — read-only, no controls
+   PARTICIPANTS LIST — read-only
 ═══════════════════════════════════════════════════════════ */
 
 function ParticipantsList({ participants, localId, raisedHands }) {
@@ -233,7 +196,7 @@ function ParticipantsList({ participants, localId, raisedHands }) {
         const isLocal = p.identity === localId;
         let metadata = {};
         try { metadata = JSON.parse(p.metadata || "{}"); } catch {}
-        const remoteRole = metadata.role; // "host" | "teacher" | "student"
+        const remoteRole = metadata.role;
 
         let roleLabel = "Student";
         if (remoteRole === "host") roleLabel = "👑 Host";
@@ -271,12 +234,6 @@ export default function StudyGroupClassroomUI({
   session,
   chatConfig,
   onLeave,
-  // Study-group integration props — see PrivateClassroomUI for full
-  // notes. studyGroup=true renders the STUDY GROUP pill in the
-  // topbar; studyGroupRemainingMs powers the ⏳ MM:SS-left chip;
-  // autoSpotlightLocal pins the local tile on first render so the
-  // layout starts in spotlight (avoids the half-page videoless
-  // tile that used to dominate pvt-grid-2).
   studyGroup = false,
   studyGroupRemainingMs = null,
   autoSpotlightLocal = false,
@@ -289,9 +246,6 @@ export default function StudyGroupClassroomUI({
   const timer = useTimer();
   const { toasts, show } = useToast();
 
-  // chatConfig is required for chat. Without it the sidebar still works
-  // (participants only) — gates below check `chatConfig` before opening
-  // the REST/WS connections.
   const noChat = !chatConfig;
 
   const [sidebarTab, setSidebarTab] = useState(noChat ? "participants" : "chat");
@@ -302,21 +256,13 @@ export default function StudyGroupClassroomUI({
   const [handRaised, setHandRaised] = useState(false);
   const [raisedHands, setRaisedHands] = useState({});
   const [pinnedIds, setPinnedIds] = useState(new Set());
-  // Tracks whether we have already applied the one-shot auto-spotlight
-  // so we don't fight a user's later unpin. Stays false if
-  // autoSpotlightLocal is false (the default).
   const autoSpotlightAppliedRef = useRef(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [soundMuted, setSoundMuted] = useState(soundManager.isMuted());
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const prevParticipantCountRef = useState({ current: null })[0];
 
-  // ── One-shot auto-spotlight for study-group rooms ──
-  // When autoSpotlightLocal=true, pin the local participant the first
-  // time we have an identity, so the layout switches to
-  // pvt-screen-layout (large main + 180px strip) instead of an even
-  // pvt-grid-2 share. Fixes the half-page "membrane" the videoless
-  // host tile used to create on the student side.
+  // ── One-shot auto-spotlight ──
   useEffect(() => {
     if (!autoSpotlightLocal) return;
     if (autoSpotlightAppliedRef.current) return;
@@ -326,7 +272,7 @@ export default function StudyGroupClassroomUI({
     autoSpotlightAppliedRef.current = true;
   }, [autoSpotlightLocal, localParticipant?.identity]);
 
-  // ── Load persisted chat messages on mount ──
+  // ── Load persisted chat messages ──
   useEffect(() => {
     if (noChat || !session?.id) return;
     api.get(chatConfig.restGetPath).then((res) => {
@@ -345,7 +291,7 @@ export default function StudyGroupClassroomUI({
     }).catch(() => {});
   }, [session?.id, myUserId, noChat, chatConfig?.restGetPath]);
 
-  // ── WebSocket for real-time chat (auto-reconnect + token auth) ──
+  // ── WebSocket for real-time chat ──
   useEffect(() => {
     if (noChat || !session?.id) return;
     let ws = null;
@@ -354,9 +300,6 @@ export default function StudyGroupClassroomUI({
 
     const connect = () => {
       if (unmounted) return;
-      // Always reach the backend host (api.shikshacom.com) in production —
-      // `window.location.host` is the dashboard's domain, which has no WS
-      // route, so messages would save to DB but never broadcast back out.
       const isLocalDev =
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1";
@@ -403,7 +346,7 @@ export default function StudyGroupClassroomUI({
     };
   }, [session?.id, myUserId, noChat, chatConfig?.wsPath]);
 
-  // ── Send a chat message ──
+  // ── Send chat message ──
   const sendChatMessage = async (text) => {
     soundManager.messageSend();
     if (noChat) return;
@@ -427,22 +370,19 @@ export default function StudyGroupClassroomUI({
     }
   };
 
-  // ── Participant join/leave sound detection ──
+  // ── Participant join/leave sounds ──
   useEffect(() => {
     const count = participants.length;
     if (prevParticipantCountRef.current === null) {
       prevParticipantCountRef.current = count;
       return;
     }
-    if (count > prevParticipantCountRef.current) {
-      soundManager.participantJoin();
-    } else if (count < prevParticipantCountRef.current) {
-      soundManager.participantLeave();
-    }
+    if (count > prevParticipantCountRef.current) soundManager.participantJoin();
+    else if (count < prevParticipantCountRef.current) soundManager.participantLeave();
     prevParticipantCountRef.current = count;
   }, [participants.length]);
 
-  // Get all tracks
+  // ── Tracks ──
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
@@ -451,7 +391,7 @@ export default function StudyGroupClassroomUI({
   const screenTracks = tracks.filter((t) => t.source === Track.Source.ScreenShare);
   const cameraTracks = tracks.filter((t) => t.source === Track.Source.Camera);
 
-  // ── Screen share detection sound (when others share) ──
+  // ── Screen share sounds ──
   const prevScreenCountRef = useState({ current: 0 })[0];
   useEffect(() => {
     const count = screenTracks.length;
@@ -460,10 +400,7 @@ export default function StudyGroupClassroomUI({
     prevScreenCountRef.current = count;
   }, [screenTracks.length]);
 
-  // ── Listen for raise/lower-hand data messages ──
-  // (We deliberately do NOT send FORCE_MUTE / FORCE_DISCONNECT from this
-  //  component. We DO listen for them as victim handlers — harmless if
-  //  no one ever sends them, future-proof if a moderator role is added.)
+  // ── Data messages (raise hand + victim handlers) ──
   useEffect(() => {
     const decoder = new TextDecoder();
     const handleData = (payload, participant) => {
@@ -496,7 +433,6 @@ export default function StudyGroupClassroomUI({
   }, [room, show, localParticipant]);
 
   // ── Controls ──
-
   const toggleMic = async () => {
     soundManager.buttonClick();
     const next = !micOn;
@@ -536,9 +472,6 @@ export default function StudyGroupClassroomUI({
     show(next ? "Hand raised 🖐" : "Hand lowered", "info");
   };
 
-  // Leave button opens an in-room confirmation modal (peer action — does
-  // NOT end the room for anyone else). Modal markup is appended near the
-  // root return below.
   const leaveRoom = () => {
     soundManager.buttonClick();
     setShowLeaveConfirm(true);
@@ -589,27 +522,32 @@ export default function StudyGroupClassroomUI({
   const unpinnedTracks = sortedAllTracks.filter(t => !pinnedIds.has(t.participant.identity));
   const showSpotlight = pinnedTracks.length === 1 && totalTiles > 1;
 
+  /* ── SIDEBAR TOGGLE HELPER ── */
+  const openTab = (tab) => {
+    if (sidebarOpen && sidebarTab === tab) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarTab(tab);
+      setSidebarOpen(true);
+    }
+  };
+
+  /* ───── MAIN UI ───── */
   return (
     <div className="pvt-room">
+
       {/* ── Top Bar ── */}
-      {/* ── Top Bar ──
-          Study-group badge and ⏳ remaining-time chip are inlined
-          here instead of the old position:fixed .tsgLive__banner so
-          they stay in normal flow and can't drift into the video
-          tiles when an ancestor creates a containing block. */}
       <div className="pvt-topbar">
         <div className="pvt-topbar-left">
           {studyGroup && (
-            <span className="pvt-sg-badge" title="Study Group session">
-              STUDY GROUP
-            </span>
+            <span className="pvt-sg-badge" title="Study Group session">STUDY GROUP</span>
           )}
           <div className="pvt-session-name">{session?.subject || "Study Group"}</div>
           <div className="pvt-session-sub">{session?.topic || session?.subject || "Study Group"}</div>
         </div>
         <div className="pvt-topbar-right">
           {studyGroup && studyGroupRemainingMs != null && (
-            <span className="pvt-sg-countdown" title="Time remaining for this study group">
+            <span className="pvt-sg-countdown" title="Time remaining">
               ⏳ {formatRemaining(studyGroupRemainingMs)} left
             </span>
           )}
@@ -618,7 +556,7 @@ export default function StudyGroupClassroomUI({
         </div>
       </div>
 
-      {/* ── Raised hand banner (visible to all) ── */}
+      {/* ── Raised hand banner ── */}
       {Object.keys(raisedHands).length > 0 && (
         <div className="pvt-hand-banner">
           🖐 {Object.keys(raisedHands).length} participant{Object.keys(raisedHands).length !== 1 ? "s" : ""} raised hand
@@ -627,7 +565,11 @@ export default function StudyGroupClassroomUI({
 
       {/* ── Main Area ── */}
       <div className="pvt-main">
+
+        {/* LEFT: video stage + control bar */}
         <div className="pvt-video-area">
+
+          {/* VIDEO STAGE */}
           {showSpotlight ? (
             <div className="pvt-screen-layout">
               <div className="pvt-screen-main">
@@ -670,8 +612,10 @@ export default function StudyGroupClassroomUI({
             </div>
           )}
 
-          {/* ── Control Bar — peer controls only ── */}
+          {/* CONTROL BAR — mirrors ClassroomUI's ControlBar layout */}
           <div className="pvt-controls">
+
+            {/* LEFT — raise hand */}
             <div className="pvt-ctrl-left">
               <button
                 className={`pvt-ctrl-btn ${handRaised ? "pvt-ctrl-active" : ""}`}
@@ -681,63 +625,70 @@ export default function StudyGroupClassroomUI({
                 🖐
               </button>
             </div>
+
+            {/* CENTER — mic, cam, screen, participants, chat */}
             <div className="pvt-ctrl-center">
-              <button className={`pvt-ctrl-btn ${micOn ? "" : "pvt-ctrl-off"}`} onClick={toggleMic} title={micOn ? "Mute" : "Unmute"}>
+              <button
+                className={`pvt-ctrl-btn ${micOn ? "" : "pvt-ctrl-off"}`}
+                onClick={toggleMic}
+                title={micOn ? "Mute" : "Unmute"}
+              >
                 {micOn ? "🎤" : "🔇"}
               </button>
-              <button className={`pvt-ctrl-btn ${camOn ? "" : "pvt-ctrl-off"}`} onClick={toggleCam} title={camOn ? "Stop Camera" : "Start Camera"}>
+              <button
+                className={`pvt-ctrl-btn ${camOn ? "" : "pvt-ctrl-off"}`}
+                onClick={toggleCam}
+                title={camOn ? "Stop Camera" : "Start Camera"}
+              >
                 {camOn ? "📹" : "📷"}
               </button>
-              <button className={`pvt-ctrl-btn ${screenSharing ? "pvt-ctrl-active" : ""}`} onClick={toggleScreen} title={screenSharing ? "Stop Share" : "Share Screen"}>
+              <button
+                className={`pvt-ctrl-btn ${screenSharing ? "pvt-ctrl-active" : ""}`}
+                onClick={toggleScreen}
+                title={screenSharing ? "Stop Share" : "Share Screen"}
+              >
                 🖥️
               </button>
               <button
                 className={`pvt-ctrl-btn ${sidebarOpen && sidebarTab === "participants" ? "pvt-ctrl-active" : ""}`}
-                onClick={() => {
-                  if (sidebarOpen && sidebarTab === "participants") {
-                    setSidebarOpen(false);
-                  } else {
-                    setSidebarTab("participants");
-                    setSidebarOpen(true);
-                  }
-                }}
+                onClick={() => openTab("participants")}
                 title="Participants"
               >
                 👥
               </button>
               {!noChat && (
                 <button
-                  className={`pvt-ctrl-btn ${sidebarTab === "chat" && sidebarOpen ? "pvt-ctrl-active" : ""}`}
-                  onClick={() => {
-                    if (sidebarTab === "chat" && sidebarOpen) {
-                      setSidebarOpen(false);
-                    } else {
-                      setSidebarTab("chat");
-                      setSidebarOpen(true);
-                    }
-                  }}
+                  className={`pvt-ctrl-btn ${sidebarOpen && sidebarTab === "chat" ? "pvt-ctrl-active" : ""}`}
+                  onClick={() => openTab("chat")}
                   title="Chat"
                 >
                   💬
                 </button>
               )}
             </div>
+
+            {/* RIGHT — sound toggle + leave */}
             <div className="pvt-ctrl-right">
               <button
                 className={`pvt-ctrl-btn ${soundMuted ? "pvt-ctrl-off" : ""}`}
                 onClick={() => { const m = soundManager.toggleMute(); setSoundMuted(m); }}
                 title={soundMuted ? "Unmute Sounds" : "Mute Sounds"}
-              >{soundMuted ? "🔇" : "🔊"}</button>
+              >
+                {soundMuted ? "🔇" : "🔊"}
+              </button>
               <button className="pvt-leave-btn" onClick={leaveRoom}>
                 ← Leave
               </button>
             </div>
+
           </div>
         </div>
 
-        {/* ── Sidebar — participants + chat tabs ── */}
+        {/* RIGHT SIDEBAR — matches ClassroomUI's right-sidebar */}
         {sidebarOpen && (
           <div className="pvt-sidebar">
+
+            {/* TABS */}
             <div className="pvt-sidebar-tabs">
               <button
                 className={`pvt-sidebar-tab ${sidebarTab === "participants" ? "active" : ""}`}
@@ -754,6 +705,8 @@ export default function StudyGroupClassroomUI({
                 </button>
               )}
             </div>
+
+            {/* BODY */}
             <div className="pvt-sidebar-body">
               {sidebarTab === "participants" || noChat ? (
                 <ParticipantsList
@@ -769,11 +722,13 @@ export default function StudyGroupClassroomUI({
                 />
               )}
             </div>
+
           </div>
         )}
+
       </div>
 
-      {/* ── Leave-confirmation modal ── */}
+      {/* ── Leave confirmation modal ── */}
       {showLeaveConfirm && (
         <div
           className="pvt-leave-modal-overlay"
@@ -782,30 +737,14 @@ export default function StudyGroupClassroomUI({
           aria-modal="true"
           aria-labelledby="pvt-leave-title"
         >
-          <div
-            className="pvt-leave-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="pvt-leave-title" className="pvt-leave-title">
-              Leave this room?
-            </h3>
-            <p className="pvt-leave-body">
-              You can rejoin while the session is still live.
-            </p>
+          <div className="pvt-leave-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 id="pvt-leave-title" className="pvt-leave-title">Leave this room?</h3>
+            <p className="pvt-leave-body">You can rejoin while the session is still live.</p>
             <div className="pvt-leave-actions">
-              <button
-                type="button"
-                className="pvt-leave-btn-cancel"
-                onClick={cancelLeave}
-                autoFocus
-              >
+              <button type="button" className="pvt-leave-btn-cancel" onClick={cancelLeave} autoFocus>
                 Stay
               </button>
-              <button
-                type="button"
-                className="pvt-leave-btn-confirm"
-                onClick={confirmLeave}
-              >
+              <button type="button" className="pvt-leave-btn-confirm" onClick={confirmLeave}>
                 Leave
               </button>
             </div>
@@ -819,6 +758,7 @@ export default function StudyGroupClassroomUI({
           <div key={t.id} className={`pvt-toast pvt-toast-${t.type}`}>{t.text}</div>
         ))}
       </div>
+
     </div>
   );
 }
