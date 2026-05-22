@@ -8,7 +8,7 @@ import ChatPanel from "./ChatPanel";
 import TeacherControls from "./TeacherControls";
 import ControlBar from "./ControlBar";
 import React, { useState, useRef, useEffect } from "react";
-import "../../styles/privateClassroom.css";
+import "./privateClassroom.css";
 import useLiveSessionChat from "../../hooks/useLiveSessionChat";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { HiDotsVertical } from "react-icons/hi";
