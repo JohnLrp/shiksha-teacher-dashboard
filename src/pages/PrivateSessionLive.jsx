@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import privateSessionService from "../api/privateSessionService";
-import TeacherPrivateClassroomUI from "../components/live/TeacherPrivateSessionUI";
+import TeacherPrivateClassroomUI from "../components/live/TeacherPrivateClassroomUI";
 import "../styles/privateSessions.css";
 
 /* ── Same fullscreen wrapper as TeacherLiveSession ── */
@@ -84,7 +84,6 @@ export default function PrivateSessionLive() {
     navigate("/teacher/private-sessions");
   };
 
-  /* ── Loading ── */
   if (loading) {
     return (
       <div style={centerMsg}>
@@ -95,7 +94,6 @@ export default function PrivateSessionLive() {
     );
   }
 
-  /* ── Error ── */
   if (error) {
     return (
       <div style={centerMsg}>
@@ -126,7 +124,6 @@ export default function PrivateSessionLive() {
     );
   }
 
-  /* ── Session not started ── */
   if (!livekitData) {
     return (
       <div style={centerMsg}>
@@ -147,7 +144,6 @@ export default function PrivateSessionLive() {
     );
   }
 
-  /* ── Live Room ── */
   return (
     <div style={fullscreenWrap}>
       <LiveKitRoom
