@@ -24,7 +24,7 @@ export default function ClassroomUI({
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
 
-  // 🔥 Force re-render when any participant's mic/cam/track changes
+  // Force re-render when any participant's mic/cam/track changes
   const [, setTick] = useState(0);
   const bump = () => setTick((t) => t + 1);
 
