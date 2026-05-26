@@ -55,7 +55,22 @@ export default function TeacherRoutes() {
     <Routes>
       <Route path="/" element={<RedirectToMainLogin />} />
 
-      {/* Private Session Live — fullscreen, outside TeacherLayout */}
+      {/* ============================================
+          FULLSCREEN LIVE ROUTES — outside TeacherLayout
+          (no sidebar, no header, no top tabs)
+          ============================================ */}
+
+      {/* Live Class Session — fullscreen */}
+      <Route
+        path="/teacher/live/:id"
+        element={
+          <ProtectedTeacherRoute>
+            <TeacherLiveSession />
+          </ProtectedTeacherRoute>
+        }
+      />
+
+      {/* Private Session Live — fullscreen */}
       <Route
         path="/teacher/private-session/live/:id"
         element={
@@ -65,7 +80,7 @@ export default function TeacherRoutes() {
         }
       />
 
-      {/* Study Group Live — fullscreen, outside TeacherLayout */}
+      {/* Study Group Live — fullscreen */}
       <Route
         path="/teacher/study-group/live/:id"
         element={
@@ -74,6 +89,10 @@ export default function TeacherRoutes() {
           </ProtectedTeacherRoute>
         }
       />
+
+      {/* ============================================
+          NORMAL ROUTES — inside TeacherLayout
+          ============================================ */}
 
       <Route
         path="/teacher"
@@ -101,7 +120,6 @@ export default function TeacherRoutes() {
         {/* Quizzes */}
         <Route path="classes/:subjectId/quizzes" element={<Quizzes />} />
         <Route path="classes/:subjectId/quizzes/create" element={<CreateQuiz />} />
-        {/* Draft preview — must be before :quizId so it isn't caught as a quizId value */}
         <Route path="classes/:subjectId/quizzes/:quizId/draft" element={<QuizDraftPreview />} />
         <Route path="classes/:subjectId/quizzes/:quizId" element={<QuizView />} />
         <Route path="classes/:subjectId/quizzes/:quizId/submissions" element={<QuizSubmissionView />} />
@@ -122,11 +140,10 @@ export default function TeacherRoutes() {
         <Route path="classes/:subjectId/students" element={<StudentsList />} />
         <Route path="classes/:subjectId/students/:studentId" element={<StudentDetail />} />
 
-        {/* Live Sessions */}
+        {/* Live Sessions list / detail (NOT the live room itself) */}
         <Route path="live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions" element={<LiveSessions />} />
         <Route path="classes/:subjectId/live-sessions/create" element={<TeacherCreateLiveSession />} />
-        <Route path="live/:id" element={<TeacherLiveSession />} />
         <Route path="live-sessions/:id/detail" element={<LiveSessionDetail />} />
         <Route path="classes/:subjectId/live-sessions/:id/detail" element={<LiveSessionDetail />} />
 
@@ -137,7 +154,7 @@ export default function TeacherRoutes() {
         <Route path="private-sessions/request/:id" element={<PrivateSessionDetail />} />
         <Route path="private-sessions/history/:id" element={<PrivateSessionDetail />} />
 
-        {/* Study Groups (teacher is an invited participant) */}
+        {/* Study Groups */}
         <Route path="study-groups" element={<StudyGroups />} />
       </Route>
     </Routes>
