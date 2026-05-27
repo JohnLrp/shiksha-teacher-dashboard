@@ -221,7 +221,7 @@ export default function LiveSessions() {
     <div className="live-sessions-page">
       <button
         className="live-sessions-back-btn"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(subjectId ? `/teacher/classes/${subjectId}` : "/teacher/dashboard")}
       >
         <IoChevronBack /> Back
       </button>

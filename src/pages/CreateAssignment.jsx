@@ -139,7 +139,7 @@ export default function CreateAssignment() {
   return (
     <div className="create-assignment-page">
 
-      <button className="ca-back-btn" onClick={() => navigate(-1)}>
+      <button className="ca-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/assignments`)}>
         <IoChevronBack /> Back
       </button>
 

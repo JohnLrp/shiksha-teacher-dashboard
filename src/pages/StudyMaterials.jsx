@@ -55,7 +55,7 @@ export default function StudyMaterials() {
   return (
     <div className="study-materials-page">
 
-      <button className="sm-back-btn" onClick={() => navigate(-1)}>
+      <button className="sm-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}`)}>
         <IoChevronBack /> Back
       </button>
 
