@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
-import { FiUsers, FiHome} from "react-icons/fi";
+import { FiUsers, FiHome, FiChevronDown } from "react-icons/fi";
 import { MdDashboard } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { RiLockLine, RiLiveLine, RiGroupLine } from "react-icons/ri";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/apiClient";
 import logo from "../assets/Shiksha.svg";
 import "../styles/sidebar.css";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [classes, setClasses] = useState([]);
+  const [classesOpen, setClassesOpen] = useState(
+    location.pathname.startsWith("/teacher/classes")
+  );
+
+  const isActive = (path) =>
+    path === "/teacher/dashboard"
+      ? location.pathname === path
+      : location.pathname.startsWith(path);
 
   useEffect(() => {
     const pickFirstText = (...values) => {
@@ -80,7 +89,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
       <nav>
         <div
-          className="menu-item"
+          className={`menu-item ${isActive("/teacher/dashboard") ? "active" : ""}`}
           onClick={() => {
             navigate("/teacher/dashboard");
             setSidebarOpen(false);
@@ -92,7 +101,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Student List — navigates to /teacher/students */}
         <div
-          className="menu-item"
+          className={`menu-item ${isActive("/teacher/students") ? "active" : ""}`}
           onClick={() => {
             navigate("/teacher/students");
             setSidebarOpen(false);
@@ -102,32 +111,45 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <span>Student List</span>
         </div>
 
-        <div className="menu-item menu-label">
+        <div
+          className={`menu-item menu-dropdown ${isActive("/teacher/classes") ? "active" : ""}`}
+          onClick={() => setClassesOpen((open) => !open)}
+        >
           <FaChalkboardTeacher />
           <span>Classes</span>
+          <FiChevronDown
+            className={`menu-chevron ${classesOpen ? "menu-chevron--open" : ""}`}
+          />
         </div>
 
-        <div className="submenu">
-          {classes.length === 0 && (
-            <p style={{ opacity: 0.6 }}>No classes</p>
-          )}
+        {classesOpen && (
+          <div className="submenu">
+            {classes.length === 0 && (
+              <p className="submenu-empty">No classes</p>
+            )}
 
-          {classes.map((cls) => (
-            <p
-              key={cls.subject_id}
-              onClick={() => {
-                navigate(`/teacher/classes/${cls.subject_id}`);
-                setSidebarOpen(false);
-              }}
-            >
-              {cls.subject_name}
-              {getClassMeta(cls)}
-            </p>
-          ))}
-        </div>
+            {classes.map((cls) => (
+              <p
+                key={cls.subject_id}
+                className={
+                  location.pathname === `/teacher/classes/${cls.subject_id}`
+                    ? "submenu-active"
+                    : ""
+                }
+                onClick={() => {
+                  navigate(`/teacher/classes/${cls.subject_id}`);
+                  setSidebarOpen(false);
+                }}
+              >
+                {cls.subject_name}
+                {getClassMeta(cls)}
+              </p>
+            ))}
+          </div>
+        )}
 
         <div
-          className="menu-item"
+          className={`menu-item ${isActive("/teacher/live-sessions") ? "active" : ""}`}
           onClick={() => {
             navigate("/teacher/live-sessions");
             setSidebarOpen(false);
@@ -138,7 +160,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
 
         <div
-          className="menu-item"
+          className={`menu-item ${isActive("/teacher/private-sessions") ? "active" : ""}`}
           onClick={() => {
             navigate("/teacher/private-sessions");
             setSidebarOpen(false);
@@ -149,7 +171,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
 
         <div
-          className="menu-item"
+          className={`menu-item ${isActive("/teacher/group-sessions") ? "active" : ""}`}
           onClick={() => {
             navigate("/teacher/group-sessions");
             setSidebarOpen(false);
