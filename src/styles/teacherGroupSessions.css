@@ -1,5 +1,6 @@
 /* ============================================================
-   TEACHER STUDY GROUPS  (tsg__ prefix)
+   TEACHER GROUP SESSIONS  (tsg__ prefix — legacy, retained as
+   internal cruft for later cleanup)
    Matches the teacher dashboard's blue accent while clearly
    distinguishing from private session dashboards.
    ============================================================ */
@@ -130,7 +131,7 @@
 /* tsg__statusPill:
    inline-flex + fixed height + flex-shrink:0 + align-self:flex-start make the
    pill render IDENTICALLY regardless of card content length. Mirror of
-   sg__statusPill — see studyGroups.css for the rationale. */
+   sg__statusPill — see groupSessions.css for the rationale. */
 .tsg__statusPill {
   display: inline-flex;
   align-items: center;

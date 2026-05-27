@@ -1,17 +1,17 @@
 /**
- * FILE: TEACHER_UI/src/pages/StudyGroups.jsx
+ * FILE: TEACHER_UI/src/pages/GroupSessions.jsx
  *
- * Teacher-side Study Groups page: invitations + upcoming + history.
+ * Teacher-side Group Sessions page: invitations + upcoming + history.
  * Teachers are invited as the (optional) subject expert of a student's
- * study group and can accept / decline / join.
+ * group session and can accept / decline / join.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import studyGroupService, { extractApiError } from "../api/studyGroupService";
+import groupSessionService, { extractApiError } from "../api/groupSessionService";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useAuth } from "../contexts/AuthContext";
-import "../styles/teacherStudyGroups.css";
+import "../styles/teacherGroupSessions.css";
 
 function formatDate(d) {
   if (!d) return "TBD";
@@ -45,7 +45,7 @@ function statusLabel(st) {
 }
 
 /**
- * Should this study group be dropped from Upcoming based purely on
+ * Should this group session be dropped from Upcoming based purely on
  * elapsed time? Mirror of the student-dashboard helper of the same name —
  * see the student file for the full rationale.
  */
@@ -135,7 +135,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const declined = invitesList.filter((i) => i.status === "declined");
 
   // Response-window: can the teacher still Accept/Decline? Must be BEFORE
-  // scheduled start time (mirrors backend gating in study_group_views.py).
+  // scheduled start time (mirrors backend gating in group_session_views.py).
   const scheduledAt = useMemo(() => {
     if (!data.date || !data.time) return null;
     // Assume the server-provided ISO-ish date + "HH:MM" time is in the
@@ -150,7 +150,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
   // Client-side "duration elapsed" check. Without this, the JOIN ROOM
   // button stays visible after the hard-end time on a stale detail page
-  // and clicking it 400s from the backend (study_group_views line ~916).
+  // and clicking it 400s from the backend (group_session_views line ~916).
   const isEndedByTime = useMemo(() => {
     if (data.status === "live" && data.roomStartedAt && data.durationMinutes) {
       const end =
@@ -172,7 +172,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doAccept = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.acceptInvite(data.id);
+      const fresh = await groupSessionService.acceptInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
       setErr(extractApiError(e, "Failed to accept invite."));
@@ -182,7 +182,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doDecline = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.declineInvite(data.id);
+      const fresh = await groupSessionService.declineInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
       setErr(extractApiError(e, "Failed to decline invite."));
@@ -194,7 +194,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doUnaccept = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.unacceptInvite(data.id);
+      const fresh = await groupSessionService.unacceptInvite(data.id);
       setData(fresh); onChanged?.();
       setDlg(null);
     } catch (e) {
@@ -220,7 +220,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
     setDlg({
       title: "Decline this invite?",
       message:
-        "You won't be able to join this study group unless the host sends a new invite.",
+        "You won't be able to join this group session unless the host sends a new invite.",
       confirmLabel: "Decline invite",
       cancelLabel: "Keep it",
       danger: true,
@@ -235,8 +235,8 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const enterRoom = async () => {
     setBusy(true); setErr("");
     try {
-      await studyGroupService.joinRoom(data.id);
-      navigate(`/teacher/study-group/live/${data.id}`);
+      await groupSessionService.joinRoom(data.id);
+      navigate(`/teacher/group-session/live/${data.id}`);
     } catch (e) {
       setErr(extractApiError(e, "Unable to join right now."));
       setBusy(false);
@@ -246,7 +246,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   return (
     <div className="tsg__detail">
       <div className="tsg__detailBack">
-        <button className="tsg__backBtn" onClick={onBack}>‹ Back to Study Groups</button>
+        <button className="tsg__backBtn" onClick={onBack}>‹ Back to Group Sessions</button>
       </div>
 
       <div className={`tsg__statusBar tsg__statusBar--${effectiveStatus}`}>
@@ -260,7 +260,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
       {data.status === "cancelled" && (
         <div className="tsg__cancelBanner">
-          <strong>This study group was cancelled by the host.</strong>
+          <strong>This group session was cancelled by the host.</strong>
           {data.cancelReason && (
             <span className="tsg__cancelBannerReason">
               Reason: {data.cancelReason}
@@ -273,7 +273,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
           comment for the full rationale. */}
       {isEndedByTime && data.status !== "cancelled" && (
         <div className="tsg__cancelBanner tsg__cancelBanner--muted">
-          <strong>This study group has ended.</strong>
+          <strong>This group session has ended.</strong>
           <span className="tsg__cancelBannerReason">
             The scheduled duration has elapsed. It will move to History
             on the next refresh.
@@ -287,7 +287,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
           <strong>Not attended.</strong>
           <span className="tsg__cancelBannerReason">
             The scheduled time has passed and nobody opened the room, so this
-            study group has been moved to History.
+            group session has been moved to History.
           </span>
         </div>
       )}
@@ -402,7 +402,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
       {myStatus === "declined" && (
         <div className="tsg__inviteeNote">
-          You declined this study group invite.
+          You declined this group session invite.
         </div>
       )}
 
@@ -414,7 +414,26 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   );
 }
 
-export default function StudyGroups() {
+export default function GroupSessions() {
+  const navigate = useNavigate();
+  const [showInstantConfirm, setShowInstantConfirm] = useState(false);
+  const [instantBusy, setInstantBusy] = useState(false);
+
+  // Teachers can also start instant meetings now — mirrors the student flow.
+  const startInstantMeeting = async () => {
+    setInstantBusy(true);
+    try {
+      const sg = await groupSessionService.createInstant({});
+      setShowInstantConfirm(false);
+      navigate(`/teacher/group-session/live/${sg.id}`);
+    } catch (err) {
+      // eslint-disable-next-line no-alert
+      alert(extractApiError(err, "Could not start an instant meeting."));
+    } finally {
+      setInstantBusy(false);
+    }
+  };
+
   const [tab, setTab] = useState("invites"); // teachers usually arrive here from a notification
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -453,7 +472,7 @@ export default function StudyGroups() {
   const loadGroups = useCallback(async (target = tab) => {
     setLoading(true);
     try {
-      const data = await studyGroupService.getMyStudyGroups(target);
+      const data = await groupSessionService.getMyGroupSessions(target);
       setGroups(data);
     } catch {
       setGroups([]);
@@ -485,7 +504,7 @@ export default function StudyGroups() {
     if (selectedIds.size === 0) return;
     setHistoryBusy(true);
     try {
-      await studyGroupService.clearHistory({
+      await groupSessionService.clearHistory({
         sessionIds: Array.from(selectedIds),
       });
       exitSelectMode();
@@ -501,7 +520,7 @@ export default function StudyGroups() {
   const deleteAllHistory = async () => {
     setHistoryBusy(true);
     try {
-      await studyGroupService.clearHistory({ all: true });
+      await groupSessionService.clearHistory({ all: true });
       exitSelectMode();
       loadGroups("history");
     } catch {
@@ -516,7 +535,7 @@ export default function StudyGroups() {
     setHistoryDlg({
       title: `Delete ${selectedIds.size} from history?`,
       message:
-        "These study groups will disappear from your History. " +
+        "These group sessions will disappear from your History. " +
         "Other participants and the host will still see them.",
       confirmLabel: `Delete ${selectedIds.size}`,
       cancelLabel: "Keep",
@@ -529,7 +548,7 @@ export default function StudyGroups() {
     setHistoryDlg({
       title: "Clear all history?",
       message:
-        "Every past study group in your History will be removed from your " +
+        "Every past group session in your History will be removed from your " +
         "view. Other participants and the host will still see them. " +
         "This can't be undone.",
       confirmLabel: "Clear all",
@@ -557,7 +576,7 @@ export default function StudyGroups() {
   return (
     <div className="tsg__page">
       <div className="tsg__header">
-        <h2 className="tsg__title">Study Groups</h2>
+        <h2 className="tsg__title">Group Sessions</h2>
         <div className="tsg__tabs">
           <button
             className={`tsg__tab ${tab === "invites" ? "active" : ""}`}
@@ -572,6 +591,14 @@ export default function StudyGroups() {
             onClick={() => setTab("history")}
           >History</button>
         </div>
+        <button
+          className="tsg__btnPrimary"
+          onClick={() => setShowInstantConfirm(true)}
+          style={{ background: "#1a73e8", color: "#fff", marginLeft: "auto" }}
+          title="Start an instant meeting right now (Google-Meet style)"
+        >
+          + Create Instant Meeting
+        </button>
       </div>
 
       {isHistory && !loading && groups.length > 0 && (
@@ -620,12 +647,12 @@ export default function StudyGroups() {
       )}
 
       {loading ? (
-        <div className="tsg__loading">Loading study groups…</div>
+        <div className="tsg__loading">Loading group sessions…</div>
       ) : visibleGroups.length === 0 ? (
         <div className="tsg__empty">
-          {tab === "invites" && "No pending study group invitations."}
-          {tab === "upcoming" && "No upcoming study groups."}
-          {tab === "history" && "No past study groups yet."}
+          {tab === "invites" && "No pending group session invitations."}
+          {tab === "upcoming" && "No upcoming group sessions."}
+          {tab === "history" && "No past group sessions yet."}
         </div>
       ) : (
         <div className="tsg__grid">
@@ -645,6 +672,24 @@ export default function StudyGroups() {
       <ConfirmDialog
         dialog={historyDlg ? { ...historyDlg, busy: historyBusy } : null}
         onClose={() => (historyBusy ? null : setHistoryDlg(null))}
+      />
+
+      <ConfirmDialog
+        dialog={
+          showInstantConfirm
+            ? {
+                title: "You are starting a New session",
+                message:
+                  "An instant meeting room will open right now with a unique session ID and a shareable link. Continue?",
+                confirmLabel: instantBusy ? "Starting…" : "Okay",
+                cancelLabel: "No",
+                danger: false,
+                busy: instantBusy,
+                onConfirm: startInstantMeeting,
+              }
+            : null
+        }
+        onClose={() => (instantBusy ? null : setShowInstantConfirm(false))}
       />
     </div>
   );
