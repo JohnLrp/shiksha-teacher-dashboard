@@ -246,7 +246,7 @@ export default function GroupSessionClassroomUI({
   return (
     <div
       className={
-        "classroom-layout classroom-layout--meet" +
+        "classroom-layout" +
         (isFullscreen ? " fs-mode" : "") +
         (!activePanel ? " panel-closed" : "")
       }

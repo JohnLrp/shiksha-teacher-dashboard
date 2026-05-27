@@ -1,5 +1,9 @@
 /**
  * FILE: TEACHER_UI/src/pages/GroupSessionLive.jsx
+ *
+ * Mirror of the student-dashboard GroupSessionLive — same UX, same
+ * persistent bottom-left "Room info" chip, same teal palette as the
+ * other live rooms. The Google-Meet dark theme has been removed.
  */
 
 import { useEffect, useState } from "react";
@@ -8,21 +12,16 @@ import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import groupSessionService, { extractApiError } from "../api/groupSessionService";
 import GroupSessionClassroomUI from "../components/live/GroupSessionClassroomUI";
 import { useAuth } from "../contexts/AuthContext";
-// Google-Meet-style theme overrides for the Group Session live room.
-// Scoped under .classroom-layout--meet so other live rooms are untouched.
-import "../styles/groupSessionLiveTheme.css";
 
-/* ── Google-Meet-style dark surfaces. Mirrors student GroupSessionLive.jsx ── */
 const fullscreenWrap = {
   width: "100vw",
   height: "100vh",
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
-  background: "#202124",
+  background: "#c9dde1",
   boxSizing: "border-box",
   padding: "14px",
-  color: "#e8eaed",
 };
 
 const liveKitWrap = {
@@ -41,8 +40,7 @@ const centerMsg = {
   justifyContent: "center",
   flexDirection: "column",
   gap: 16,
-  background: "#202124",
-  color: "#e8eaed",
+  background: "#c9dde1",
 };
 
 export default function GroupSessionLive() {
@@ -56,26 +54,14 @@ export default function GroupSessionLive() {
   const [remainingMs, setRemainingMs]   = useState(null);
 
   const { user } = useAuth();
-  const [showReadyPanel, setShowReadyPanel] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(true);
 
-  // Host gate — only the session's host gets the End Session button.
   const isHost = !!(user?.id && sessionData?.hostId &&
                     String(user.id) === String(sessionData.hostId));
 
-  // Shareable invite link from the meeting's short_code (UUID fallback).
-  const inviteLink = (() => {
-    const code = sessionData?.shortCode || id;
-    return `${window.location.origin}/group-session/live/${code}`;
-  })();
-
-  // Show the Google-Meet-style "Your meeting's ready" panel for instant
-  // meetings the moment the host arrives.
-  useEffect(() => {
-    if (sessionData?.sessionType === "instant" && isHost) {
-      setShowReadyPanel(true);
-    }
-  }, [sessionData?.sessionType, isHost]);
+  const roomCode = sessionData?.shortCode || id;
+  const inviteLink = `${window.location.origin}/group-session/live/${roomCode}`;
 
   const handleCopyLink = async () => {
     try {
@@ -84,6 +70,16 @@ export default function GroupSessionLive() {
       setTimeout(() => setCopied(false), 1800);
     } catch {
       window.prompt("Copy this link:", inviteLink);
+    }
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      window.prompt("Copy this room code:", roomCode);
     }
   };
 
@@ -100,7 +96,6 @@ export default function GroupSessionLive() {
       navigate("/teacher/group-sessions");
     }
   };
-
 
   useEffect(() => {
     let cancelled = false;
@@ -146,7 +141,7 @@ export default function GroupSessionLive() {
   if (loading) {
     return (
       <div style={centerMsg}>
-        <p style={{ fontSize: 16, color: "#e8eaed", margin: 0 }}>Joining group session…</p>
+        <p style={{ fontSize: 16, color: "#0f172a", margin: 0 }}>Joining group session…</p>
       </div>
     );
   }
@@ -154,16 +149,16 @@ export default function GroupSessionLive() {
   if (error) {
     return (
       <div style={centerMsg}>
-        <h2 style={{ margin: 0, color: "#e8eaed" }}>Unable to join group session</h2>
-        <p style={{ color: "#9aa0a6", margin: 0 }}>{error}</p>
+        <h2 style={{ margin: 0, color: "#0f172a" }}>Unable to join group session</h2>
+        <p style={{ color: "#475569", margin: 0 }}>{error}</p>
         <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={() => navigate("/teacher/group-sessions")}
-            style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#1a73e8", color: "#fff", fontWeight: 600, cursor: "pointer" }}
+            style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#015865", color: "#fff", fontWeight: 600, cursor: "pointer" }}
           >Back to Group Sessions</button>
           <button
             onClick={() => window.location.reload()}
-            style={{ padding: "10px 24px", borderRadius: 8, border: "1px solid rgba(232,234,237,0.24)", background: "transparent", color: "#e8eaed", fontWeight: 600, cursor: "pointer" }}
+            style={{ padding: "10px 24px", borderRadius: 8, border: "2px solid #94a3b8", background: "transparent", color: "#475569", fontWeight: 600, cursor: "pointer" }}
           >Retry</button>
         </div>
       </div>
@@ -173,11 +168,11 @@ export default function GroupSessionLive() {
   if (!livekitData) {
     return (
       <div style={centerMsg}>
-        <h2 style={{ margin: 0, color: "#e8eaed" }}>Group session not open yet</h2>
-        <p style={{ color: "#9aa0a6", margin: 0 }}>Waiting for the host. Please try again.</p>
+        <h2 style={{ margin: 0, color: "#0f172a" }}>Group session not open yet</h2>
+        <p style={{ color: "#475569", margin: 0 }}>Waiting for the host. Please try again.</p>
         <button
           onClick={() => navigate("/teacher/group-sessions")}
-          style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#1a73e8", color: "#fff", fontWeight: 600, cursor: "pointer" }}
+          style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#015865", color: "#fff", fontWeight: 600, cursor: "pointer" }}
         >Back to Group Sessions</button>
       </div>
     );
@@ -219,74 +214,84 @@ export default function GroupSessionLive() {
         <RoomAudioRenderer />
       </LiveKitRoom>
 
-      {/* "Your meeting's ready" — Google-Meet-style host panel for instant meetings */}
-      {showReadyPanel && (
+      {/* Bottom-left "Room info" — visible to everyone in the room. */}
+      {infoOpen ? (
         <div
           style={{
             position: "fixed",
-            bottom: 24,
-            left: 24,
+            bottom: 18,
+            left: 18,
             zIndex: 9999,
-            width: 340,
+            width: 320,
             background: "#ffffff",
-            borderRadius: 14,
-            padding: "18px 18px 16px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+            borderRadius: 12,
+            padding: "14px 14px 12px",
+            boxShadow: "0 6px 20px rgba(15,23,42,0.18)",
+            border: "1px solid #cbd5e1",
+            color: "#0f172a",
             fontFamily: "system-ui, -apple-system, sans-serif",
-            color: "#202124",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <strong style={{ fontSize: 16 }}>Your meeting's ready</strong>
+            <strong style={{ fontSize: 14, color: "#015865" }}>Room info</strong>
             <button
-              onClick={() => setShowReadyPanel(false)}
-              aria-label="Close"
+              onClick={() => setInfoOpen(false)}
+              aria-label="Hide room info"
+              title="Hide"
               style={{
                 border: "none", background: "transparent", cursor: "pointer",
-                fontSize: 20, color: "#5f6368", lineHeight: 1, padding: 4,
+                fontSize: 16, color: "#475569", lineHeight: 1, padding: 2,
               }}
             >
               ✕
             </button>
           </div>
 
-          <button
-            disabled
-            title="Invite flow coming soon"
-            style={{
-              marginTop: 14,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "#1a73e8",
-              color: "#fff",
-              border: "none",
-              padding: "10px 18px",
-              borderRadius: 999,
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: "not-allowed",
-              opacity: 0.85,
-            }}
-          >
-            <span aria-hidden>👥+</span> Add others
-          </button>
-
-          <p style={{ margin: "14px 0 8px", fontSize: 13, color: "#5f6368" }}>
-            Or share this meeting link with others that you want in the meeting
-          </p>
-
+          <div style={{ marginTop: 8, fontSize: 12, color: "#475569" }}>Room code</div>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
-              background: "#f1f3f4",
-              borderRadius: 8,
-              padding: "8px 10px",
+              background: "#f1f5f9",
+              borderRadius: 6,
+              padding: "6px 8px",
               fontFamily: "monospace",
-              fontSize: 13,
-              color: "#202124",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#0f172a",
+              letterSpacing: "0.5px",
+            }}
+          >
+            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {roomCode}
+            </span>
+            <button
+              onClick={handleCopyCode}
+              aria-label="Copy room code"
+              title="Copy code"
+              style={{
+                border: "none", background: "transparent", cursor: "pointer",
+                color: copied ? "#15803d" : "#015865", padding: 2,
+                fontSize: 12, fontWeight: 700,
+              }}
+            >
+              {copied ? "✓" : "Copy"}
+            </button>
+          </div>
+
+          <div style={{ marginTop: 10, fontSize: 12, color: "#475569" }}>Share link</div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#f1f5f9",
+              borderRadius: 6,
+              padding: "6px 8px",
+              fontFamily: "monospace",
+              fontSize: 11,
+              color: "#0f172a",
             }}
           >
             <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -295,25 +300,43 @@ export default function GroupSessionLive() {
             <button
               onClick={handleCopyLink}
               aria-label="Copy link"
+              title="Copy link"
               style={{
                 border: "none", background: "transparent", cursor: "pointer",
-                color: copied ? "#137333" : "#5f6368", padding: 4,
-                fontSize: 14, fontWeight: 600,
+                color: copied ? "#15803d" : "#015865", padding: 2,
+                fontSize: 12, fontWeight: 700,
               }}
             >
-              {copied ? "✓ Copied" : "📋"}
+              {copied ? "✓" : "Copy"}
             </button>
           </div>
 
-          <p style={{ margin: "12px 0 0", fontSize: 12, color: "#5f6368", lineHeight: 1.4 }}>
-            <span aria-hidden>🛡️ </span>
-            Only paid Teacher and Student dashboard users who open this link can join.
-          </p>
-
-          <p style={{ margin: "8px 0 0", fontSize: 12, color: "#5f6368" }}>
-            Joined as {user?.email || user?.username || "you"}
+          <p style={{ margin: "10px 0 0", fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>
+            Only signed-in students and teachers on this site can join with the code or link.
           </p>
         </div>
+      ) : (
+        <button
+          onClick={() => setInfoOpen(true)}
+          title="Show room info"
+          style={{
+            position: "fixed",
+            bottom: 18,
+            left: 18,
+            zIndex: 9999,
+            background: "#015865",
+            color: "#fff",
+            border: "none",
+            borderRadius: 999,
+            padding: "8px 14px",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(15,23,42,0.18)",
+          }}
+        >
+          Room: {roomCode}
+        </button>
       )}
     </div>
   );
