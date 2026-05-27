@@ -151,12 +151,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         <div
           className="menu-item"
           onClick={() => {
-            navigate("/teacher/study-groups");
+            navigate("/teacher/group-sessions");
             setSidebarOpen(false);
           }}
         >
           <RiGroupLine />
-          <span>Study Groups</span>
+          <span>Group Sessions</span>
         </div>
             </nav>
       <div className="sidebar__bottom">

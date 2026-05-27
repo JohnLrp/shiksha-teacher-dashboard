@@ -67,7 +67,7 @@ export default function NotificationBell() {
   };
 
   const handleNotifClick = (notif) => {
-    const { type, subject_id, id, is_private_session, is_study_group } = notif;
+    const { type, subject_id, id, is_private_session, is_group_session } = notif;
     if (id) markOneRead(id);
 
     // Teacher app is mounted under /teacher — every navigate() must include
@@ -81,11 +81,11 @@ export default function NotificationBell() {
       return;
     }
 
-    // Study group notifications come over the wire as type === "SESSION" with
-    // the is_study_group flag (set in study_group_views._notify_user). Route
-    // them to the Study Groups page instead of /teacher/live-sessions.
-    if (is_study_group) {
-      navigate("/teacher/study-groups");
+    // Group session notifications come over the wire as type === "SESSION" with
+    // the is_group_session flag (set in group_session_views._notify_user). Route
+    // them to the Group Sessions page instead of /teacher/live-sessions.
+    if (is_group_session) {
+      navigate("/teacher/group-sessions");
       setOpen(false);
       return;
     }

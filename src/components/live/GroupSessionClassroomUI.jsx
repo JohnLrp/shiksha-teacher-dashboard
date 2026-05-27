@@ -1,10 +1,10 @@
 /**
- * StudyGroupClassroomUI.jsx
+ * GroupSessionClassroomUI.jsx
  * 
  * Exact copy of ClassroomUI.jsx — three differences only:
- *  1. Chat uses study-group REST + WS (chatConfig) instead of useLiveSessionChat
+ *  1. Chat uses group-session REST + WS (chatConfig) instead of useLiveSessionChat
  *  2. No TeacherControls overlay (peer room)
- *  3. studyGroupRemainingMs countdown shown in the rh-toasts area (no topbar)
+ *  3. groupSessionRemainingMs countdown shown in the rh-toasts area (no topbar)
  */
 
 import { useTracks, VideoTrack, useRoomContext } from "@livekit/components-react";
@@ -19,13 +19,15 @@ import soundManager from "../../utils/soundManager";
 import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { HiDotsVertical } from "react-icons/hi";
 
-export default function StudyGroupClassroomUI({
+export default function GroupSessionClassroomUI({
   role,
   session,
   chatConfig,
   onLeave,
-  studyGroup = false,
-  studyGroupRemainingMs = null,
+  groupSession = false,
+  groupSessionRemainingMs = null,
+  isHost = false,
+  onEndSession = null,
 }) {
   const isPresenter = role === "PRESENTER" || role === "teacher";
 
@@ -282,13 +284,60 @@ export default function StudyGroupClassroomUI({
           </button>
         </div>
 
-        {/* CONTROL BAR — identical to ClassroomUI */}
-        <ControlBar
-          onLeave={onLeave}
-          role={role}
-          activePanel={activePanel}
-          onTogglePanel={togglePanel}
-        />
+        {/* CONTROL BAR + host-only End Session */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          <ControlBar
+            onLeave={onLeave}
+            role={role}
+            activePanel={activePanel}
+            onTogglePanel={togglePanel}
+          />
+          {isHost && onEndSession && (
+            <button
+              onClick={onEndSession}
+              title="End the session for everyone"
+              style={{
+                background: "#d93025",
+                color: "#fff",
+                border: "none",
+                borderRadius: 999,
+                padding: "10px 18px",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              End Session
+            </button>
+          )}
+        </div>
+
+        {/* Unique session code chip */}
+        {(session?.shortCode || session?.id) && (
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              background: "rgba(15, 23, 42, 0.55)",
+              color: "#e2e8f0",
+              padding: "5px 10px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontFamily: "monospace",
+              letterSpacing: "0.4px",
+              pointerEvents: "none",
+              zIndex: 5,
+            }}
+          >
+            Session: {session?.shortCode || String(session?.id).slice(0, 8)}
+            {session?.sessionType === "instant" && (
+              <span style={{ marginLeft: 8, opacity: 0.75 }}>· Instant</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* RIGHT SIDEBAR — identical to ClassroomUI */}
