@@ -117,7 +117,7 @@ export default function UploadRecording() {
 
   const handleCancel = () => {
     if (xhrRef.current) xhrRef.current.abort();
-    navigate(-1);
+    navigate(`/teacher/classes/${subjectId}/session-recordings`);
   };
 
   const formatBytes = (bytes) => {
@@ -309,7 +309,7 @@ export default function UploadRecording() {
                 students once Bunny finishes processing (usually 1–5 minutes). You'll
                 see the status badge update on the recordings list.
               </p>
-              <button className="ur-btn-primary" onClick={() => navigate(-1)}>
+              <button className="ur-btn-primary" onClick={() => navigate(`/teacher/classes/${subjectId}/session-recordings`)}>
                 Back to Recordings
               </button>
             </div>

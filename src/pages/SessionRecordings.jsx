@@ -96,7 +96,7 @@ export default function SessionRecordings() {
 
       <button
         className="sr-back-btn"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(`/teacher/classes/${subjectId}`)}
       >
         <IoChevronBack /> Back
       </button>

@@ -161,7 +161,7 @@ export default function UploadMaterial() {
 
     <div className="upload-material-page">
 
-      <button className="um-back-btn" onClick={() => navigate(-1)}>
+      <button className="um-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/study-materials`)}>
         <IoChevronBack /> Back
       </button>
 

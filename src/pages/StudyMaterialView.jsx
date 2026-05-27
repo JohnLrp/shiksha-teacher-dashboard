@@ -22,7 +22,7 @@ const extColor = (ext) => {
 
 export default function StudyMaterialView() {
   const navigate = useNavigate();
-  const { materialId } = useParams();
+  const { materialId, subjectId } = useParams();
 
   const [material, setMaterial] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function StudyMaterialView() {
   return (
     <div className="smv-page">
 
-      <button className="smv-back-btn" onClick={() => navigate(-1)}>
+      <button className="smv-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/study-materials`)}>
         <IoChevronBack /> Back
       </button>
 
