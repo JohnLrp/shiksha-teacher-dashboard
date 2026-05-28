@@ -435,12 +435,39 @@ function InstantMeetingDialog({ open, busy, error, onClose, onCreate, onEnter })
 
   if (!open) return null;
 
+  // Self-contained, inline-styled modal — does not depend on any CSS file,
+  // so it renders identically on both dashboards even if the local stylesheet
+  // is missing the .modalOverlay / .modal rules.
   return (
-    <div className="tsg__modalOverlay" onClick={() => !busy && onClose()}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="im-title"
+      onClick={() => !busy && onClose()}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        zIndex: 9999,
+      }}
+    >
       <div
-        className="tsg__modal"
-        style={{ maxWidth: 420, position: "relative" }}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "#ffffff",
+          borderRadius: 16,
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.28)",
+          padding: "24px 24px 22px",
+          position: "relative",
+          fontFamily: "inherit",
+          boxSizing: "border-box",
+        }}
       >
         <button
           type="button"
@@ -449,58 +476,121 @@ function InstantMeetingDialog({ open, busy, error, onClose, onCreate, onEnter })
           title="Close"
           style={{
             position: "absolute",
-            top: 10,
-            right: 10,
+            top: 12,
+            right: 12,
+            width: 32,
+            height: 32,
             border: "none",
             background: "transparent",
             cursor: busy ? "not-allowed" : "pointer",
-            fontSize: 20,
+            borderRadius: 8,
+            fontSize: 18,
             color: "#475569",
             lineHeight: 1,
-            padding: 4,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          onMouseEnter={(e) => { if (!busy) e.currentTarget.style.background = "#f1f5f9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >
           ✕
         </button>
 
-        <div className="tsg__modalHead">
-          <h3 className="tsg__modalTitle" style={{ paddingRight: 24 }}>
-            Instant Meeting
-          </h3>
-        </div>
+        <h3
+          id="im-title"
+          style={{
+            margin: 0,
+            paddingRight: 32,
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#0f172a",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Instant Meeting
+        </h3>
+        <p style={{ margin: "6px 0 18px", fontSize: 13.5, color: "#475569", lineHeight: 1.45 }}>
+          {mode === "menu"
+            ? "Start a brand-new room right now, or join one with a room code shared by the host."
+            : "Paste a Group Session room code or the full link the host sent you."}
+        </p>
 
         {mode === "menu" && (
-          <div className="tsg__step" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <p className="tsg__hint" style={{ margin: 0 }}>
-              Start a brand-new room right now, or join one with a room code shared by the host.
-            </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               type="button"
-              className="tsg__btnPrimary"
               disabled={busy}
               onClick={onCreate}
-              style={{ background: "#1a73e8", color: "#fff" }}
+              style={{
+                width: "100%",
+                background: "#015865",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px 16px",
+                fontWeight: 600,
+                fontSize: 14.5,
+                cursor: busy ? "not-allowed" : "pointer",
+                opacity: busy ? 0.7 : 1,
+              }}
             >
               {busy ? "Starting…" : "+ Create Instant Meeting"}
             </button>
             <button
               type="button"
-              className="tsg__btnGhost"
               disabled={busy}
               onClick={() => setMode("enter")}
+              style={{
+                width: "100%",
+                background: "#ffffff",
+                color: "#0f172a",
+                border: "1px solid #cbd5e1",
+                borderRadius: 10,
+                padding: "11px 16px",
+                fontWeight: 600,
+                fontSize: 14.5,
+                cursor: busy ? "not-allowed" : "pointer",
+                opacity: busy ? 0.55 : 1,
+              }}
             >
               Enter Room ID
             </button>
-            {error && <div className="tsg__errorBox" style={{ marginTop: 4 }}>{error}</div>}
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 4,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#b91c1c",
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </div>
+            )}
           </div>
         )}
 
         {mode === "enter" && (
-          <div className="tsg__step" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <label className="tsg__label" htmlFor="im-code-input">Room ID</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <label
+              htmlFor="im-code-input"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#334155",
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
+              Room ID
+            </label>
             <input
               id="im-code-input"
-              className="tsg__input"
               placeholder="e.g. xyz-abcd-efg"
               value={code}
               autoFocus
@@ -510,25 +600,77 @@ function InstantMeetingDialog({ open, busy, error, onClose, onCreate, onEnter })
               onKeyDown={(e) => {
                 if (e.key === "Enter" && code.trim() && !busy) onEnter(code.trim());
               }}
+              style={{
+                width: "100%",
+                padding: "11px 12px",
+                fontSize: 14,
+                border: "1px solid #cbd5e1",
+                borderRadius: 10,
+                outline: "none",
+                background: "#fff",
+                color: "#0f172a",
+                boxSizing: "border-box",
+                transition: "border-color 120ms, box-shadow 120ms",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#015865";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(1, 88, 101, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#cbd5e1";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
-            <p className="tsg__hint" style={{ margin: 0 }}>
-              Paste a Group Session room code or the full link the host sent you.
-            </p>
-            {error && <div className="tsg__errorBox" style={{ marginTop: 4 }}>{error}</div>}
-            <div style={{ display: "flex", gap: 8, justifyContent: "space-between", marginTop: 4 }}>
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 2,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#b91c1c",
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6 }}>
               <button
                 type="button"
-                className="tsg__btnGhost"
                 disabled={busy}
                 onClick={() => setMode("menu")}
+                style={{
+                  background: "transparent",
+                  color: "#0f172a",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: busy ? "not-allowed" : "pointer",
+                  opacity: busy ? 0.55 : 1,
+                }}
               >
                 ‹ Back
               </button>
               <button
                 type="button"
-                className="tsg__btnPrimary"
                 disabled={busy || !code.trim()}
                 onClick={() => onEnter(code.trim())}
+                style={{
+                  background: "#015865",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 18px",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: busy || !code.trim() ? "not-allowed" : "pointer",
+                  opacity: busy || !code.trim() ? 0.6 : 1,
+                }}
               >
                 {busy ? "Joining…" : "Join Room"}
               </button>
