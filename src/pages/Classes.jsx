@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import SubjectCard from "../components/SubjectCard";
-import SearchBar from "../components/SearchBar";
 import api from "../api/apiClient";
 import "../styles/classes.css";
 
@@ -52,7 +51,6 @@ export default function Classes() {
           <h2>
             {dashboard.name} — {hoveredTitle}
           </h2>
-          <SearchBar />
         </div>
 
         <div className="classes-grid">

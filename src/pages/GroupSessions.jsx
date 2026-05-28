@@ -1,17 +1,17 @@
 /**
- * FILE: TEACHER_UI/src/pages/StudyGroups.jsx
+ * FILE: TEACHER_UI/src/pages/GroupSessions.jsx
  *
- * Teacher-side Study Groups page: invitations + upcoming + history.
+ * Teacher-side Group Sessions page: invitations + upcoming + history.
  * Teachers are invited as the (optional) subject expert of a student's
- * study group and can accept / decline / join.
+ * group session and can accept / decline / join.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import studyGroupService, { extractApiError } from "../api/studyGroupService";
+import groupSessionService, { extractApiError } from "../api/groupSessionService";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useAuth } from "../contexts/AuthContext";
-import "../styles/teacherStudyGroups.css";
+import "../styles/teacherGroupSessions.css";
 
 function formatDate(d) {
   if (!d) return "TBD";
@@ -45,7 +45,7 @@ function statusLabel(st) {
 }
 
 /**
- * Should this study group be dropped from Upcoming based purely on
+ * Should this group session be dropped from Upcoming based purely on
  * elapsed time? Mirror of the student-dashboard helper of the same name —
  * see the student file for the full rationale.
  */
@@ -135,7 +135,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const declined = invitesList.filter((i) => i.status === "declined");
 
   // Response-window: can the teacher still Accept/Decline? Must be BEFORE
-  // scheduled start time (mirrors backend gating in study_group_views.py).
+  // scheduled start time (mirrors backend gating in group_session_views.py).
   const scheduledAt = useMemo(() => {
     if (!data.date || !data.time) return null;
     // Assume the server-provided ISO-ish date + "HH:MM" time is in the
@@ -150,7 +150,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
   // Client-side "duration elapsed" check. Without this, the JOIN ROOM
   // button stays visible after the hard-end time on a stale detail page
-  // and clicking it 400s from the backend (study_group_views line ~916).
+  // and clicking it 400s from the backend (group_session_views line ~916).
   const isEndedByTime = useMemo(() => {
     if (data.status === "live" && data.roomStartedAt && data.durationMinutes) {
       const end =
@@ -172,7 +172,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doAccept = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.acceptInvite(data.id);
+      const fresh = await groupSessionService.acceptInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
       setErr(extractApiError(e, "Failed to accept invite."));
@@ -182,7 +182,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doDecline = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.declineInvite(data.id);
+      const fresh = await groupSessionService.declineInvite(data.id);
       setData(fresh); onChanged?.();
     } catch (e) {
       setErr(extractApiError(e, "Failed to decline invite."));
@@ -194,7 +194,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const doUnaccept = async () => {
     setBusy(true); setErr("");
     try {
-      const fresh = await studyGroupService.unacceptInvite(data.id);
+      const fresh = await groupSessionService.unacceptInvite(data.id);
       setData(fresh); onChanged?.();
       setDlg(null);
     } catch (e) {
@@ -220,7 +220,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
     setDlg({
       title: "Decline this invite?",
       message:
-        "You won't be able to join this study group unless the host sends a new invite.",
+        "You won't be able to join this group session unless the host sends a new invite.",
       confirmLabel: "Decline invite",
       cancelLabel: "Keep it",
       danger: true,
@@ -235,8 +235,8 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   const enterRoom = async () => {
     setBusy(true); setErr("");
     try {
-      await studyGroupService.joinRoom(data.id);
-      navigate(`/teacher/study-group/live/${data.id}`);
+      await groupSessionService.joinRoom(data.id);
+      navigate(`/teacher/group-session/live/${data.id}`);
     } catch (e) {
       setErr(extractApiError(e, "Unable to join right now."));
       setBusy(false);
@@ -246,7 +246,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   return (
     <div className="tsg__detail">
       <div className="tsg__detailBack">
-        <button className="tsg__backBtn" onClick={onBack}>‹ Back to Study Groups</button>
+        <button className="tsg__backBtn" onClick={onBack}>‹ Back to Group Sessions</button>
       </div>
 
       <div className={`tsg__statusBar tsg__statusBar--${effectiveStatus}`}>
@@ -260,7 +260,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
       {data.status === "cancelled" && (
         <div className="tsg__cancelBanner">
-          <strong>This study group was cancelled by the host.</strong>
+          <strong>This group session was cancelled by the host.</strong>
           {data.cancelReason && (
             <span className="tsg__cancelBannerReason">
               Reason: {data.cancelReason}
@@ -273,7 +273,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
           comment for the full rationale. */}
       {isEndedByTime && data.status !== "cancelled" && (
         <div className="tsg__cancelBanner tsg__cancelBanner--muted">
-          <strong>This study group has ended.</strong>
+          <strong>This group session has ended.</strong>
           <span className="tsg__cancelBannerReason">
             The scheduled duration has elapsed. It will move to History
             on the next refresh.
@@ -287,7 +287,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
           <strong>Not attended.</strong>
           <span className="tsg__cancelBannerReason">
             The scheduled time has passed and nobody opened the room, so this
-            study group has been moved to History.
+            group session has been moved to History.
           </span>
         </div>
       )}
@@ -402,7 +402,7 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
 
       {myStatus === "declined" && (
         <div className="tsg__inviteeNote">
-          You declined this study group invite.
+          You declined this group session invite.
         </div>
       )}
 
@@ -414,7 +414,313 @@ function Detail({ group, currentUserId, onBack, onChanged }) {
   );
 }
 
-export default function StudyGroups() {
+/* ═══════════════════════════════════════════════════════════
+   INSTANT MEETING DIALOG
+   ─────────────────────────────────────────────────────────────
+   Two-mode popup shown when the teacher clicks "Instant Meeting":
+     mode="menu"   → Create Instant Meeting | Enter Room ID
+     mode="enter"  → input + Join Room
+   X close button lives in the top-right of the modal.
+═══════════════════════════════════════════════════════════ */
+function InstantMeetingDialog({ open, busy, error, onClose, onCreate, onEnter }) {
+  const [mode, setMode] = useState("menu");
+  const [code, setCode] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setMode("menu");
+      setCode("");
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  // Self-contained, inline-styled modal — does not depend on any CSS file,
+  // so it renders identically on both dashboards even if the local stylesheet
+  // is missing the .modalOverlay / .modal rules.
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="im-title"
+      onClick={() => !busy && onClose()}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        zIndex: 9999,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          background: "#ffffff",
+          borderRadius: 16,
+          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.28)",
+          padding: "24px 24px 22px",
+          position: "relative",
+          fontFamily: "inherit",
+          boxSizing: "border-box",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => !busy && onClose()}
+          aria-label="Close"
+          title="Close"
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            width: 32,
+            height: 32,
+            border: "none",
+            background: "transparent",
+            cursor: busy ? "not-allowed" : "pointer",
+            borderRadius: 8,
+            fontSize: 18,
+            color: "#475569",
+            lineHeight: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onMouseEnter={(e) => { if (!busy) e.currentTarget.style.background = "#f1f5f9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+        >
+          ✕
+        </button>
+
+        <h3
+          id="im-title"
+          style={{
+            margin: 0,
+            paddingRight: 32,
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#0f172a",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          Instant Meeting
+        </h3>
+        <p style={{ margin: "6px 0 18px", fontSize: 13.5, color: "#475569", lineHeight: 1.45 }}>
+          {mode === "menu"
+            ? "Start a brand-new room right now, or join one with a room code shared by the host."
+            : "Paste a Group Session room code or the full link the host sent you."}
+        </p>
+
+        {mode === "menu" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onCreate}
+              style={{
+                width: "100%",
+                background: "#015865",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 10,
+                padding: "12px 16px",
+                fontWeight: 600,
+                fontSize: 14.5,
+                cursor: busy ? "not-allowed" : "pointer",
+                opacity: busy ? 0.7 : 1,
+              }}
+            >
+              {busy ? "Starting…" : "+ Create Instant Meeting"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setMode("enter")}
+              style={{
+                width: "100%",
+                background: "#ffffff",
+                color: "#0f172a",
+                border: "1px solid #cbd5e1",
+                borderRadius: 10,
+                padding: "11px 16px",
+                fontWeight: 600,
+                fontSize: 14.5,
+                cursor: busy ? "not-allowed" : "pointer",
+                opacity: busy ? 0.55 : 1,
+              }}
+            >
+              Enter Room ID
+            </button>
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 4,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#b91c1c",
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode === "enter" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <label
+              htmlFor="im-code-input"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#334155",
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
+              Room ID
+            </label>
+            <input
+              id="im-code-input"
+              placeholder="e.g. xyz-abcd-efg"
+              value={code}
+              autoFocus
+              autoComplete="off"
+              spellCheck="false"
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && code.trim() && !busy) onEnter(code.trim());
+              }}
+              style={{
+                width: "100%",
+                padding: "11px 12px",
+                fontSize: 14,
+                border: "1px solid #cbd5e1",
+                borderRadius: 10,
+                outline: "none",
+                background: "#fff",
+                color: "#0f172a",
+                boxSizing: "border-box",
+                transition: "border-color 120ms, box-shadow 120ms",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#015865";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(1, 88, 101, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "#cbd5e1";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 2,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#b91c1c",
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6 }}>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setMode("menu")}
+                style={{
+                  background: "transparent",
+                  color: "#0f172a",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: busy ? "not-allowed" : "pointer",
+                  opacity: busy ? 0.55 : 1,
+                }}
+              >
+                ‹ Back
+              </button>
+              <button
+                type="button"
+                disabled={busy || !code.trim()}
+                onClick={() => onEnter(code.trim())}
+                style={{
+                  background: "#015865",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 18px",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: busy || !code.trim() ? "not-allowed" : "pointer",
+                  opacity: busy || !code.trim() ? 0.6 : 1,
+                }}
+              >
+                {busy ? "Joining…" : "Join Room"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function GroupSessions() {
+  const navigate = useNavigate();
+  const [showInstantMenu, setShowInstantMenu] = useState(false);
+  const [instantBusy, setInstantBusy] = useState(false);
+  const [instantError, setInstantError] = useState("");
+
+  // "+ Create Instant Meeting" inside the Instant Meeting popup.
+  // POSTs to /group-sessions/instant/ and walks the teacher straight into
+  // the live room — no invitees required.
+  const startInstantMeeting = async () => {
+    setInstantBusy(true);
+    setInstantError("");
+    try {
+      const sg = await groupSessionService.createInstant({});
+      setShowInstantMenu(false);
+      navigate(`/teacher/group-session/live/${sg.id}`);
+    } catch (err) {
+      setInstantError(extractApiError(err, "Could not start an instant meeting."));
+    } finally {
+      setInstantBusy(false);
+    }
+  };
+
+  // "Enter Room ID" inside the Instant Meeting popup.
+  const enterRoomByCode = async (code) => {
+    if (!code) return;
+    setInstantBusy(true);
+    setInstantError("");
+    try {
+      const { session_id } = await groupSessionService.joinByCode(code);
+      setShowInstantMenu(false);
+      navigate(`/teacher/group-session/live/${session_id}`);
+    } catch (err) {
+      setInstantError(extractApiError(err, "Couldn't join that room."));
+    } finally {
+      setInstantBusy(false);
+    }
+  };
+
   const [tab, setTab] = useState("invites"); // teachers usually arrive here from a notification
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -453,7 +759,7 @@ export default function StudyGroups() {
   const loadGroups = useCallback(async (target = tab) => {
     setLoading(true);
     try {
-      const data = await studyGroupService.getMyStudyGroups(target);
+      const data = await groupSessionService.getMyGroupSessions(target);
       setGroups(data);
     } catch {
       setGroups([]);
@@ -485,7 +791,7 @@ export default function StudyGroups() {
     if (selectedIds.size === 0) return;
     setHistoryBusy(true);
     try {
-      await studyGroupService.clearHistory({
+      await groupSessionService.clearHistory({
         sessionIds: Array.from(selectedIds),
       });
       exitSelectMode();
@@ -501,7 +807,7 @@ export default function StudyGroups() {
   const deleteAllHistory = async () => {
     setHistoryBusy(true);
     try {
-      await studyGroupService.clearHistory({ all: true });
+      await groupSessionService.clearHistory({ all: true });
       exitSelectMode();
       loadGroups("history");
     } catch {
@@ -516,7 +822,7 @@ export default function StudyGroups() {
     setHistoryDlg({
       title: `Delete ${selectedIds.size} from history?`,
       message:
-        "These study groups will disappear from your History. " +
+        "These group sessions will disappear from your History. " +
         "Other participants and the host will still see them.",
       confirmLabel: `Delete ${selectedIds.size}`,
       cancelLabel: "Keep",
@@ -529,7 +835,7 @@ export default function StudyGroups() {
     setHistoryDlg({
       title: "Clear all history?",
       message:
-        "Every past study group in your History will be removed from your " +
+        "Every past group session in your History will be removed from your " +
         "view. Other participants and the host will still see them. " +
         "This can't be undone.",
       confirmLabel: "Clear all",
@@ -557,7 +863,7 @@ export default function StudyGroups() {
   return (
     <div className="tsg__page">
       <div className="tsg__header">
-        <h2 className="tsg__title">Study Groups</h2>
+        <h2 className="tsg__title">Group Sessions</h2>
         <div className="tsg__tabs">
           <button
             className={`tsg__tab ${tab === "invites" ? "active" : ""}`}
@@ -572,6 +878,14 @@ export default function StudyGroups() {
             onClick={() => setTab("history")}
           >History</button>
         </div>
+        <button
+          className="tsg__btnPrimary"
+          onClick={() => { setInstantError(""); setShowInstantMenu(true); }}
+          style={{ background: "#1a73e8", color: "#fff", marginLeft: "auto" }}
+          title="Start a new instant meeting or join one with a room code"
+        >
+          Instant Meeting
+        </button>
       </div>
 
       {isHistory && !loading && groups.length > 0 && (
@@ -620,12 +934,12 @@ export default function StudyGroups() {
       )}
 
       {loading ? (
-        <div className="tsg__loading">Loading study groups…</div>
+        <div className="tsg__loading">Loading group sessions…</div>
       ) : visibleGroups.length === 0 ? (
         <div className="tsg__empty">
-          {tab === "invites" && "No pending study group invitations."}
-          {tab === "upcoming" && "No upcoming study groups."}
-          {tab === "history" && "No past study groups yet."}
+          {tab === "invites" && "No pending group session invitations."}
+          {tab === "upcoming" && "No upcoming group sessions."}
+          {tab === "history" && "No past group sessions yet."}
         </div>
       ) : (
         <div className="tsg__grid">
@@ -645,6 +959,16 @@ export default function StudyGroups() {
       <ConfirmDialog
         dialog={historyDlg ? { ...historyDlg, busy: historyBusy } : null}
         onClose={() => (historyBusy ? null : setHistoryDlg(null))}
+      />
+
+      {/* Instant Meeting popup — Create | Enter Room ID | ✕ */}
+      <InstantMeetingDialog
+        open={showInstantMenu}
+        busy={instantBusy}
+        error={instantError}
+        onClose={() => { if (!instantBusy) { setShowInstantMenu(false); setInstantError(""); } }}
+        onCreate={startInstantMeeting}
+        onEnter={enterRoomByCode}
       />
     </div>
   );

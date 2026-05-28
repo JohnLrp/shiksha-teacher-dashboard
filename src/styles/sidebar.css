@@ -46,44 +46,90 @@
   font-size: 14px;
   opacity: 0.9;
   border-radius: 10px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  position: relative;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 .menu-item.menu-label {
   cursor: default;
 }
 
-.menu-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  font-weight: 600;
-  opacity: 1;
-}
-.menu-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  font-weight: 600;
-  opacity: 1;
-}
-
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 1;
+  transform: translateX(2px);
 }
 
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+  opacity: 1;
+  box-shadow: inset 3px 0 0 #ffd166;
+}
+
+.menu-dropdown {
+  justify-content: flex-start;
+}
+
+.menu-chevron {
+  margin-left: auto;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  opacity: 0.8;
+}
+
+.menu-chevron--open {
+  transform: rotate(180deg);
+}
 
 .menu-icon {
   font-size: 18px;
 }
 
+.submenu {
+  margin: 2px 0 6px 0;
+  padding: 4px 0 4px 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+  margin-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .submenu p {
-  font-size: 12px;
-  margin-left: 32px;
-  margin-top: 6px;
+  font-size: 12.5px;
+  padding: 7px 10px;
+  margin: 0;
+  border-radius: 8px;
   opacity: 0.85;
   cursor: pointer;
-  line-height: 1.4;
+  line-height: 1.3;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 
 .submenu p:hover {
+  background: rgba(255, 255, 255, 0.1);
   opacity: 1;
+  transform: translateX(2px);
+}
+
+.submenu p.submenu-active {
+  background: rgba(255, 209, 102, 0.18);
+  color: #ffd166;
+  opacity: 1;
+  font-weight: 600;
+}
+
+.submenu-empty {
+  cursor: default !important;
+  opacity: 0.55 !important;
+  font-style: italic;
+}
+
+.submenu-empty:hover {
+  background: transparent !important;
+  transform: none !important;
 }
 
 .sidebar-close {

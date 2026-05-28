@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { IoCheckmarkCircle } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import api from "../api/apiClient";
 import "../styles/quiz-draft-preview.css";
 
@@ -26,7 +25,6 @@ export default function QuizDraftPreview() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
-  const [search, setSearch] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState(null);
 
@@ -79,9 +77,6 @@ export default function QuizDraftPreview() {
   if (!quiz) return null;
 
   const questions = quiz.questions || [];
-  const filtered = questions.filter((q) =>
-    (q.text || "").toLowerCase().includes(search.toLowerCase())
-  );
 
   // Find correct answer for a question (uses choices array from backend)
   const getCorrectText = (q) => {
@@ -125,15 +120,6 @@ export default function QuizDraftPreview() {
             Created: {quiz.created_at ? new Date(quiz.created_at).toLocaleDateString() : "—"}
           </p>
         </div>
-        <div className="qdp-search">
-          <input
-            type="text"
-            placeholder="Search questions…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="qdp-search-icon" />
-        </div>
       </div>
 
       <div className="qdp-content-card">
@@ -165,16 +151,14 @@ export default function QuizDraftPreview() {
         )}
 
         {/* Questions */}
-        {filtered.length === 0 && (
+        {questions.length === 0 && (
           <p className="qdp-empty">
-            {questions.length === 0
-              ? "No questions added yet. Go back and add questions before publishing."
-              : "No questions match your search."}
+            No questions added yet. Go back and add questions before publishing.
           </p>
         )}
 
         <div className="qdp-questions-list">
-          {filtered.map((q, qIndex) => {
+          {questions.map((q, qIndex) => {
             const correctText = getCorrectText(q);
             const choices = q.choices || q.options || [];
 

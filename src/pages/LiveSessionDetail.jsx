@@ -4,8 +4,11 @@ import api from "../api/apiClient";
 import { IoChevronBack } from "react-icons/io5";
 
 export default function LiveSessionDetail() {
-  const { id } = useParams();
+  const { id, subjectId } = useParams();
   const navigate = useNavigate();
+  const backTo = subjectId
+    ? `/teacher/classes/${subjectId}/live-sessions`
+    : `/teacher/live-sessions`;
   const [session, setSession] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [recording, setRecording] = useState(null);
@@ -37,7 +40,7 @@ export default function LiveSessionDetail() {
   return (
     <div style={{ padding: "24px 32px", maxWidth: 800, margin: "0 auto" }}>
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(backTo)}
         style={{
           display: "flex", alignItems: "center", gap: 4,
           background: "none", border: "none", cursor: "pointer",

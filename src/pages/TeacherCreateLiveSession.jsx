@@ -152,7 +152,7 @@ export default function TeacherCreateLiveSession() {
   return (
     <div className="lsc-page">
 
-      <button className="lsc-back-btn" onClick={() => navigate(-1)}>
+      <button className="lsc-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/live-sessions`)}>
         <IoChevronBack /> Back
       </button>
 

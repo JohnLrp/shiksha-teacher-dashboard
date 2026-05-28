@@ -1,51 +1,86 @@
 /**
- * FILE: TEACHER_UI/src/api/studyGroupService.js
+ * FILE: TEACHER_UI/src/api/groupSessionService.js
  *
- * Teacher-side client for Study Groups.
- * Teachers are only invitees of study groups — they can:
+ * Teacher-side client for Group Sessions.
+ * Teachers are only invitees of group sessions — they can:
  *   - view invitations (pending)
  *   - accept / decline
  *   - view upcoming / history
  *   - join the live room (same /join/ endpoint)
  *
- * Backend: /api/sessions/study-groups/...
+ * Backend: /api/sessions/group-sessions/...
  */
 
 import api from "./apiClient";
 
-const studyGroupService = {
+const groupSessionService = {
 
-  async getMyStudyGroups(tab = "upcoming") {
+  async getMyGroupSessions(tab = "upcoming") {
     const res = await api.get(
-      `/sessions/study-groups/mine/?tab=${encodeURIComponent(tab)}`
+      `/sessions/group-sessions/mine/?tab=${encodeURIComponent(tab)}`
     );
-    return (res.data || []).map(transformStudyGroup);
+    return (res.data || []).map(transformGroupSession);
   },
 
   async getDetail(sessionId) {
-    const res = await api.get(`/sessions/study-groups/${sessionId}/`);
-    return transformStudyGroup(res.data);
+    const res = await api.get(`/sessions/group-sessions/${sessionId}/`);
+    return transformGroupSession(res.data);
   },
 
   async acceptInvite(sessionId) {
-    const res = await api.post(`/sessions/study-groups/${sessionId}/accept/`);
-    return transformStudyGroup(res.data);
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/accept/`);
+    return transformGroupSession(res.data);
   },
 
   async declineInvite(sessionId) {
-    const res = await api.post(`/sessions/study-groups/${sessionId}/decline/`);
-    return transformStudyGroup(res.data);
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/decline/`);
+    return transformGroupSession(res.data);
   },
 
   // Teacher (or student) who previously accepted flips back to pending.
   // Allowed any time before the room actually opens.
   async unacceptInvite(sessionId) {
-    const res = await api.post(`/sessions/study-groups/${sessionId}/unaccept/`);
-    return transformStudyGroup(res.data);
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/unaccept/`);
+    return transformGroupSession(res.data);
   },
 
   async joinRoom(sessionId) {
-    const res = await api.post(`/sessions/study-groups/${sessionId}/join/`);
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/join/`);
+    return res.data;
+  },
+
+
+  // ─────────────────────────────────────────────
+  // Instant Meeting + host controls (teachers can host instant meetings too)
+  // ─────────────────────────────────────────────
+  async createInstant({ duration_minutes = 180, topic = "" } = {}) {
+    const res = await api.post("/sessions/group-sessions/instant/", {
+      duration_minutes,
+      topic,
+    });
+    return transformGroupSession(res.data);
+  },
+
+  // Resolve a room code (or UUID) to a session id so the teacher can
+  // navigate into the live room. Auth + paywall are enforced by the
+  // backend; this wrapper just normalises the response shape.
+  async joinByCode(code) {
+    const res = await api.post("/sessions/group-sessions/join-by-code/", {
+      code: (code || "").trim(),
+    });
+    return res.data; // { session_id, short_code, status, session_type, host_id }
+  },
+
+  async endSession(sessionId) {
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/end/`);
+    return res.data;
+  },
+
+  async setAdmitMode(sessionId, mode) {
+    const res = await api.post(
+      `/sessions/group-sessions/${sessionId}/admit-mode/`,
+      { admit_mode: mode }
+    );
     return res.data;
   },
 
@@ -56,7 +91,7 @@ const studyGroupService = {
   // Hide a single past session from MY history view. Doesn't touch the
   // session itself — the host and other participants still see it.
   async hideFromHistory(sessionId) {
-    const res = await api.post(`/sessions/study-groups/${sessionId}/hide/`);
+    const res = await api.post(`/sessions/group-sessions/${sessionId}/hide/`);
     return res.data;
   },
 
@@ -66,18 +101,21 @@ const studyGroupService = {
   async clearHistory({ all = false, sessionIds = null } = {}) {
     const body = all ? { all: true } : { session_ids: sessionIds || [] };
     const res = await api.post(
-      "/sessions/study-groups/history/clear/",
+      "/sessions/group-sessions/history/clear/",
       body,
     );
     return res.data;
   },
 };
 
-function transformStudyGroup(sg) {
+function transformGroupSession(sg) {
   if (!sg) return sg;
   return {
     ...sg,
     id: sg.id,
+    shortCode: sg.short_code || "",
+    sessionType: sg.session_type || "scheduled",
+    admitMode: sg.admit_mode || "open",
     subjectId: sg.subject_id || null,
     subjectName: sg.subject_name,
     courseId: sg.course_id || null,
@@ -134,14 +172,18 @@ export function extractApiError(err, fallback = "Something went wrong.") {
 }
 
 export const {
-  getMyStudyGroups,
+  getMyGroupSessions,
   getDetail,
   acceptInvite,
   declineInvite,
   unacceptInvite,
   joinRoom,
+  createInstant,
+  joinByCode,
+  endSession,
+  setAdmitMode,
   hideFromHistory,
   clearHistory,
-} = studyGroupService;
+} = groupSessionService;
 
-export default studyGroupService;
+export default groupSessionService;

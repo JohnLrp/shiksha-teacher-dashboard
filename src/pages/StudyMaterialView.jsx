@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { FaRegFolder } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import api from "../api/apiClient";
@@ -22,12 +21,10 @@ const extColor = (ext) => {
 
 export default function StudyMaterialView() {
   const navigate = useNavigate();
-  const { materialId } = useParams();
+  const { materialId, subjectId } = useParams();
 
   const [material, setMaterial] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(null);
 
   useEffect(() => {
@@ -50,10 +47,6 @@ export default function StudyMaterialView() {
 
   const files = material.files || [];
 
-  const filtered = files.filter((f) =>
-    f.file_name?.toLowerCase().includes(search.toLowerCase())
-  );
-
   const handleCopy = (e, url) => {
     e.preventDefault();
     navigator.clipboard.writeText(url).then(() => {
@@ -65,21 +58,12 @@ export default function StudyMaterialView() {
   return (
     <div className="smv-page">
 
-      <button className="smv-back-btn" onClick={() => navigate(-1)}>
+      <button className="smv-back-btn" onClick={() => navigate(`/teacher/classes/${subjectId}/study-materials`)}>
         <IoChevronBack /> Back
       </button>
 
       <div className="smv-header">
         <h2 className="smv-title">Study Material</h2>
-        <div className="smv-search">
-          <input
-            type="text"
-            placeholder="Search files..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="smv-search-icon" />
-        </div>
       </div>
 
       <div className="smv-content-card">
@@ -116,13 +100,11 @@ export default function StudyMaterialView() {
               <span className="smv-files-count-badge">{files.length}</span>
             </div>
 
-            {filtered.length === 0 ? (
-              <p className="smv-no-files">
-                {search ? "No files match your search." : "No files attached."}
-              </p>
+            {files.length === 0 ? (
+              <p className="smv-no-files">No files attached.</p>
             ) : (
               <div className="smv-files-list">
-                {filtered.map((file) => {
+                {files.map((file) => {
                   const url = file.file_url || `${import.meta.env.VITE_API_BASE || "https://api.shikshacom.com"}${file.file}`;
                   const ext = getFileExt(file.file_name);
                   const color = extColor(ext);

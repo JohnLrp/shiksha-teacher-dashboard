@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
 import api from "../api/apiClient";
 import "../styles/quiz-review-view.css";
@@ -11,7 +10,6 @@ export default function QuizReviewView() {
 const { attemptId, quizId, subjectId, studentId } = useParams();
 
   const [data, setData] = useState(null);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchReview() {
@@ -29,10 +27,6 @@ const { attemptId, quizId, subjectId, studentId } = useParams();
     return <div className="qrv-loading">Loading review...</div>;
   }
 
-  const filtered = data.questions.filter((q) =>
-    q.question.toLowerCase().includes(search.toLowerCase())
-  );
-
   const correct = data.questions.filter((q) => q.selected === q.correct).length;
   const total = data.questions.length;
   const pct = Math.round((correct / total) * 100);
@@ -46,15 +40,6 @@ const { attemptId, quizId, subjectId, studentId } = useParams();
       <div className="qrv-card">
         <div className="qrv-header">
           <h2 className="qrv-title">Quiz Review</h2>
-          <div className="qrv-search">
-            <FiSearch className="qrv-search-icon" />
-            <input
-              type="text"
-              placeholder="Search questions..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
         </div>
 
         <div className="qrv-content">
@@ -87,7 +72,7 @@ const { attemptId, quizId, subjectId, studentId } = useParams();
           </div>
 
           <div className="qrv-questions-list">
-            {filtered.map((q, qIndex) => {
+            {data.questions.map((q, qIndex) => {
               const isCorrect = q.selected === q.correct;
 
               return (
@@ -142,8 +127,8 @@ const { attemptId, quizId, subjectId, studentId } = useParams();
               );
             })}
 
-            {filtered.length === 0 && (
-              <p className="qrv-no-results">No questions match your search.</p>
+            {data.questions.length === 0 && (
+              <p className="qrv-no-results">No questions to review.</p>
             )}
           </div>
         </div>

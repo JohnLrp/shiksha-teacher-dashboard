@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { MdCancel } from "react-icons/md";
 import api from "../api/apiClient";
 import "../styles/live-sessions.css";
@@ -31,7 +30,6 @@ export default function LiveSessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState("");
   const [historyPage, setHistoryPage] = useState(1);
   const HISTORY_PAGE_SIZE = 5;
 
@@ -108,25 +106,14 @@ export default function LiveSessions() {
   };
 
   /* =====================================
-     🔥 FILTER & CATEGORIZE
+     🔥 CATEGORIZE
   ===================================== */
-  const filtered = sessions.filter((s) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      s.title?.toLowerCase().includes(q) ||
-      s.subject_name?.toLowerCase().includes(q) ||
-      s.course_name?.toLowerCase().includes(q) ||
-      s.teacher?.toLowerCase().includes(q)
-    );
-  });
-
-  const ongoing = filtered.filter(
+  const ongoing = sessions.filter(
     (s) => s.computed_status === "LIVE" || s.computed_status === "PAUSED" ||
       s.computed_status === "RECONNECTING" || s.computed_status === "WAITING_FOR_TEACHER" ||
       s.computed_status === "SCHEDULED"
   );
-  const history = filtered.filter((s) => s.computed_status === "COMPLETED" || s.computed_status === "CANCELLED").sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+  const history = sessions.filter((s) => s.computed_status === "COMPLETED" || s.computed_status === "CANCELLED").sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
   const historyTotal = history.length;
   const historyPages = Math.ceil(historyTotal / HISTORY_PAGE_SIZE);
   const historyPaged = history.slice((historyPage - 1) * HISTORY_PAGE_SIZE, historyPage * HISTORY_PAGE_SIZE);
@@ -221,7 +208,7 @@ export default function LiveSessions() {
     <div className="live-sessions-page">
       <button
         className="live-sessions-back-btn"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(subjectId ? `/teacher/classes/${subjectId}` : "/teacher/dashboard")}
       >
         <IoChevronBack /> Back
       </button>
@@ -230,16 +217,6 @@ export default function LiveSessions() {
         <h2 className="live-sessions-title">
           Schedule for Interactive Sessions
         </h2>
-
-        <div className="live-sessions-search">
-          <input
-            type="text"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="live-sessions-search-icon" />
-        </div>
       </div>
 
       <div className="live-sessions-content">
