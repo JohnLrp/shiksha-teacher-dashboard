@@ -1,20 +1,21 @@
-/* =====================================================
-   TEACHER PROFILE PAGE — Figma redesign
-   Drop-in replacement. Uses EXISTING class names from Profile.jsx.
-   Keep your existing Profile.jsx as-is.
-===================================================== */
+/* ============================================================
+   TEACHER PROFILE — matches Figma screenshots (all 4 states)
+   Single white card containing all sections, separated by lines.
+   Light blue-tinted gradient at top fading to white.
+============================================================ */
 
 .tp-page {
-  background: #e9e9e9;
-  min-height: 100vh;
   padding: 32px 24px;
+  background: transparent;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 1024px;
-  margin: 0 auto;
-  font-family: 'Inter', 'Montserrat', system-ui, -apple-system, sans-serif;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #111;
+}
+
+.tp-page * {
   box-sizing: border-box;
 }
 
@@ -28,34 +29,54 @@
 
 .tp-error { color: #b91c1c; }
 
-/* =====================================================
-   TOP CARD
-===================================================== */
-
-.tp-top-card {
+/* ============================================================
+   MAIN CARD — single rounded white container with subtle shadow
+============================================================ */
+.tp-card {
+  width: 100%;
+  max-width: 1100px;
   background: #ffffff;
-  border-radius: 9px;
-  padding: 32px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
 }
 
-.tp-top-left {
+/* ============================================================
+   HEADER — gradient fade from soft blue at top to white
+============================================================ */
+.tp-header {
   display: flex;
-  gap: 28px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 32px 40px 28px;
+  background: linear-gradient(
+    180deg,
+    #d9e7f5 0%,
+    #e8f0f8 35%,
+    #f4f8fb 65%,
+    #ffffff 100%
+  );
+  position: relative;
+}
+
+.tp-header-left {
+  display: flex;
+  gap: 24px;
   align-items: center;
   flex: 1 1 auto;
   min-width: 0;
 }
 
+/* ── Avatar ── */
 .tp-avatar-wrap {
   position: relative;
-  width: 96px;
-  height: 96px;
-  min-width: 96px;
+  width: 88px;
+  height: 88px;
+  min-width: 88px;
   flex-shrink: 0;
 }
 
@@ -65,6 +86,8 @@
   border-radius: 50%;
   overflow: hidden;
   background: #d9d9d9;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,7 +100,7 @@
 }
 
 .tp-avatar-placeholder {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   color: #666;
 }
@@ -86,8 +109,8 @@
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: #111;
   border: 2px solid #ffffff;
@@ -96,7 +119,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   padding: 0;
   transition: background 0.15s;
@@ -106,338 +129,283 @@
   background: #2a2a2a;
 }
 
+/* ── Name + credentials + pills ── */
 .tp-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
 .tp-name {
   margin: 0;
   font-family: 'Poppins', 'Inter', sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  color: #000;
-  letter-spacing: -0.01em;
+  color: #0b1220;
   line-height: 1.2;
 }
 
-/* Credentials row — dot-separated inline items, matching Figma */
-.tp-badges {
+.tp-credentials {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0;
-  font-family: 'Montserrat', 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #1a1a1a;
+  gap: 4px 14px;
+  font-size: 13px;
+  color: #1f2937;
+  margin-top: 2px;
 }
 
-.tp-badge-item {
-  font-size: 15px;
-  color: #1a1a1a;
+.tp-credential {
   position: relative;
-  padding: 0 16px 0 0;
-  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
 }
 
-.tp-badge-item::after {
-  content: "·";
-  position: absolute;
-  right: 5px;
-  color: #1a1a1a;
+.tp-credential::before {
+  content: "•";
+  color: #1f2937;
+  margin-right: 8px;
   font-weight: 700;
 }
 
-.tp-badge-item:last-child {
-  padding-right: 16px;
+/* Pills row */
+.tp-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
 }
 
-.tp-experience {
-  margin: 0;
-  font-size: 15px;
-  color: #1a1a1a;
+.tp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
   line-height: 1.5;
 }
 
-/* Pills row */
-.tp-tags {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.tp-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 14px;
-  border-radius: 29px;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  line-height: 1.4;
-  border: none;
-}
-
-.tp-tag--available {
-  background: #3ed03e;
+.tp-pill--available {
+  background: #1eb854;
   color: #ffffff;
 }
 
-.tp-tag--available::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
+.tp-pill-dot {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #ffffff;
-  margin-right: 8px;
 }
 
-.tp-tag--lang {
-  background: #f5cb72;
-  color: #b56100;
-}
-
-/* =====================================================
-   TOP-RIGHT BUTTONS
-===================================================== */
-
-.tp-top-right {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.tp-edit-btn,
-.tp-private-btn,
-.tp-cancel-btn,
-.tp-save-btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  white-space: nowrap;
-  font-family: inherit;
-}
-
-.tp-edit-btn,
-.tp-cancel-btn {
-  border: 1px solid #c4c7c6;
-  background: #ffffff;
-  color: #111;
-}
-
-.tp-edit-btn:hover,
-.tp-cancel-btn:hover:not(:disabled) {
-  background: #f5f5f5;
-}
-
-.tp-private-btn,
-.tp-save-btn {
-  border: 1px solid #111;
-  background: #111;
+.tp-pill--lang {
+  background: #2e3a7c;
   color: #ffffff;
 }
 
-.tp-private-btn:hover,
-.tp-save-btn:hover:not(:disabled) {
-  background: #2a2a2a;
-  border-color: #2a2a2a;
+/* ── Header buttons ── */
+.tp-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: stretch;
 }
 
-.tp-save-btn:disabled,
-.tp-cancel-btn:disabled {
+.tp-btn {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.tp-btn--outline {
+  border: 1px solid #cfd6dd;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.tp-btn--outline:hover:not(:disabled) {
+  background: #f3f5f8;
+  border-color: #9ba6b1;
+}
+
+.tp-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* =====================================================
-   RATINGS ROW
-===================================================== */
-
+/* ============================================================
+   RATINGS — two sub-cards inside main card
+============================================================ */
 .tp-ratings-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 20px;
+  padding: 24px 40px 28px;
 }
 
 .tp-rating-card {
   background: #ffffff;
-  border-radius: 9px;
-  padding: 28px 32px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08);
-  text-align: left;
+  border: 1px solid #e6eaee;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.tp-rating-card h3 {
-  margin: 0 0 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  color: #000;
-  text-transform: uppercase;
-  letter-spacing: 0.2px;
+.tp-rating-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b1220;
 }
 
 .tp-rating-value {
   display: flex;
   align-items: baseline;
-  justify-content: flex-start;
-  gap: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .tp-star {
-  font-size: 28px;
-  color: #ffae00;
+  font-size: 22px;
+  color: #f5a524;
   line-height: 1;
 }
 
 .tp-rating-number {
-  font-family: 'Inter', sans-serif;
-  font-size: 44px;
-  font-weight: 700;
-  color: #000;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0b1220;
   line-height: 1;
 }
 
 .tp-rating-max {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 500;
-  color: #000;
+  color: #6b7280;
 }
 
 .tp-rating-count {
-  margin: 8px 0 0;
-  font-size: 13px;
-  font-weight: 500;
+  margin: 0 0 2px;
+  font-size: 12px;
   color: #374151;
+  font-weight: 500;
 }
 
 .tp-rating-sub {
-  margin: 6px 0 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.58);
+  margin: 0;
+  font-size: 11px;
+  color: #6b7280;
 }
 
-/* =====================================================
-   SECTIONS — generic white cards
-===================================================== */
-
+/* ============================================================
+   SECTIONS — separated by dividers (NOT separate cards)
+============================================================ */
 .tp-section {
-  background: #ffffff;
-  border-radius: 9px;
-  padding: 28px 32px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08);
+  padding: 22px 40px 24px;
+  border-top: 1px solid #e6eaee;
 }
 
-.tp-section h2 {
-  margin: 0 0 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  color: #000;
-  text-transform: uppercase;
-  letter-spacing: 0.2px;
-  padding-bottom: 0;
-  border-bottom: none;
+.tp-section--col {
+  border-top: none;
+  padding: 0;
 }
 
-/* =====================================================
+.tp-section-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0b1220;
+}
+
+/* ============================================================
    ABOUT
-===================================================== */
-
+============================================================ */
 .tp-about-text {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.65;
-  color: #1a1a1a;
+  color: #1f2937;
 }
 
 .tp-about-placeholder {
   margin: 0;
-  font-size: 15px;
-  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  color: #9ca3af;
   font-style: italic;
 }
 
 .tp-about-textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #c4c7c6;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
   color: #111;
   resize: vertical;
   font-family: inherit;
-  background: #fafafa;
-  box-sizing: border-box;
+  background: #f3f5f8;
   transition: border-color 0.15s, background 0.15s;
   outline: none;
 }
 
 .tp-about-textarea:focus {
-  border-color: #111;
+  border-color: #6b7280;
   background: #ffffff;
 }
 
 .tp-about-textarea::placeholder {
-  color: rgba(0, 0, 0, 0.45);
+  color: #9ca3af;
 }
 
-/* =====================================================
-   TWO COLUMN
-===================================================== */
-
+/* ============================================================
+   TWO COLUMN — Active Courses + Subjects share a row
+============================================================ */
 .tp-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 40px;
+  padding: 22px 40px 24px;
+  border-top: 1px solid #e6eaee;
 }
 
-/* =====================================================
-   LISTS — Active Courses / Subjects
-   Restyled with row dividers like Figma
-===================================================== */
-
-.tp-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+/* ============================================================
+   NUMBERED LISTS — Active Courses / Subjects
+============================================================ */
+.tp-numbered-list {
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style-type: decimal;
+  list-style-position: outside;
 }
 
-.tp-list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 0;
-  font-size: 15px;
-  color: #1a1a1a;
-  border-bottom: 1px solid #e6e6e6;
+.tp-numbered-list::marker,
+.tp-numbered-item::marker {
+  color: #0b1220;
+  font-weight: 500;
 }
 
-.tp-list-item:last-child {
-  border-bottom: none;
-}
-
-.tp-list-num {
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.62);
-  min-width: 22px;
+.tp-numbered-item {
+  margin: 4px 0 8px;
   font-size: 14px;
+  color: #0b1220;
+  padding-left: 4px;
 }
 
-.tp-list-item strong {
-  font-weight: 600;
-  color: #000;
+.tp-numbered-main {
+  font-weight: 500;
+  color: #0b1220;
 }
 
 .tp-sub-list {
@@ -447,102 +415,102 @@
 }
 
 .tp-sub-list li {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.54);
-  line-height: 1.6;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.55;
+  margin: 2px 0;
 }
 
 .tp-empty {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.45);
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #9ca3af;
   font-style: italic;
 }
 
-/* =====================================================
+/* ============================================================
    PRIVATE SESSIONS
-===================================================== */
-
+============================================================ */
 .tp-private-count {
-  margin: 0 0 16px;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.58);
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #6b7280;
 }
 
 .tp-priv-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e6e6e6;
+  gap: 40px;
 }
 
 .tp-priv-col {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tp-priv-label {
   margin: 0;
   font-size: 13px;
-  font-weight: 700;
-  color: #000;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  font-weight: 600;
+  color: #0b1220;
 }
 
 .tp-no-prefs {
   margin: 0;
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  color: #9ca3af;
   font-style: italic;
 }
-
-/* ===== SESSION PREF ROWS ===== */
 
 .tp-pref-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-.tp-pref-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+/* View mode rows (dot prefix) */
 .tp-pref-row-view {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  font-size: 13px;
+  color: #1f2937;
 }
 
 .tp-pref-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  min-width: 6px;
+  width: 5px;
+  height: 5px;
+  min-width: 5px;
   border-radius: 50%;
-  background: #111;
+  background: #0b1220;
+}
+
+/* Edit mode rows (label + control) */
+.tp-pref-row-edit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #1f2937;
 }
 
 .tp-pref-name {
-  font-size: 14px;
-  color: #1a1a1a;
+  font-size: 13px;
+  color: #1f2937;
 }
 
-/* ===== TOGGLE ===== */
-
+/* ── Toggle ── */
 .tp-toggle {
   position: relative;
   display: inline-flex;
   align-items: center;
-  width: 44px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   border-radius: 999px;
-  background: #d1d5db;
+  background: #cfd6dd;
   border: none;
   cursor: pointer;
   padding: 0;
@@ -551,38 +519,32 @@
 }
 
 .tp-toggle--on {
-  background: #3ed03e;
-}
-
-.tp-toggle--static {
-  cursor: default;
-  pointer-events: none;
+  background: #1eb854;
 }
 
 .tp-toggle-thumb {
   position: absolute;
-  left: 3px;
-  width: 18px;
-  height: 18px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   transition: transform 0.2s;
 }
 
 .tp-toggle--on .tp-toggle-thumb {
-  transform: translateX(20px);
+  transform: translateX(16px);
 }
 
-/* ===== GROUP MAX INPUT/BADGE ===== */
-
+/* ── Group input ── */
 .tp-group-input {
-  width: 56px;
-  padding: 5px 8px;
-  border: 1px solid #c4c7c6;
+  width: 50px;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: #111;
   text-align: center;
   outline: none;
@@ -590,30 +552,14 @@
 }
 
 .tp-group-input:focus {
-  border-color: #111;
+  border-color: #6b7280;
 }
 
-.tp-group-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 22px;
-  padding: 0 8px;
-  background: #ecf0ef;
-  border: 1px solid #c4c7c6;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-/* ===== AVAILABILITY EDIT ===== */
-
+/* ── Availability edit ── */
 .tp-avail-edit {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tp-avail-row {
@@ -621,20 +567,21 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  font-size: 13px;
 }
 
 .tp-avail-day-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  min-width: 72px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  min-width: 70px;
 }
 
 .tp-avail-select {
-  padding: 5px 10px;
-  border: 1px solid #c4c7c6;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   color: #111;
   background: #ffffff;
   cursor: pointer;
@@ -643,52 +590,45 @@
 }
 
 .tp-avail-select:focus {
-  border-color: #111;
+  border-color: #6b7280;
 }
 
 .tp-avail-dash {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  color: #6b7280;
 }
 
-/* ===== AVAILABILITY VIEW ===== */
-
+/* ── Availability view ── */
 .tp-avail-view {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.tp-avail-row-view {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tp-avail-time {
-  font-size: 14px;
-  color: #1a1a1a;
+  font-size: 13px;
+  color: #1f2937;
   font-weight: 500;
 }
 
 .tp-avail-not-set {
-  font-size: 14px;
-  color: #b56100;
+  font-size: 13px;
+  color: #9ca3af;
   font-style: italic;
 }
 
-/* =====================================================
-   SPECIALIZED SKILLS
-===================================================== */
-
+/* ============================================================
+   SPECIALIZED SKILL
+============================================================ */
 .tp-skills-list {
   display: flex;
   flex-direction: column;
+  gap: 0;
 }
 
 .tp-skill-item {
-  padding: 16px 0;
-  border-bottom: 1px solid #e6e6e6;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f4;
 }
 
 .tp-skill-item:last-child {
@@ -700,67 +640,64 @@
   padding-top: 4px;
 }
 
-.tp-skill-item h4 {
-  margin: 0 0 6px;
-  font-size: 16px;
+.tp-skill-title {
+  margin: 0 0 4px;
+  font-size: 14px;
   font-weight: 600;
-  color: #000;
+  color: #0b1220;
 }
 
-.tp-skill-item p {
+.tp-skill-desc {
   margin: 0;
-  font-size: 15px;
-  color: rgba(0, 0, 0, 0.62);
+  font-size: 13px;
+  color: #4b5563;
   line-height: 1.5;
 }
 
-/* =====================================================
+/* ============================================================
    RESPONSIVE
-===================================================== */
-
-@media (max-width: 768px) {
+============================================================ */
+@media (max-width: 900px) {
   .tp-page {
     padding: 16px 12px;
+  }
+
+  .tp-header,
+  .tp-ratings-row,
+  .tp-section,
+  .tp-two-col {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .tp-header {
+    flex-direction: column;
     gap: 16px;
   }
 
-  .tp-top-card,
-  .tp-rating-card,
-  .tp-section {
-    padding: 20px 18px;
-  }
-
-  .tp-top-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tp-top-left {
+  .tp-header-left {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 16px;
+    width: 100%;
   }
 
   .tp-info {
     align-items: center;
   }
 
-  .tp-badges,
-  .tp-tags {
+  .tp-credentials,
+  .tp-pills {
     justify-content: center;
   }
 
-  .tp-top-right {
+  .tp-header-actions {
     flex-direction: row;
     width: 100%;
-    justify-content: center;
+    justify-content: stretch;
   }
 
-  .tp-edit-btn,
-  .tp-private-btn,
-  .tp-cancel-btn,
-  .tp-save-btn {
+  .tp-header-actions .tp-btn {
     flex: 1 1 auto;
   }
 
@@ -768,22 +705,14 @@
   .tp-two-col,
   .tp-priv-two-col {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .tp-rating-number {
-    font-size: 36px;
+    font-size: 28px;
   }
 
   .tp-name {
-    font-size: 22px;
-  }
-
-  .tp-badges {
-    font-size: 13px;
-  }
-
-  .tp-badge-item,
-  .tp-experience {
-    font-size: 13px;
+    font-size: 20px;
   }
 }
