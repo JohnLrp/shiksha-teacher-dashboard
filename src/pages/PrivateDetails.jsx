@@ -5,6 +5,10 @@ import api from "../api/apiClient";
 import "../styles/profile.css";
 import "../styles/private-details.css";
 
+/* ────────────────────────────────────────────────────────────
+   VALUE FORMATTERS — turn raw API codes into human-friendly text
+   ──────────────────────────────────────────────────────────── */
+
 function formatDob(dob) {
   if (!dob) return "";
   const d = new Date(dob);
@@ -20,6 +24,104 @@ function getFileName(url) {
   return decodeURIComponent(url.split("/").pop());
 }
 
+/** Title-case for plain words: "mathematics" → "Mathematics" */
+function titleCase(s) {
+  if (!s || typeof s !== "string") return s;
+  return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
+/** Range strings: "1_3" → "1-3 years", "10_plus" → "10+ years" */
+function formatExperienceRange(v) {
+  if (!v) return v;
+  const known = {
+    "0":         "New Teacher (0 years)",
+    "new":       "New Teacher (0 years)",
+    "1_2":       "1-2 years",
+    "1-2":       "1-2 years",
+    "1_3":       "1-3 years",
+    "1-3":       "1-3 years",
+    "3_5":       "3-5 years",
+    "3-5":       "3-5 years",
+    "6_10":      "6-10 years",
+    "6-10":      "6-10 years",
+    "10_plus":   "10+ years",
+    "10+":       "10+ years",
+  };
+  if (known[v]) return known[v];
+  // Generic fallback: "X_Y" → "X-Y years"
+  if (/^\d+_\d+$/.test(v)) return v.replace("_", "-") + " years";
+  return v;
+}
+
+/** Employment status: "fulltime" → "Full-time", "parttime" → "Part-time" */
+function formatEmploymentStatus(v) {
+  if (!v) return v;
+  const known = {
+    "fulltime":   "Full-time",
+    "full_time":  "Full-time",
+    "full-time":  "Full-time",
+    "parttime":   "Part-time",
+    "part_time":  "Part-time",
+    "part-time":  "Part-time",
+    "freelance":  "Freelance / Independent",
+    "unemployed": "Unemployed / Looking for opportunities",
+    "looking":    "Unemployed / Looking for opportunities",
+  };
+  return known[v?.toLowerCase()] || titleCase(v);
+}
+
+/** Government ID: "aadhaar" → "Aadhar Card", "voter_id" → "Voter's ID" */
+function formatGovtId(v) {
+  if (!v) return v;
+  const known = {
+    "aadhaar":         "Aadhar Card",
+    "aadhar":          "Aadhar Card",
+    "voter_id":        "Voter's ID",
+    "voters_id":       "Voter's ID",
+    "voter":           "Voter's ID",
+    "pan":             "PAN Card",
+    "pan_card":        "PAN Card",
+    "passport":        "Passport",
+    "driving_license": "Driving License",
+    "dl":              "Driving License",
+  };
+  return known[v?.toLowerCase()] || titleCase(v);
+}
+
+/** Certification codes: "bed" → "B.Ed", "med" → "M.Ed", "ctet" → "CTET" */
+function formatCert(v) {
+  if (!v) return v;
+  const known = {
+    "bed":       "B.Ed",
+    "b.ed":      "B.Ed",
+    "med":       "M.Ed",
+    "m.ed":      "M.Ed",
+    "ctet":      "CTET",
+    "state_tet": "State TET",
+    "statetet":  "State TET",
+    "tet":       "State TET",
+  };
+  return known[v?.toLowerCase()] || v.toUpperCase();
+}
+
+/** Board codes: "cbse" → "CBSE", "mbse" → "MBSE", "icse" → "ICSE" */
+function formatBoard(v) {
+  if (!v) return v;
+  return String(v).toUpperCase();
+}
+
+/** Class codes: "8" → "Class 8", "class_8" → "Class 8" */
+function formatClass(v) {
+  if (!v) return v;
+  const s = String(v).replace(/class[_\s-]?/i, "").trim();
+  if (/^\d+$/.test(s)) return `Class ${s}`;
+  return v;
+}
+
+/* ────────────────────────────────────────────────────────────
+   PRESENTATIONAL HELPERS
+   ──────────────────────────────────────────────────────────── */
+
 function FileDisplay({ file, size }) {
   const name = getFileName(file);
   if (!name) return <div className="pd-value pd-value--muted">—</div>;
@@ -32,7 +134,7 @@ function FileDisplay({ file, size }) {
   );
 }
 
-function CheckList({ items }) {
+function CheckList({ items, formatter }) {
   if (!items || items.length === 0)
     return <div className="pd-value pd-value--muted">—</div>;
   return (
@@ -40,12 +142,16 @@ function CheckList({ items }) {
       {items.map((item) => (
         <label key={item} className="pd-check-item">
           <input type="checkbox" checked readOnly className="pd-checkbox" />
-          <span>{item}</span>
+          <span>{formatter ? formatter(item) : item}</span>
         </label>
       ))}
     </div>
   );
 }
+
+/* ────────────────────────────────────────────────────────────
+   DROPDOWN OPTIONS
+   ──────────────────────────────────────────────────────────── */
 
 const DEGREE_OPTIONS = [
   "High School / Secondary",
@@ -89,12 +195,15 @@ const RELATED_SUBJECT_OPTIONS = [
   "Computer Science", "Arts", "Music", "Physical Education", "Others",
 ];
 
-
 const currentYear = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from(
   { length: currentYear - 1950 + 1 },
   (_, i) => currentYear - i
 );
+
+/* ════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ════════════════════════════════════════════════════════════ */
 
 export default function PrivateDetails() {
   const navigate = useNavigate();
@@ -191,13 +300,11 @@ export default function PrivateDetails() {
         const f = formRes.data;
         const courseApp = f.course_applications?.[0] || {};
         const merged = {
-          // Identity (from teacher/profile)
           name: p.name,
           photo: p.photo,
           is_approved: p.is_approved,
           languages: p.languages,
           spoken_languages: p.spoken_languages,
-          // Basic Details (from form-fillup)
           username: f.username,
           email: f.email,
           first_name: f.first_name,
@@ -205,32 +312,26 @@ export default function PrivateDetails() {
           phone: f.phone,
           date_of_birth: f.date_of_birth,
           gender: f.gender,
-          // Address
           state: f.state,
           district: f.district,
           city: f.city_town,
           pin_code: f.pin_code,
-          // Education
           highest_degree: f.highest_degree,
           field_of_study: f.field_of_study,
           year_of_completion: f.year_of_completion,
           teaching_certifications: f.teaching_certifications,
           qualification_certificate: f.qualification_certificate,
-          // Experience
           experience_range: f.experience_range,
           employment_status: f.employment_status,
           is_currently_employed: f.currently_employed,
           institution_name: f.current_institution,
           position: f.current_position,
-          // Verification
           government_id_type: f.govt_id_type,
           id_number: f.id_number,
           id_document: f.id_proof_front || f.id_proof_back,
-          // Course application (single-row view)
           subject: courseApp.subject,
           boards: courseApp.boards,
           classes: courseApp.classes,
-          // Skills (from either — teacher/profile is formatted nicer)
           skill_applications: p.skill_applications || f.skill_applications || [],
         };
         setProfile(merged);
@@ -282,7 +383,7 @@ export default function PrivateDetails() {
     );
   };
 
-const handleQualFileChange = (e) => {
+  const handleQualFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) setEditQualFile(file);
     e.target.value = "";
@@ -393,7 +494,7 @@ const handleQualFileChange = (e) => {
   return (
     <div className="tp-page">
 
-      {/* TOP CARD */}
+      {/* TOP CARD (reuses tp-* from profile.css) */}
       <div className="tp-top-card">
         <div className="tp-top-left">
           <div className="tp-avatar-wrap">
@@ -556,7 +657,7 @@ const handleQualFileChange = (e) => {
                   placeholder="State"
                 />
               ) : (
-                <div className="pd-value">{profile.state || "—"}</div>
+                <div className="pd-value">{titleCase(profile.state) || "—"}</div>
               )}
             </div>
 
@@ -570,7 +671,7 @@ const handleQualFileChange = (e) => {
                   placeholder="District"
                 />
               ) : (
-                <div className="pd-value">{profile.district || "—"}</div>
+                <div className="pd-value">{titleCase(profile.district) || "—"}</div>
               )}
             </div>
 
@@ -584,7 +685,7 @@ const handleQualFileChange = (e) => {
                   placeholder="City"
                 />
               ) : (
-                <div className="pd-value">{profile.city || "—"}</div>
+                <div className="pd-value">{titleCase(profile.city) || "—"}</div>
               )}
             </div>
 
@@ -610,7 +711,6 @@ const handleQualFileChange = (e) => {
           <h2 className="pd-section-title">Educational Qualifications</h2>
           <div className="pd-grid">
 
-            {/* Highest Degree */}
             <div className="pd-field">
               <label className="pd-label">Highest Degree</label>
               {isEditing ? (
@@ -634,7 +734,6 @@ const handleQualFileChange = (e) => {
 
             <div className="pd-field" />
 
-            {/* Field of Study + Year of Completion */}
             <div className="pd-field">
               <label className="pd-label">Field of Study</label>
               {isEditing ? (
@@ -656,7 +755,7 @@ const handleQualFileChange = (e) => {
                   )}
                 </div>
               ) : (
-                <div className="pd-value">{profile.field_of_study || "—"}</div>
+                <div className="pd-value">{titleCase(profile.field_of_study) || "—"}</div>
               )}
             </div>
 
@@ -681,7 +780,6 @@ const handleQualFileChange = (e) => {
               )}
             </div>
 
-            {/* Teaching Certificate */}
             <div className="pd-field pd-full-width">
               <label className="pd-label">Teaching Certificate</label>
               {isEditing ? (
@@ -699,16 +797,14 @@ const handleQualFileChange = (e) => {
                   ))}
                 </div>
               ) : (
-                <CheckList items={profile.teaching_certifications} />
+                <CheckList items={profile.teaching_certifications} formatter={formatCert} />
               )}
             </div>
 
-            {/* Upload Qualification Certificate */}
             <div className="pd-field pd-full-width">
               <label className="pd-label">Upload Qualification Certificate</label>
               {isEditing ? (
                 <div className="pd-file-edit-list">
-                  {/* Existing file */}
                   {existingQualFile && !editQualFile && (
                     <div className="pd-file-edit-item">
                       <FiFileText className="pd-file-svg" />
@@ -722,7 +818,6 @@ const handleQualFileChange = (e) => {
                       </button>
                     </div>
                   )}
-                  {/* Newly selected file */}
                   {editQualFile && (
                     <div className="pd-file-edit-item">
                       <FiFileText className="pd-file-svg" />
@@ -739,7 +834,6 @@ const handleQualFileChange = (e) => {
                       </button>
                     </div>
                   )}
-                  {/* Add file button */}
                   {!editQualFile && (
                     <div
                       className="pd-file-add-btn"
@@ -788,7 +882,7 @@ const handleQualFileChange = (e) => {
                   <FiChevronDown className="pd-select-icon" />
                 </div>
               ) : (
-                <div className="pd-value">{profile.experience_range || "—"}</div>
+                <div className="pd-value">{formatExperienceRange(profile.experience_range) || "—"}</div>
               )}
             </div>
 
@@ -809,7 +903,7 @@ const handleQualFileChange = (e) => {
                   <FiChevronDown className="pd-select-icon" />
                 </div>
               ) : (
-                <div className="pd-value">{profile.employment_status || "—"}</div>
+                <div className="pd-value">{formatEmploymentStatus(profile.employment_status) || "—"}</div>
               )}
             </div>
 
@@ -873,7 +967,7 @@ const handleQualFileChange = (e) => {
                       placeholder="e.g. Math Teacher"
                     />
                   ) : (
-                    <div className="pd-value">{profile.position || "—"}</div>
+                    <div className="pd-value">{titleCase(profile.position) || "—"}</div>
                   )}
                 </div>
               </>
@@ -891,17 +985,17 @@ const handleQualFileChange = (e) => {
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Subject</label>
-              <div className="pd-value">{profile.subject || "—"}</div>
+              <div className="pd-value">{titleCase(profile.subject) || "—"}</div>
             </div>
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Boards</label>
-              <CheckList items={profile.boards} />
+              <CheckList items={profile.boards} formatter={formatBoard} />
             </div>
 
             <div className="pd-field pd-full-width">
               <label className="pd-label">Classes</label>
-              <CheckList items={profile.classes} />
+              <CheckList items={profile.classes} formatter={formatClass} />
             </div>
 
           </div>
@@ -1041,7 +1135,6 @@ const handleQualFileChange = (e) => {
           )}
         </div>
 
-        {/* Hidden file input shared across all skill file pickers */}
         <input
           ref={skillFileInputRef}
           type="file"
@@ -1071,7 +1164,7 @@ const handleQualFileChange = (e) => {
                   <FiChevronDown className="pd-select-icon" />
                 </div>
               ) : (
-                <div className="pd-value">{profile.government_id_type || "—"}</div>
+                <div className="pd-value">{formatGovtId(profile.government_id_type) || "—"}</div>
               )}
             </div>
 
