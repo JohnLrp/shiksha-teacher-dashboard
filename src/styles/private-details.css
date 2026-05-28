@@ -1,40 +1,47 @@
-/* =====================================================
-   PRIVATE DETAILS PAGE  (pd-* classes)
-   Top card reuses tp-* from profile.css
-===================================================== */
+/* ============================================================
+   PRIVATE DETAILS PAGE — matches Figma "Type=Private, Owner"
+   Top card reuses tp-* from profile.css.
+   Content uses a white→light-blue gradient with underlined fields,
+   dark-green section titles (#004a33), Outfit-family typography.
+============================================================ */
 
-.pd-skill-divider {
-  border-top: 1px solid #c5dde8;
-  margin-top: 20px;
-  padding-top: 20px;
-}
-
+/* ─── Content container ─── */
 .pd-content {
-  background: linear-gradient(180deg, #dff0f7 0%, #d4e9f2 100%);
-  border-radius: 20px;
-  padding: 32px 36px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #ffffff 8%,
+    #d4ebfa 13%,
+    #ebf4fa 30%,
+    #ebf4fa 100%
+  );
+  border-radius: 12px;
+  padding: 32px 64px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  gap: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
-/* ===== SECTION ===== */
-
+/* ============================================================
+   SECTION
+============================================================ */
 .pd-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .pd-section-title {
   margin: 0;
+  font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 18px;
-  font-weight: 800;
-  color: #1a5f70;
-  padding-bottom: 10px;
-  border-bottom: 1.5px solid rgba(26, 95, 112, 0.15);
+  font-weight: 600;
+  color: #004a33;
+  padding-bottom: 0;
+  border-bottom: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -42,47 +49,69 @@
 
 .pd-title-lock {
   font-size: 14px;
-  color: #1a5f70;
-  opacity: 0.6;
+  color: #004a33;
+  opacity: 0.65;
   flex-shrink: 0;
 }
 
-/* ===== GRID ===== */
-
+/* ============================================================
+   GRID — two-column responsive
+============================================================ */
 .pd-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 48px;
+  grid-template-columns: 250px 250px;
+  gap: 12px 40px;
+  align-items: start;
 }
 
 .pd-full-width {
   grid-column: 1 / -1;
 }
 
-/* ===== FIELD ===== */
-
+/* ============================================================
+   FIELD — underline style from Figma
+============================================================ */
 .pd-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  min-width: 0;
+  max-width: 300px;
+  width: 250px;
+  border-bottom: 0.8px solid #6b7280;
+  padding: 0 4px 4px 0;
+  overflow: hidden;
 }
 
+.pd-full-width.pd-field {
+  width: 100%;
+  max-width: 540px;
+}
+
+/* Empty placeholder field (used for grid spacing) */
+.pd-field:empty,
+.pd-field:not(:has(*)) {
+  border-bottom: none;
+}
+
+/* ── Label ── */
 .pd-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: none;
-  letter-spacing: 0.01em;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #000000;
+  letter-spacing: 0;
 }
 
-/* View-mode value */
+/* ── View-mode value ── */
 .pd-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid #c3d9e4;
-  min-height: 36px;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
+  padding: 0;
+  border-bottom: none;
+  min-height: 22px;
   display: flex;
   align-items: center;
 }
@@ -91,52 +120,57 @@
   color: #6b7280;
 }
 
-/* Value row with trailing icon (email, dob) */
+/* ── Value row with trailing icon (email/dob) ── */
 .pd-value-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid #c3d9e4;
-  min-height: 36px;
+  padding: 0;
+  border-bottom: none;
+  min-height: 22px;
+  gap: 6px;
 }
 
 .pd-value-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* When email is locked → text muted gray */
+.pd-value-row:has(.pd-field-icon) .pd-value-text {
+  color: #6b7280;
 }
 
 .pd-field-icon {
-  color: #9ca3af;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
-/* ===== INPUT (edit mode) ===== */
-
+/* ============================================================
+   INPUT — edit mode (transparent, no extra borders since field
+   has the underline)
+============================================================ */
 .pd-input {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
   background: transparent;
   border: none;
-  border-bottom: 1.5px solid #3a7a8c;
-  padding: 8px 0 6px;
+  padding: 0;
   outline: none;
   width: 100%;
-  font-family: inherit;
-  min-height: 36px;
-  transition: border-color 0.15s;
-}
-
-.pd-input:focus {
-  border-bottom-color: #0b5b5b;
+  min-height: 22px;
+  line-height: 1.3;
 }
 
 .pd-input::placeholder {
   color: #b0bec5;
-  font-weight: 400;
 }
 
 select.pd-input {
@@ -144,8 +178,7 @@ select.pd-input {
   appearance: auto;
 }
 
-/* ===== SELECT DROPDOWN (edit mode) ===== */
-
+/* ── Select with chevron ── */
 .pd-select-wrap {
   position: relative;
   display: flex;
@@ -155,21 +188,21 @@ select.pd-input {
 .pd-select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 28px;
+  padding-right: 22px;
   cursor: pointer;
+  background: transparent;
 }
 
 .pd-select-icon {
   position: absolute;
-  right: 4px;
+  right: 0;
   color: #6b7280;
-  font-size: 15px;
+  font-size: 16px;
   pointer-events: none;
   flex-shrink: 0;
 }
 
-/* ===== INPUT WITH CLEAR BUTTON (edit mode) ===== */
-
+/* ── Clearable input ── */
 .pd-input-wrap {
   position: relative;
   display: flex;
@@ -177,17 +210,17 @@ select.pd-input {
 }
 
 .pd-input-clearable {
-  padding-right: 28px;
+  padding-right: 22px;
 }
 
 .pd-input-clear-btn {
   position: absolute;
-  right: 2px;
+  right: 0;
   background: none;
   border: none;
   padding: 2px;
   cursor: pointer;
-  color: #9ca3af;
+  color: #6b7280;
   display: flex;
   align-items: center;
   font-size: 14px;
@@ -195,62 +228,150 @@ select.pd-input {
 }
 
 .pd-input-clear-btn:hover {
-  color: #374151;
+  color: #015865;
 }
 
-/* ===== CERT CHECKBOXES (edit mode) ===== */
-
-.pd-cert-options {
+/* ============================================================
+   CHECKBOXES (Teaching Certificate / Boards / Classes)
+   Figma: 12px square with black border + ✓
+============================================================ */
+.pd-cert-options,
+.pd-checks-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 24px;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid #c3d9e4;
-  min-height: 36px;
+  gap: 8px 16px;
+  padding: 0;
+  border-bottom: none;
+  min-height: 22px;
   align-items: center;
 }
 
-.pd-cert-option {
+.pd-cert-option,
+.pd-check-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
+  gap: 4px;
+  padding-left: 4px;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
   cursor: pointer;
   user-select: none;
 }
 
-.pd-cert-checkbox {
-  width: 15px;
-  height: 15px;
-  accent-color: #1a5f70;
+.pd-check-item {
+  cursor: default;
+}
+
+/* Custom checkbox to match the Figma 12x12 black-bordered look */
+.pd-cert-checkbox,
+.pd-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000000;
+  border-radius: 0;
+  background: #ffffff;
   cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.pd-checkbox {
+  cursor: default;
+}
+
+.pd-cert-checkbox:checked,
+.pd-checkbox:checked {
+  background: #ffffff;
+}
+
+.pd-cert-checkbox:checked::after,
+.pd-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 400;
+  color: #000000;
+  line-height: 1;
+}
+
+/* Teaching Certificate field-spacing (matches Figma "Form Fields" with label on top) */
+.pd-field:has(.pd-cert-options),
+.pd-field:has(.pd-checks-row) {
+  padding-bottom: 4px;
+}
+
+.pd-field:has(.pd-cert-options) .pd-label,
+.pd-field:has(.pd-checks-row) .pd-label {
+  font-size: 12px;
+}
+
+/* ============================================================
+   FILE DISPLAY (view-mode)
+============================================================ */
+.pd-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border-bottom: none;
+  min-height: 22px;
+}
+
+.pd-file-svg {
+  color: #000000;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
-/* ===== FILE EDIT LIST (edit mode) ===== */
+.pd-file-name {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
+.pd-file-size {
+  font-size: 12px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   FILE EDIT LIST (edit-mode)
+============================================================ */
 .pd-file-edit-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 0 4px;
-  border-bottom: 1px solid #c3d9e4;
+  gap: 6px;
+  padding: 0;
+  border-bottom: none;
 }
 
 .pd-file-edit-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 6px;
+  padding: 0;
 }
 
 .pd-file-remove-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #9ca3af;
+  color: #6b7280;
   display: flex;
   align-items: center;
   font-size: 14px;
@@ -265,16 +386,17 @@ select.pd-input {
 .pd-file-add-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 6px;
+  padding: 0;
   cursor: pointer;
-  color: #1a5f70;
+  color: #015865;
+  font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
 }
 
 .pd-file-add-btn:hover {
-  color: #0b5b5b;
+  color: #014450;
 }
 
 .pd-file-add-note {
@@ -283,116 +405,103 @@ select.pd-input {
   font-weight: 400;
 }
 
-/* ===== CHECKLIST ===== */
-
-.pd-checks-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid #c3d9e4;
-  min-height: 36px;
-  align-items: center;
-}
-
-.pd-check-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
-  cursor: default;
-  user-select: none;
-}
-
-.pd-checkbox {
-  width: 15px;
-  height: 15px;
-  accent-color: #1a5f70;
-  cursor: default;
-  flex-shrink: 0;
-}
-
-/* ===== FILE DISPLAY ===== */
-
-.pd-file-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid #c3d9e4;
-  min-height: 36px;
-}
-
-.pd-file-svg {
-  color: #1a5f70;
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-.pd-file-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
-}
-
-.pd-file-size {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-/* ===== YES / NO TOGGLE (view-only) ===== */
-
+/* ============================================================
+   YES / NO BUTTONS (Currently Employed?)
+   Figma: 1.5px teal border, "Yes" filled when active
+============================================================ */
 .pd-yn-row {
   display: flex;
-  gap: 10px;
-  padding: 6px 0 4px;
+  gap: 24px;
+  padding: 0;
 }
 
 .pd-yn-btn {
   padding: 6px 22px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1.5px solid #c3d9e4;
-  color: #6b7280;
-  background: transparent;
+  border-radius: 8px;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  border: 1.5px solid #015865;
+  color: #015865;
+  background: rgba(255, 255, 255, 0.1);
   cursor: default;
   user-select: none;
-  font-family: inherit;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
 }
 
 button.pd-yn-btn {
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
-  border-color: #1a5f70;
-  color: #1a5f70;
+  background: rgba(1, 88, 101, 0.06);
 }
 
 .pd-yn-btn--active {
-  background: #1a5f70;
-  color: #fff;
-  border-color: #1a5f70;
+  background: #015865;
+  color: #ffffff;
+  border-color: #015865;
+  box-shadow:
+    inset 2px 2px 6px 1px rgba(0, 0, 0, 0.25),
+    2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== RESPONSIVE ===== */
+/* Yes/No is full-width, NOT a form-field — remove the underline */
+.pd-field:has(.pd-yn-row) {
+  border-bottom: none;
+  padding: 0;
+  width: auto;
+  max-width: none;
+}
+
+/* ============================================================
+   SKILL DIVIDER (between multiple skill blocks)
+============================================================ */
+.pd-skill-divider {
+  border-top: 1px solid #c5dde8;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 900px) {
+  .pd-content {
+    padding: 24px 28px;
+    gap: 28px;
+  }
+
+  .pd-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+  }
+
+  .pd-field,
+  .pd-full-width.pd-field {
+    width: 100%;
+    max-width: none;
+  }
+}
 
 @media (max-width: 640px) {
   .pd-content {
-    padding: 24px 20px;
-    gap: 24px;
+    padding: 20px 18px;
+    gap: 22px;
   }
 
   .pd-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 14px;
   }
 
   .pd-full-width {
     grid-column: 1;
+  }
+
+  .pd-section-title {
+    font-size: 16px;
   }
 }
