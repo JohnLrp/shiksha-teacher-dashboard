@@ -1,25 +1,190 @@
 /* ============================================================
-   PRIVATE DETAILS PAGE — matches Figma "Type=Private, Owner"
-   Top card reuses tp-* from profile.css.
-   Content uses a white→light-blue gradient with underlined fields,
-   dark-green section titles (#004a33), Outfit-family typography.
+   PRIVATE DETAILS PAGE — Figma "Type=Private, Owner"
+   Self-contained: also styles the top card so it doesn't depend
+   on profile.css being loaded correctly.
 ============================================================ */
 
-/* ─── Content container ─── */
+/* ─── Page wrapper (already used by .tp-page) ─── */
+.tp-page {
+  padding: 24px 32px !important;
+  background: transparent !important;
+  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+.tp-page * {
+  box-sizing: border-box;
+}
+
+/* ─── Top profile card ─── */
+.tp-page .tp-top-card {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 24px 32px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  width: 100% !important;
+}
+
+.tp-page .tp-top-left {
+  display: flex !important;
+  gap: 20px !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+}
+
+.tp-page .tp-avatar-wrap {
+  position: relative;
+  width: 76px !important;
+  height: 76px !important;
+  min-width: 76px !important;
+  flex-shrink: 0;
+}
+
+.tp-page .tp-avatar {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background: #d9d9d9 !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.tp-page .tp-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tp-page .tp-avatar-placeholder {
+  font-size: 28px;
+  font-weight: 700;
+  color: #666;
+}
+
+.tp-page .tp-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.tp-page .tp-name {
+  margin: 0 !important;
+  font-family: 'Poppins', 'Outfit', sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #0b1220 !important;
+  line-height: 1.2 !important;
+}
+
+.tp-page .tp-tags {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-top: 2px !important;
+}
+
+.tp-page .tp-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 12px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  border: none !important;
+}
+
+.tp-page .tp-tag--available {
+  background: #1eb854 !important;
+  color: #ffffff !important;
+}
+
+.tp-page .tp-tag--available::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  margin-right: 4px;
+}
+
+.tp-page .tp-tag--lang {
+  background: #2e3a7c !important;
+  color: #ffffff !important;
+}
+
+.tp-page .tp-top-right {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.tp-page .tp-edit-btn,
+.tp-page .tp-cancel-btn,
+.tp-page .tp-save-btn {
+  padding: 7px 18px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  font-family: inherit !important;
+  line-height: 1.4 !important;
+  min-width: 110px !important;
+  text-align: center !important;
+  border: 1px solid #015865 !important;
+  background: #ffffff !important;
+  color: #015865 !important;
+  transition: background 0.15s !important;
+}
+
+.tp-page .tp-edit-btn:hover,
+.tp-page .tp-cancel-btn:hover:not(:disabled),
+.tp-page .tp-save-btn:hover:not(:disabled) {
+  background: #f0f7f8 !important;
+}
+
+.tp-page .tp-save-btn:disabled,
+.tp-page .tp-cancel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   CONTENT CARD — fills the layout width, no fixed max-width
+============================================================ */
 .pd-content {
   width: 100%;
-  max-width: 1024px;
-  margin: 0 auto;
-  background: linear-gradient(
+  background-color: #e8f1f7;
+  background-image: linear-gradient(
     180deg,
     #ffffff 0%,
-    #ffffff 6%,
-    #d4ebfa 12%,
-    #ebf4fa 28%,
-    #ebf4fa 100%
+    #d4ebfa 60px,
+    #e8f1f7 240px
   );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border-radius: 12px;
-  padding: 40px 80px;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
   gap: 40px;
@@ -33,6 +198,10 @@
   box-sizing: border-box;
 }
 
+.pd-content > * {
+  background: transparent !important;
+}
+
 /* ============================================================
    SECTION
 ============================================================ */
@@ -40,6 +209,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .pd-section-title {
@@ -53,6 +225,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  background: transparent !important;
 }
 
 .pd-title-lock {
@@ -63,14 +236,15 @@
 }
 
 /* ============================================================
-   GRID — two-column layout matching Figma 250px columns + 40px gap
+   GRID
 ============================================================ */
 .pd-grid {
   display: grid;
-  grid-template-columns: 250px 250px;
+  grid-template-columns: minmax(0, 280px) minmax(0, 280px);
   gap: 16px 40px;
   align-items: start;
   justify-content: start;
+  background: transparent !important;
 }
 
 .pd-full-width {
@@ -78,41 +252,37 @@
 }
 
 /* ============================================================
-   FIELD — gray underline style from Figma
+   FIELD
 ============================================================ */
 .pd-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  width: 250px;
+  width: 280px;
   border-bottom: 0.8px solid #6b7280;
   padding: 0 4px 4px 0;
-  overflow: hidden;
+  background: transparent !important;
 }
 
 .pd-full-width.pd-field {
   width: 100%;
-  max-width: 540px;
+  max-width: 600px;
 }
 
-/* Empty placeholder field (used purely for grid spacing) */
 .pd-field:empty {
   border-bottom: none;
   height: 0;
   visibility: hidden;
 }
 
-/* ── Label ── */
 .pd-label {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #000000;
-  letter-spacing: 0;
 }
 
-/* ── View-mode value ── */
 .pd-value {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 16px;
@@ -129,7 +299,6 @@
   color: #6b7280;
 }
 
-/* ── Value row with trailing icon (email/dob) ── */
 .pd-value-row {
   display: flex;
   align-items: center;
@@ -152,7 +321,6 @@
   white-space: nowrap;
 }
 
-/* When email/dob is locked → value-text muted gray to match Figma */
 .pd-value-row:has(.pd-field-icon) .pd-value-text {
   color: #6b7280;
 }
@@ -164,7 +332,7 @@
 }
 
 /* ============================================================
-   INPUT — edit mode (transparent; field has the underline)
+   INPUT
 ============================================================ */
 .pd-input {
   font-family: 'Outfit', 'Inter', sans-serif;
@@ -189,7 +357,6 @@ select.pd-input {
   appearance: auto;
 }
 
-/* ── Select with chevron ── */
 .pd-select-wrap {
   position: relative;
   display: flex;
@@ -213,7 +380,6 @@ select.pd-input {
   flex-shrink: 0;
 }
 
-/* ── Clearable input ── */
 .pd-input-wrap {
   position: relative;
   display: flex;
@@ -243,7 +409,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   CHECKBOXES — 12px square with black border + ✓
+   CHECKBOXES
 ============================================================ */
 .pd-cert-options,
 .pd-checks-row {
@@ -254,6 +420,7 @@ select.pd-input {
   border-bottom: none;
   min-height: 22px;
   align-items: center;
+  background: transparent !important;
 }
 
 .pd-cert-option,
@@ -274,7 +441,6 @@ select.pd-input {
   cursor: default;
 }
 
-/* Custom checkbox to match the Figma 12x12 black-bordered look */
 .pd-cert-checkbox,
 .pd-checkbox {
   appearance: none;
@@ -295,11 +461,6 @@ select.pd-input {
   cursor: default;
 }
 
-.pd-cert-checkbox:checked,
-.pd-checkbox:checked {
-  background: #ffffff;
-}
-
 .pd-cert-checkbox:checked::after,
 .pd-checkbox:checked::after {
   content: "✓";
@@ -313,22 +474,20 @@ select.pd-input {
   line-height: 1;
 }
 
-/* Teaching Certificate / Boards / Classes — narrower label */
 .pd-field:has(.pd-cert-options) .pd-label,
 .pd-field:has(.pd-checks-row) .pd-label {
   font-size: 12px;
 }
 
-/* Boards / Classes are wider lists — let them expand */
 .pd-field:has(.pd-checks-row),
 .pd-field:has(.pd-cert-options) {
   width: auto;
-  min-width: 250px;
-  max-width: 540px;
+  min-width: 280px;
+  max-width: 600px;
 }
 
 /* ============================================================
-   FILE DISPLAY (view-mode)
+   FILE DISPLAY
 ============================================================ */
 .pd-file-item {
   display: flex;
@@ -363,15 +522,14 @@ select.pd-input {
   flex-shrink: 0;
 }
 
-/* Upload Qualification + ID Proof + Skill File — let the file row breathe */
 .pd-field:has(.pd-file-item),
 .pd-field:has(.pd-file-edit-list) {
   width: 100%;
-  max-width: 540px;
+  max-width: 600px;
 }
 
 /* ============================================================
-   FILE EDIT LIST (edit-mode)
+   FILE EDIT LIST
 ============================================================ */
 .pd-file-edit-list {
   display: flex;
@@ -427,8 +585,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   YES / NO BUTTONS (Currently Employed?)
-   Figma: 1.5px teal border #015865, "Yes" filled when active
+   YES / NO BUTTONS
 ============================================================ */
 .pd-yn-row {
   display: flex;
@@ -444,7 +601,7 @@ select.pd-input {
   font-weight: 400;
   border: 1.5px solid #015865;
   color: #015865;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.6);
   cursor: default;
   user-select: none;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
@@ -459,7 +616,7 @@ button.pd-yn-btn {
 }
 
 button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
-  background: rgba(1, 88, 101, 0.06);
+  background: rgba(1, 88, 101, 0.1);
 }
 
 .pd-yn-btn--active {
@@ -471,7 +628,6 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
     2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Yes/No is full-width, NOT a form-field — remove the underline */
 .pd-field:has(.pd-yn-row) {
   border-bottom: none;
   padding: 0;
@@ -480,7 +636,7 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
 }
 
 /* ============================================================
-   SKILL DIVIDER (between multiple skill blocks)
+   SKILL DIVIDER
 ============================================================ */
 .pd-skill-divider {
   border-top: 1px solid #c5dde8;
@@ -492,8 +648,32 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
    RESPONSIVE
 ============================================================ */
 @media (max-width: 900px) {
+  .tp-page {
+    padding: 16px 16px !important;
+  }
+
+  .tp-page .tp-top-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .tp-page .tp-top-left {
+    justify-content: center !important;
+  }
+
+  .tp-page .tp-top-right {
+    flex-direction: row !important;
+    width: 100% !important;
+  }
+
+  .tp-page .tp-edit-btn,
+  .tp-page .tp-cancel-btn,
+  .tp-page .tp-save-btn {
+    flex: 1 1 auto !important;
+  }
+
   .pd-content {
-    padding: 28px 32px;
+    padding: 28px 28px;
     gap: 30px;
   }
 
