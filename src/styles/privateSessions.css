@@ -1,7 +1,7 @@
 /* ============================================================
    PRIVATE DETAILS PAGE — matches Figma "Type=Private, Owner"
    Top card reuses tp-* from profile.css.
-   Light blue gradient continuous over the full card body.
+   Body is a single light-blue card with subtle top-white fade.
 ============================================================ */
 
 /* ─── Content container ─── */
@@ -9,14 +9,15 @@
   width: 100%;
   max-width: 1024px;
   margin: 0 auto;
-  background: linear-gradient(
+  background-color: #e8f1f7;
+  background-image: linear-gradient(
     180deg,
     #ffffff 0%,
-    #d4ebfa 8%,
-    #e0eef7 30%,
-    #e8f1f7 70%,
-    #e8f1f7 100%
+    #d4ebfa 60px,
+    #e8f1f7 240px
   );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border-radius: 12px;
   padding: 40px 80px;
   display: flex;
@@ -26,11 +27,16 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   font-family: 'Outfit', 'Inter', system-ui, sans-serif;
   box-sizing: border-box;
-  overflow: visible;
+  /* No overflow: hidden — let the bg fill naturally */
 }
 
 .pd-content * {
   box-sizing: border-box;
+}
+
+/* All sections are transparent — they should show the gradient through */
+.pd-content > * {
+  background: transparent !important;
 }
 
 /* ============================================================
@@ -40,7 +46,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background: transparent;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .pd-section-title {
@@ -54,6 +62,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  background: transparent !important;
 }
 
 .pd-title-lock {
@@ -64,7 +73,7 @@
 }
 
 /* ============================================================
-   GRID — two-column layout matching Figma
+   GRID
 ============================================================ */
 .pd-grid {
   display: grid;
@@ -72,6 +81,7 @@
   gap: 16px 40px;
   align-items: start;
   justify-content: start;
+  background: transparent !important;
 }
 
 .pd-full-width {
@@ -79,7 +89,7 @@
 }
 
 /* ============================================================
-   FIELD — gray underline from Figma
+   FIELD
 ============================================================ */
 .pd-field {
   display: flex;
@@ -89,7 +99,7 @@
   width: 250px;
   border-bottom: 0.8px solid #6b7280;
   padding: 0 4px 4px 0;
-  background: transparent;
+  background: transparent !important;
 }
 
 .pd-full-width.pd-field {
@@ -97,23 +107,19 @@
   max-width: 540px;
 }
 
-/* Empty placeholder field (grid spacer) */
 .pd-field:empty {
   border-bottom: none;
   height: 0;
   visibility: hidden;
 }
 
-/* ── Label ── */
 .pd-label {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
   color: #000000;
-  letter-spacing: 0;
 }
 
-/* ── View-mode value ── */
 .pd-value {
   font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 16px;
@@ -130,7 +136,6 @@
   color: #6b7280;
 }
 
-/* ── Value row with trailing icon ── */
 .pd-value-row {
   display: flex;
   align-items: center;
@@ -164,7 +169,7 @@
 }
 
 /* ============================================================
-   INPUT (edit mode)
+   INPUT
 ============================================================ */
 .pd-input {
   font-family: 'Outfit', 'Inter', sans-serif;
@@ -241,7 +246,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   CHECKBOXES — 12px black-bordered ✓
+   CHECKBOXES
 ============================================================ */
 .pd-cert-options,
 .pd-checks-row {
@@ -252,6 +257,7 @@ select.pd-input {
   border-bottom: none;
   min-height: 22px;
   align-items: center;
+  background: transparent !important;
 }
 
 .pd-cert-option,
@@ -305,13 +311,11 @@ select.pd-input {
   line-height: 1;
 }
 
-/* Narrower label for the checkbox sections (matches Figma 12px) */
 .pd-field:has(.pd-cert-options) .pd-label,
 .pd-field:has(.pd-checks-row) .pd-label {
   font-size: 12px;
 }
 
-/* Boards / Classes / certs fields are wider — let them expand */
 .pd-field:has(.pd-checks-row),
 .pd-field:has(.pd-cert-options) {
   width: auto;
@@ -320,7 +324,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   FILE DISPLAY (view-mode)
+   FILE DISPLAY
 ============================================================ */
 .pd-file-item {
   display: flex;
@@ -355,7 +359,6 @@ select.pd-input {
   flex-shrink: 0;
 }
 
-/* File-row fields breathe wider */
 .pd-field:has(.pd-file-item),
 .pd-field:has(.pd-file-edit-list) {
   width: 100%;
@@ -363,7 +366,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   FILE EDIT LIST (edit-mode)
+   FILE EDIT LIST
 ============================================================ */
 .pd-file-edit-list {
   display: flex;
@@ -435,7 +438,7 @@ select.pd-input {
   font-weight: 400;
   border: 1.5px solid #015865;
   color: #015865;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.6);
   cursor: default;
   user-select: none;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
@@ -450,7 +453,7 @@ button.pd-yn-btn {
 }
 
 button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
-  background: rgba(1, 88, 101, 0.06);
+  background: rgba(1, 88, 101, 0.1);
 }
 
 .pd-yn-btn--active {
