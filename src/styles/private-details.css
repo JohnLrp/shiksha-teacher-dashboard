@@ -7,22 +7,30 @@
 
 /* ─── Content container ─── */
 .pd-content {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
   background: linear-gradient(
     180deg,
     #ffffff 0%,
-    #ffffff 8%,
-    #d4ebfa 13%,
-    #ebf4fa 30%,
+    #ffffff 6%,
+    #d4ebfa 12%,
+    #ebf4fa 28%,
     #ebf4fa 100%
   );
   border-radius: 12px;
-  padding: 32px 64px;
+  padding: 40px 80px;
   display: flex;
   flex-direction: column;
   gap: 40px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+.pd-content * {
+  box-sizing: border-box;
 }
 
 /* ============================================================
@@ -55,13 +63,14 @@
 }
 
 /* ============================================================
-   GRID — two-column responsive
+   GRID — two-column layout matching Figma 250px columns + 40px gap
 ============================================================ */
 .pd-grid {
   display: grid;
   grid-template-columns: 250px 250px;
-  gap: 12px 40px;
+  gap: 16px 40px;
   align-items: start;
+  justify-content: start;
 }
 
 .pd-full-width {
@@ -69,14 +78,13 @@
 }
 
 /* ============================================================
-   FIELD — underline style from Figma
+   FIELD — gray underline style from Figma
 ============================================================ */
 .pd-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  max-width: 300px;
   width: 250px;
   border-bottom: 0.8px solid #6b7280;
   padding: 0 4px 4px 0;
@@ -88,10 +96,11 @@
   max-width: 540px;
 }
 
-/* Empty placeholder field (used for grid spacing) */
-.pd-field:empty,
-.pd-field:not(:has(*)) {
+/* Empty placeholder field (used purely for grid spacing) */
+.pd-field:empty {
   border-bottom: none;
+  height: 0;
+  visibility: hidden;
 }
 
 /* ── Label ── */
@@ -138,9 +147,12 @@
   color: #000000;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* When email is locked → text muted gray */
+/* When email/dob is locked → value-text muted gray to match Figma */
 .pd-value-row:has(.pd-field-icon) .pd-value-text {
   color: #6b7280;
 }
@@ -152,8 +164,7 @@
 }
 
 /* ============================================================
-   INPUT — edit mode (transparent, no extra borders since field
-   has the underline)
+   INPUT — edit mode (transparent; field has the underline)
 ============================================================ */
 .pd-input {
   font-family: 'Outfit', 'Inter', sans-serif;
@@ -232,8 +243,7 @@ select.pd-input {
 }
 
 /* ============================================================
-   CHECKBOXES (Teaching Certificate / Boards / Classes)
-   Figma: 12px square with black border + ✓
+   CHECKBOXES — 12px square with black border + ✓
 ============================================================ */
 .pd-cert-options,
 .pd-checks-row {
@@ -271,6 +281,7 @@ select.pd-input {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
+  min-width: 12px;
   border: 1px solid #000000;
   border-radius: 0;
   background: #ffffff;
@@ -302,15 +313,18 @@ select.pd-input {
   line-height: 1;
 }
 
-/* Teaching Certificate field-spacing (matches Figma "Form Fields" with label on top) */
-.pd-field:has(.pd-cert-options),
-.pd-field:has(.pd-checks-row) {
-  padding-bottom: 4px;
-}
-
+/* Teaching Certificate / Boards / Classes — narrower label */
 .pd-field:has(.pd-cert-options) .pd-label,
 .pd-field:has(.pd-checks-row) .pd-label {
   font-size: 12px;
+}
+
+/* Boards / Classes are wider lists — let them expand */
+.pd-field:has(.pd-checks-row),
+.pd-field:has(.pd-cert-options) {
+  width: auto;
+  min-width: 250px;
+  max-width: 540px;
 }
 
 /* ============================================================
@@ -347,6 +361,13 @@ select.pd-input {
   font-size: 12px;
   color: #000000;
   flex-shrink: 0;
+}
+
+/* Upload Qualification + ID Proof + Skill File — let the file row breathe */
+.pd-field:has(.pd-file-item),
+.pd-field:has(.pd-file-edit-list) {
+  width: 100%;
+  max-width: 540px;
 }
 
 /* ============================================================
@@ -407,7 +428,7 @@ select.pd-input {
 
 /* ============================================================
    YES / NO BUTTONS (Currently Employed?)
-   Figma: 1.5px teal border, "Yes" filled when active
+   Figma: 1.5px teal border #015865, "Yes" filled when active
 ============================================================ */
 .pd-yn-row {
   display: flex;
@@ -428,6 +449,8 @@ select.pd-input {
   user-select: none;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
   line-height: 1.2;
+  min-width: 76px;
+  text-align: center;
 }
 
 button.pd-yn-btn {
@@ -470,16 +493,19 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
 ============================================================ */
 @media (max-width: 900px) {
   .pd-content {
-    padding: 24px 28px;
-    gap: 28px;
+    padding: 28px 32px;
+    gap: 30px;
   }
 
   .pd-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 12px 24px;
+    gap: 14px 28px;
   }
 
-  .pd-field,
+  .pd-field {
+    width: 100%;
+  }
+
   .pd-full-width.pd-field {
     width: 100%;
     max-width: none;
@@ -488,8 +514,8 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
 
 @media (max-width: 640px) {
   .pd-content {
-    padding: 20px 18px;
-    gap: 22px;
+    padding: 22px 18px;
+    gap: 24px;
   }
 
   .pd-grid {
