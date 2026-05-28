@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import api from "../api/apiClient";
 import "../styles/submission-view.css";
@@ -11,7 +10,6 @@ export default function SubmissionView() {
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all | submitted | pending
 
   const backPath = `/teacher/classes/${subjectId}/assignments`;
@@ -58,7 +56,6 @@ export default function SubmissionView() {
   const pendingCount = total - submittedCount;
 
   const filteredStudents = students
-    .filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
     .filter((s) => {
       if (filter === "submitted") return s.status === "Submitted";
       if (filter === "pending") return s.status === "Pending";
@@ -79,18 +76,6 @@ export default function SubmissionView() {
 
       <div className="sv-header">
         <h2 className="sv-title">Assignment Submissions</h2>
-
-        
-
-        <div className="sv-search">
-          <input
-            type="text"
-            placeholder="Search student..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="sv-search-icon" />
-        </div>
       </div>
 
       <div className="sv-content-card">

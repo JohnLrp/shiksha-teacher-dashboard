@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../api/apiClient";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import "../styles/quiz-view.css";
 
@@ -14,7 +13,6 @@ export default function QuizView() {
 
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -53,10 +51,6 @@ export default function QuizView() {
     return <div className="qv-loading">Loading quiz...</div>;
   }
 
-  const filtered = questions.filter((q) =>
-    (q.text || "").toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div className="quiz-view-page">
       <button
@@ -68,15 +62,6 @@ export default function QuizView() {
 
       <div className="qv-header">
         <h2 className="qv-title">{quiz.subject_name || "Subject"}</h2>
-        <div className="qv-search">
-          <input
-            type="text"
-            placeholder="Search questions..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="qv-search-icon" />
-        </div>
       </div>
 
       <div className="qv-content-card">
@@ -109,16 +94,16 @@ export default function QuizView() {
 
           <div className="qv-dates-row">
             <span className="qv-question-count">
-              {filtered.length} question{filtered.length !== 1 ? "s" : ""}
+              {questions.length} question{questions.length !== 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="qv-questions-list">
-            {filtered.length === 0 && (
+            {questions.length === 0 && (
               <p className="qv-no-results">No questions found.</p>
             )}
 
-            {filtered.map((q, qIndex) => {
+            {questions.map((q, qIndex) => {
               const answerText = getAnswerText(q);
 
               return (

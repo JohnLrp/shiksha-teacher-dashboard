@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
 import { useEffect, useState } from "react";
 import api from "../api/apiClient";
-import SearchBar from "../components/SearchBar";
 import "../styles/classes-list.css";
 
 export default function ClassesList() {
@@ -78,7 +77,6 @@ export default function ClassesList() {
 
         <div className="cl-top">
           <h2>My Classes</h2>
-          <SearchBar />
         </div>
 
         <div className="cl-grid">

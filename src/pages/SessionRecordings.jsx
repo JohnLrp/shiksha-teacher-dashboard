@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { useEffect, useState, useRef } from "react";
 import api from "../api/apiClient";
 import "../styles/session-recordings.css";
@@ -20,7 +19,6 @@ export default function SessionRecordings() {
   const { subjectId } = useParams();
 
   const [recordings, setRecordings] = useState([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const pollRef = useRef(null);
 
@@ -79,10 +77,6 @@ export default function SessionRecordings() {
     return () => clearInterval(pollRef.current);
   }, [recordings.map((r) => `${r.id}:${r.status}`).join(",")]);
 
-  const filtered = recordings.filter((rec) =>
-    rec.title?.toLowerCase().includes(search.toLowerCase())
-  );
-
   function formatDuration(seconds) {
     if (!seconds) return "";
     const m = Math.floor(seconds / 60);
@@ -107,19 +101,6 @@ export default function SessionRecordings() {
 
           <h2 className="sr-title">Session Recordings</h2>
 
-          <div className="sr-search">
-
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <FiSearch className="sr-search-icon" />
-
-          </div>
-
         </div>
 
         <div className="sr-actions">
@@ -139,13 +120,13 @@ export default function SessionRecordings() {
 
           {loading && <p>Loading recordings...</p>}
 
-          {!loading && filtered.length === 0 && (
+          {!loading && recordings.length === 0 && (
             <p style={{ opacity: 0.6 }}>
               No recordings uploaded yet.
             </p>
           )}
 
-          {filtered.map((rec) => (
+          {recordings.map((rec) => (
 
             <div
               className={`sr-card ${rec.status < 4 ? "sr-card-processing" : ""}`}

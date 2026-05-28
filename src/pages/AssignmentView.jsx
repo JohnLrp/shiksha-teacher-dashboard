@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { FaRegFolder } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import api from "../api/apiClient";
@@ -54,10 +53,6 @@ export default function AssignmentView() {
 
       <div className="av-header">
         <h2 className="av-title">{assignment.title}</h2>
-        <div className="av-search">
-          <input type="text" placeholder="Search" />
-          <FiSearch className="av-search-icon" />
-        </div>
       </div>
 
       <div className="av-content-card">

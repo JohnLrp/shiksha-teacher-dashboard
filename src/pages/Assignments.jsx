@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -22,7 +21,6 @@ export default function Assignments() {
 
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);   // which row is mid-delete
   const [confirmId, setConfirmId] = useState(null);     // which row has confirm open
 
@@ -41,12 +39,6 @@ export default function Assignments() {
     }
     if (subjectId) fetchAssignments();
   }, [subjectId]);
-
-  const filtered = assignments.filter(
-    (a) =>
-      a.title.toLowerCase().includes(search.toLowerCase()) ||
-      a.chapter_name?.toLowerCase().includes(search.toLowerCase())
-  );
 
   // ── Delete ────────────────────────────────────────────────────────────
   const handleDeleteConfirm = async (assignmentId) => {
@@ -86,16 +78,6 @@ export default function Assignments() {
           <h2 className="assignments-title">Assignments</h2>
           <span className="assignments-count-badge">{assignments.length}</span>
         </div>
-
-        <div className="assignments-search">
-          <input
-            type="text"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="assignments-search-icon" />
-        </div>
       </div>
 
       <div className="assignments-list-container">
@@ -110,13 +92,13 @@ export default function Assignments() {
         </div>
 
         <div className="assignments-list">
-          {filtered.length === 0 && (
+          {assignments.length === 0 && (
             <div className="assignments-empty">
-              {search ? "No assignments match your search." : "No assignments created yet."}
+              No assignments created yet.
             </div>
           )}
 
-          {filtered.map((assignment) => (
+          {assignments.map((assignment) => (
             <div className="assignment-row" key={assignment.id}>
 
               <div className="assignment-info">

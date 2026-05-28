@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import api from "../api/apiClient";
 import "../styles/students.css";
@@ -10,7 +9,6 @@ export default function StudentsList() {
   const { subjectId } = useParams();
 
   const [data, setData] = useState(null);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const backPath = `/teacher/classes/${subjectId}`;
@@ -34,14 +32,7 @@ export default function StudentsList() {
 
   if (!data) return <div className="students-loading">Failed to load students.</div>;
 
-  const filtered = data.students.filter((s) => {
-    const q = search.toLowerCase();
-    return (
-      (s.full_name || "").toLowerCase().includes(q) ||
-      (s.email || "").toLowerCase().includes(q) ||
-      (s.student_id || "").toLowerCase().includes(q)
-    );
-  });
+  const filtered = data.students;
 
   return (
     <div className="students-page">
@@ -57,22 +48,10 @@ export default function StudentsList() {
             {data.total_students} student{data.total_students !== 1 ? "s" : ""}
           </p>
         </div>
-
-        <div className="students-search">
-          <input
-            type="text"
-            placeholder="Search by name, email or ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="students-search-icon" />
-        </div>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="students-empty">
-          {search ? "No students match your search." : "No students enrolled."}
-        </p>
+        <p className="students-empty">No students enrolled.</p>
       ) : (
         <div className="students-table-wrap">
           <table className="students-table">
