@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import api from "../api/apiClient";
 import "../styles/quiz-submission-view.css";
 
@@ -12,7 +11,6 @@ export default function QuizSubmissionView() {
   const { quizId, subjectId } = useParams();
 
   const [students, setStudents] = useState([]);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchSubmissions() {
@@ -26,12 +24,6 @@ export default function QuizSubmissionView() {
 
     fetchSubmissions();
   }, [quizId]);
-
-  const filteredStudents = students.filter((s) =>
-    (s.student_name || "")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
@@ -66,16 +58,6 @@ export default function QuizSubmissionView() {
           </span>
         </div>
 
-        <div className="qsv-search">
-          <input
-            type="text"
-            placeholder="Search student"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="qsv-search-icon" />
-        </div>
-
         <table className="qsv-table">
           <thead>
             <tr>
@@ -90,7 +72,7 @@ export default function QuizSubmissionView() {
           </thead>
 
           <tbody>
-            {filteredStudents.map((student, index) => (
+            {students.map((student, index) => (
               <tr key={student.id || index}>
   <td>{index + 1}</td>
   <td>{student.student_name}</td>

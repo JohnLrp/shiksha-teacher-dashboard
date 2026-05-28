@@ -14,16 +14,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as privateSessionService from "../api/privateSessionService";
 import "../styles/privateSessions.css";
 
-/* ── Search debounce hook ── */
-function useDebounce(value, delay) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
-
 /* ── Helpers ── */
 
 function fmtDate(d) {
@@ -98,9 +88,6 @@ export default function PrivateSessionsDashboard() {
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Search
-  const [searchTerm, setSearchTerm] = useState("");
-
   // Filters
   const [historyFilter, setHistoryFilter] = useState("all");
   const [reqStatusFilter, setReqStatusFilter] = useState("all");
@@ -148,22 +135,6 @@ export default function PrivateSessionsDashboard() {
     r.status === "needs_reconfirmation"
   ).length;
 
-  // Client-side search filter
-  const searchFilter = (items) => {
-    if (!searchTerm.trim()) return items;
-    const q = searchTerm.toLowerCase();
-    return items.filter((s) => {
-      const n = norm(s);
-      return (
-        (n.subject || "").toLowerCase().includes(q) ||
-        (n._student || "").toLowerCase().includes(q) ||
-        (n._teacher || "").toLowerCase().includes(q) ||
-        (n.topic || "").toLowerCase().includes(q) ||
-        (n.course || "").toLowerCase().includes(q)
-      );
-    });
-  };
-
   const reqSubjects = useMemo(() => {
     const set = new Set(requests.map(r => r.subject));
     return [...set].sort();
@@ -173,14 +144,13 @@ export default function PrivateSessionsDashboard() {
     let f = requests;
     if (reqStatusFilter !== "all") f = f.filter(r => r.status === reqStatusFilter);
     if (reqSubjectFilter !== "all") f = f.filter(r => r.subject === reqSubjectFilter);
-    return searchFilter(f);
-  }, [requests, reqStatusFilter, reqSubjectFilter, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
+    return f;
+  }, [requests, reqStatusFilter, reqSubjectFilter]);
 
-  const filteredHistory = searchFilter(
-    historyFilter === "all" ? history : history.filter(h => h.status === historyFilter)
-  );
+  const filteredHistory =
+    historyFilter === "all" ? history : history.filter(h => h.status === historyFilter);
 
-  const filteredScheduled = searchFilter(scheduled);
+  const filteredScheduled = scheduled;
 
   return (
     <div className="tps">
@@ -208,18 +178,6 @@ export default function PrivateSessionsDashboard() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="tps__search-wrap">
-        <span className="tps__search-icon">🔍</span>
-        <input
-          type="text"
-          className="tps__search"
-          placeholder="Search by subject, student, or teacher..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
       {loading && <div className="tps__loading">Loading...</div>}
       {error && <div className="tps__empty" style={{ color: "#ef4444" }}>{error}</div>}
 
@@ -227,9 +185,7 @@ export default function PrivateSessionsDashboard() {
       {!loading && tab === "scheduled" && (
         <div className="tps__grid">
           {filteredScheduled.length === 0 && (
-            <p className="tps__empty">
-              {searchTerm ? "No sessions match your search." : "No scheduled sessions yet."}
-            </p>
+            <p className="tps__empty">No scheduled sessions yet.</p>
           )}
           {filteredScheduled.map((raw) => {
             const s = norm(raw);
@@ -358,8 +314,8 @@ export default function PrivateSessionsDashboard() {
           <div className="tps__hlist">
             {filteredHistory.length === 0 && (
               <p className="tps__empty">
-                {searchTerm ? "No history matches your search." : "No history found."}
-                {!searchTerm && history.length === 0 ? " History endpoint may not be set up yet." : ""}
+                No history found.
+                {history.length === 0 ? " History endpoint may not be set up yet." : ""}
               </p>
             )}
             {filteredHistory.map((raw) => {

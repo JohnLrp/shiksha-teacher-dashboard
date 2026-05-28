@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack } from "react-icons/io5";
-import { FiSearch } from "react-icons/fi";
 import "../styles/quizzes.css";
 import api from "../api/apiClient";
 
@@ -13,7 +12,6 @@ export default function Quizzes() {
   const [subjectName, setSubjectName] = useState("");
   const [publishingId, setPublishingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchQuizzes() {
@@ -101,10 +99,6 @@ export default function Quizzes() {
     }
   };
 
-  const filtered = quizzes.filter((q) =>
-    q.title.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div className="quizzes-page">
       <button
@@ -116,15 +110,6 @@ export default function Quizzes() {
 
       <div className="quizzes-title-container">
         <h2 className="quizzes-title">{subjectName || "Quizzes"}</h2>
-        <div className="quizzes-search">
-          <input
-            type="text"
-            placeholder="Search quizzes…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <FiSearch className="quizzes-search-icon" />
-        </div>
       </div>
 
       <div className="quizzes-list-container">
@@ -138,15 +123,13 @@ export default function Quizzes() {
         </div>
 
         <div className="quizzes-list">
-          {filtered.length === 0 && (
+          {quizzes.length === 0 && (
             <p className="quizzes-empty">
-              {quizzes.length === 0
-                ? 'No quizzes created yet. Click "Create New Quiz" to get started.'
-                : "No quizzes match your search."}
+              No quizzes created yet. Click "Create New Quiz" to get started.
             </p>
           )}
 
-          {filtered.map((quiz, index) => (
+          {quizzes.map((quiz, index) => (
             <div className="quiz-row" key={quiz.id || index}>
 
               <div className="quiz-info">
