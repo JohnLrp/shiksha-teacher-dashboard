@@ -43,10 +43,18 @@ const centerMsg = {
   background: "#c9dde1",
 };
 
+// :id from the URL might be a UUID (the normal case) or a short_code pasted
+// from a shared link. resolvedId is the real session UUID we hit on every
+// backend call — short_codes get resolved through join-by-code first.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function GroupSessionLive() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [resolvedId, setResolvedId] = useState(
+    UUID_RE.test(String(id || "")) ? String(id) : null
+  );
   const [sessionData, setSessionData]   = useState(null);
   const [livekitData, setLivekitData]   = useState(null);
   const [error, setError]               = useState(null);
@@ -61,7 +69,11 @@ export default function GroupSessionLive() {
                     String(user.id) === String(sessionData.hostId));
 
   const roomCode = sessionData?.shortCode || id;
-  const inviteLink = `${window.location.origin}/group-session/live/${roomCode}`;
+  // Teacher dashboard mounts the live room under /teacher/... so the link
+  // points there. Students on the student dashboard need to paste the same
+  // code into "Enter Room ID" on their side (different origin / different
+  // routes) — see the share-link copy hint below for the explanation.
+  const inviteLink = `${window.location.origin}/teacher/group-session/live/${roomCode}`;
 
   const handleCopyLink = async () => {
     try {
@@ -89,7 +101,7 @@ export default function GroupSessionLive() {
     );
     if (!ok) return;
     try {
-      await groupSessionService.endSession(id);
+      await groupSessionService.endSession(resolvedId || id);
     } catch (e) {
       console.error("endSession failed", e);
     } finally {
@@ -97,14 +109,44 @@ export default function GroupSessionLive() {
     }
   };
 
+  // Resolve a short_code → UUID before touching detail/join. UUIDs short-
+  // circuit and become resolvedId immediately so the pasted-link / typed-
+  // code flow lands in the same place as the host-creates-instant flow.
   useEffect(() => {
     let cancelled = false;
+    if (!id) return undefined;
+    if (UUID_RE.test(String(id))) {
+      setResolvedId(String(id));
+      return undefined;
+    }
+    (async () => {
+      try {
+        const res = await groupSessionService.joinByCode(id);
+        if (cancelled) return;
+        if (res?.session_id) {
+          setResolvedId(String(res.session_id));
+        } else {
+          setError("No room found for that code.");
+          setLoading(false);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setError(extractApiError(err, "No room found for that code."));
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!resolvedId) return undefined;
     const load = async () => {
       try {
-        const detail   = await groupSessionService.getDetail(id);
+        const detail   = await groupSessionService.getDetail(resolvedId);
         if (cancelled) return;
         setSessionData(detail);
-        const joinData = await groupSessionService.joinRoom(id);
+        const joinData = await groupSessionService.joinRoom(resolvedId);
         if (cancelled) return;
         setLivekitData(joinData);
         setRemainingMs(joinData.remaining_ms ?? null);
@@ -117,7 +159,7 @@ export default function GroupSessionLive() {
     };
     load();
     return () => { cancelled = true; };
-  }, [id]);
+  }, [resolvedId]);
 
   useEffect(() => {
     if (remainingMs == null || remainingMs <= 0) return;
@@ -193,7 +235,7 @@ export default function GroupSessionLive() {
           role="PRESENTER"
           session={{
             ...sessionData,
-            id,
+            id: resolvedId || id,
             subject: sessionData?.subjectName,
             topic:   sessionData?.topic,
             shortCode: sessionData?.shortCode,
@@ -201,9 +243,9 @@ export default function GroupSessionLive() {
             admitMode: sessionData?.admitMode,
           }}
           chatConfig={{
-            restGetPath:  `/sessions/group-sessions/${id}/chat/`,
-            restPostPath: `/sessions/group-sessions/${id}/chat/send/`,
-            wsPath:       `/ws/group-session/${id}/chat/`,
+            restGetPath:  `/sessions/group-sessions/${resolvedId || id}/chat/`,
+            restPostPath: `/sessions/group-sessions/${resolvedId || id}/chat/send/`,
+            wsPath:       `/ws/group-session/${resolvedId || id}/chat/`,
           }}
           groupSession={true}
           groupSessionRemainingMs={remainingMs}
