@@ -1,7 +1,23 @@
 /* ============================================================
    PRIVATE DETAILS PAGE — Figma "Type=Private, Owner"
-   Only styles .pd-* classes. The top card is styled by profile.css.
+   Top card uses tp-* classes from profile.css.
+   Form uses pd-* classes defined below.
 ============================================================ */
+
+/* ─── Layout fix: stack top card + content vertically ─── */
+/* When .tp-page contains a .pd-content child, switch the page from
+   flex row (which centers a single profile card) to flex column. */
+.tp-page:has(.pd-content) {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+}
+
+.tp-page:has(.pd-content) .tp-card {
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+}
 
 /* ─── Content card ─── */
 .pd-content {
