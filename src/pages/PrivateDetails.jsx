@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock, FiCalendar, FiFileText, FiChevronDown, FiX } from "react-icons/fi";
 import api from "../api/apiClient";
-import "../styles/profile.css";
 import "../styles/private-details.css";
 
 /* ────────────────────────────────────────────────────────────
@@ -32,8 +31,7 @@ function titleCase(s) {
 function formatExperienceRange(v) {
   if (!v) return v;
   const known = {
-    "0": "New Teacher (0 years)",
-    "new": "New Teacher (0 years)",
+    "0": "New Teacher (0 years)", "new": "New Teacher (0 years)",
     "1_2": "1-2 years", "1-2": "1-2 years",
     "1_3": "1-3 years", "1-3": "1-3 years",
     "3_5": "3-5 years", "3-5": "3-5 years",
@@ -62,8 +60,7 @@ function formatGovtId(v) {
   const known = {
     "aadhaar": "Aadhar Card", "aadhar": "Aadhar Card",
     "voter_id": "Voter's ID", "voters_id": "Voter's ID", "voter": "Voter's ID",
-    "pan": "PAN Card", "pan_card": "PAN Card",
-    "passport": "Passport",
+    "pan": "PAN Card", "pan_card": "PAN Card", "passport": "Passport",
     "driving_license": "Driving License", "dl": "Driving License",
   };
   return known[v?.toLowerCase()] || titleCase(v);
@@ -72,10 +69,9 @@ function formatGovtId(v) {
 function formatCert(v) {
   if (!v) return v;
   const known = {
-    "bed": "B.Ed", "b.ed": "B.Ed",
-    "med": "M.Ed", "m.ed": "M.Ed",
-    "ctet": "CTET",
-    "state_tet": "State TET", "statetet": "State TET", "tet": "State TET",
+    "bed": "B.Ed", "b.ed": "B.Ed", "med": "M.Ed", "m.ed": "M.Ed",
+    "ctet": "CTET", "state_tet": "State TET",
+    "statetet": "State TET", "tet": "State TET",
   };
   return known[v?.toLowerCase()] || v.toUpperCase();
 }
@@ -91,8 +87,6 @@ function formatClass(v) {
   if (/^\d+$/.test(s)) return `Class ${s}`;
   return v;
 }
-
-/* ──────────────────────────────────────────────────────────── */
 
 function FileDisplay({ file, size }) {
   const name = getFileName(file);
@@ -374,11 +368,11 @@ export default function PrivateDetails() {
   };
 
   if (loading) {
-    return <div className="tp-page"><p className="tp-loading">Loading...</p></div>;
+    return <div className="pd-page"><p className="pd-loading">Loading...</p></div>;
   }
 
   if (error || !profile) {
-    return <div className="tp-page"><p className="tp-error">{error || "Profile not found."}</p></div>;
+    return <div className="pd-page"><p className="pd-error">{error || "Profile not found."}</p></div>;
   }
 
   const prefix =
@@ -403,57 +397,47 @@ export default function PrivateDetails() {
     : null;
 
   return (
-    <div className="tp-page">
+    <div className="pd-page">
 
-      {/* ===== TOP CARD — uses NEW profile.css class names ===== */}
-      <div className="tp-card">
-        <div className="tp-header">
-          <div className="tp-header-left">
-            <div className="tp-avatar-wrap">
-              <div className="tp-avatar">
-                {profile.photo
-                  ? <img src={profile.photo} alt={profile.name} />
-                  : <span className="tp-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
-                }
-              </div>
-            </div>
-            <div className="tp-info">
-              <h1 className="tp-name">{displayName}</h1>
-              <div className="tp-pills">
-                {profile.is_approved && (
-                  <span className="tp-pill tp-pill--available">
-                    <span className="tp-pill-dot" />
-                    Available
-                  </span>
-                )}
-                {languages && (
-                  <span className="tp-pill tp-pill--lang">{languages}</span>
-                )}
-              </div>
+      {/* ===== TOP CARD (uses pd-top-* — self-contained, no profile.css dep) ===== */}
+      <div className="pd-top-card">
+        <div className="pd-top-left">
+          <div className="pd-top-avatar">
+            {profile.photo
+              ? <img src={profile.photo} alt={profile.name} />
+              : <span className="pd-top-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
+            }
+          </div>
+          <div className="pd-top-info">
+            <h1 className="pd-top-name">{displayName}</h1>
+            <div className="pd-top-pills">
+              {profile.is_approved && (
+                <span className="pd-top-pill pd-top-pill--available">
+                  <span className="pd-top-pill-dot" />
+                  Available
+                </span>
+              )}
+              {languages && (
+                <span className="pd-top-pill pd-top-pill--lang">{languages}</span>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="tp-header-actions">
-            {isEditing ? (
-              <>
-                <button className="tp-btn tp-btn--outline" onClick={handleCancel} disabled={saving}>
-                  Cancel
-                </button>
-                <button className="tp-btn tp-btn--outline" onClick={handleSave} disabled={saving}>
-                  {saving ? "Saving..." : "Save"}
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="tp-btn tp-btn--outline" onClick={() => navigate("/teacher/profile")}>
-                  Back
-                </button>
-                <button className="tp-btn tp-btn--outline" onClick={handleEdit}>
-                  Edit Profile
-                </button>
-              </>
-            )}
-          </div>
+        <div className="pd-top-actions">
+          {isEditing ? (
+            <>
+              <button className="pd-top-btn" onClick={handleCancel} disabled={saving}>Cancel</button>
+              <button className="pd-top-btn" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="pd-top-btn" onClick={() => navigate("/teacher/profile")}>Back</button>
+              <button className="pd-top-btn" onClick={handleEdit}>Edit Profile</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -464,12 +448,10 @@ export default function PrivateDetails() {
         <div className="pd-section">
           <h2 className="pd-section-title">Basic Details</h2>
           <div className="pd-grid">
-
             <div className="pd-field pd-full-width">
               <label className="pd-label">Username</label>
               <div className="pd-value pd-value--muted">{profile.username || "—"}</div>
             </div>
-
             <div className="pd-field">
               <label className="pd-label">First Name</label>
               {isEditing ? (
@@ -479,7 +461,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{profile.first_name || "—"}</div>
               )}
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Last Name</label>
               {isEditing ? (
@@ -489,7 +470,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{profile.last_name || "—"}</div>
               )}
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Email</label>
               <div className="pd-value-row">
@@ -497,7 +477,6 @@ export default function PrivateDetails() {
                 <FiLock className="pd-field-icon" />
               </div>
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Phone Number</label>
               {isEditing ? (
@@ -507,7 +486,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{phone || "—"}</div>
               )}
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Date of Birth</label>
               {isEditing ? (
@@ -520,7 +498,6 @@ export default function PrivateDetails() {
                 </div>
               )}
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Gender</label>
               {isEditing ? (
@@ -535,7 +512,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{gender || "—"}</div>
               )}
             </div>
-
           </div>
         </div>
 
@@ -586,7 +562,6 @@ export default function PrivateDetails() {
         <div className="pd-section">
           <h2 className="pd-section-title">Educational Qualifications</h2>
           <div className="pd-grid">
-
             <div className="pd-field">
               <label className="pd-label">Highest Degree</label>
               {isEditing ? (
@@ -602,9 +577,7 @@ export default function PrivateDetails() {
                 <div className="pd-value">{profile.highest_degree || "—"}</div>
               )}
             </div>
-
             <div className="pd-field" />
-
             <div className="pd-field">
               <label className="pd-label">Field of Study</label>
               {isEditing ? (
@@ -623,7 +596,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{titleCase(profile.field_of_study) || "—"}</div>
               )}
             </div>
-
             <div className="pd-field">
               <label className="pd-label">Year of Completion</label>
               {isEditing ? (
@@ -639,7 +611,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{profile.year_of_completion || "—"}</div>
               )}
             </div>
-
             <div className="pd-field pd-full-width">
               <label className="pd-label">Teaching Certificate</label>
               {isEditing ? (
@@ -657,7 +628,6 @@ export default function PrivateDetails() {
                 <CheckList items={profile.teaching_certifications} formatter={formatCert} />
               )}
             </div>
-
             <div className="pd-field pd-full-width">
               <label className="pd-label">Upload Qualification Certificate</label>
               {isEditing ? (
@@ -701,7 +671,6 @@ export default function PrivateDetails() {
                 <FileDisplay file={profile.qualification_certificate} />
               )}
             </div>
-
           </div>
         </div>
 
@@ -763,7 +732,6 @@ export default function PrivateDetails() {
                 </div>
               )}
             </div>
-
             {(isEditing ? editIsCurrentlyEmployed : profile.is_currently_employed) && (
               <>
                 <div className="pd-field">
@@ -839,7 +807,6 @@ export default function PrivateDetails() {
                       </div>
                     </div>
                     <div className="pd-field" />
-
                     <div className="pd-field pd-full-width">
                       <label className="pd-label">Skill Description</label>
                       {isEditing ? (
@@ -859,7 +826,6 @@ export default function PrivateDetails() {
                         <div className="pd-value">{skill.skill_description || skill.description || "—"}</div>
                       )}
                     </div>
-
                     <div className="pd-field">
                       <label className="pd-label">Related Subject</label>
                       {isEditing ? (
@@ -877,7 +843,6 @@ export default function PrivateDetails() {
                       )}
                     </div>
                     <div className="pd-field" />
-
                     <div className="pd-field pd-full-width">
                       <label className="pd-label">File Related to Skill</label>
                       {isEditing ? (
@@ -947,7 +912,6 @@ export default function PrivateDetails() {
               )}
             </div>
             <div className="pd-field" />
-
             <div className="pd-field pd-full-width">
               <label className="pd-label">Id Number</label>
               {isEditing ? (
@@ -958,7 +922,6 @@ export default function PrivateDetails() {
                 <div className="pd-value">{profile.id_number || "—"}</div>
               )}
             </div>
-
             <div className="pd-field pd-full-width">
               <label className="pd-label">Upload ID Proof</label>
               {isEditing ? (

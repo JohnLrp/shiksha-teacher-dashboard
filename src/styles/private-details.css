@@ -1,25 +1,173 @@
 /* ============================================================
    PRIVATE DETAILS PAGE — Figma "Type=Private, Owner"
-   Top card uses tp-* classes from profile.css.
-   Form uses pd-* classes defined below.
+   FULLY SELF-CONTAINED: no dependency on profile.css.
+   All classes are pd-*.
 ============================================================ */
 
-/* ─── Layout fix: stack top card + content vertically ─── */
-/* When .tp-page contains a .pd-content child, switch the page from
-   flex row (which centers a single profile card) to flex column. */
-.tp-page:has(.pd-content) {
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 20px !important;
-}
-
-.tp-page:has(.pd-content) .tp-card {
+/* ─── Page wrapper: normal block flow, scrollable ─── */
+.pd-page {
+  display: block;            /* normal flow, NOT flex */
+  padding: 24px 32px;
+  box-sizing: border-box;
+  background: transparent;
   width: 100%;
-  max-width: none;
-  align-self: stretch;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
-/* ─── Content card ─── */
+.pd-page * {
+  box-sizing: border-box;
+}
+
+.pd-loading,
+.pd-error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.pd-error { color: #b91c1c; }
+
+/* ============================================================
+   TOP CARD
+============================================================ */
+.pd-top-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.pd-top-left {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pd-top-avatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #d9d9d9;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pd-top-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pd-top-avatar-placeholder {
+  font-size: 28px;
+  font-weight: 700;
+  color: #666;
+}
+
+.pd-top-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pd-top-name {
+  margin: 0;
+  font-family: 'Poppins', 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0b1220;
+  line-height: 1.2;
+}
+
+.pd-top-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pd-top-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.5;
+  border: none;
+}
+
+.pd-top-pill--available {
+  background: #1eb854;
+  color: #ffffff;
+}
+
+.pd-top-pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.pd-top-pill--lang {
+  background: #2e3a7c;
+  color: #ffffff;
+}
+
+.pd-top-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pd-top-btn {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.4;
+  min-width: 110px;
+  text-align: center;
+  border: 1px solid #015865;
+  background: #ffffff;
+  color: #015865;
+}
+
+.pd-top-btn:hover:not(:disabled) {
+  background: #f0f7f8;
+}
+
+.pd-top-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   CONTENT CARD
+============================================================ */
 .pd-content {
   width: 100%;
   background-color: #e8f1f7;
@@ -38,16 +186,10 @@
   gap: 40px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-  box-sizing: border-box;
-}
-
-.pd-content * {
-  box-sizing: border-box;
 }
 
 .pd-content > * {
-  background: transparent !important;
+  background: transparent;
 }
 
 /* ============================================================
@@ -57,9 +199,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: transparent;
 }
 
 .pd-section-title {
@@ -68,12 +208,9 @@
   font-size: 18px;
   font-weight: 600;
   color: #004a33;
-  padding-bottom: 0;
-  border-bottom: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: transparent !important;
 }
 
 .pd-title-lock {
@@ -92,7 +229,6 @@
   gap: 16px 40px;
   align-items: start;
   justify-content: start;
-  background: transparent !important;
 }
 
 .pd-full-width {
@@ -110,7 +246,6 @@
   width: 280px;
   border-bottom: 0.8px solid #6b7280;
   padding: 0 4px 4px 0;
-  background: transparent !important;
 }
 
 .pd-full-width.pd-field {
@@ -268,7 +403,6 @@ select.pd-input {
   border-bottom: none;
   min-height: 22px;
   align-items: center;
-  background: transparent !important;
 }
 
 .pd-cert-option,
@@ -496,8 +630,38 @@ button.pd-yn-btn:hover:not(.pd-yn-btn--active) {
    RESPONSIVE
 ============================================================ */
 @media (max-width: 900px) {
+  .pd-page {
+    padding: 16px 12px;
+  }
+
+  .pd-top-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 20px;
+  }
+
+  .pd-top-left {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .pd-top-info {
+    align-items: center;
+  }
+
+  .pd-top-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .pd-top-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .pd-content {
-    padding: 28px 28px;
+    padding: 28px 24px;
     gap: 30px;
   }
 
