@@ -167,367 +167,384 @@ export default function Profile() {
   const hasWeekdayAvail = profile.weekday_availability_start && profile.weekday_availability_end;
   const hasWeekendAvail = profile.weekend_availability_start && profile.weekend_availability_end;
 
+  // ── credentials list (dot separated) ──
+  const credentials = [];
+  if (profile.highest_degree && profile.field_of_study) {
+    credentials.push(`${profile.highest_degree} in ${profile.field_of_study}`);
+  } else if (profile.highest_degree) {
+    credentials.push(profile.highest_degree);
+  }
+  if (profile.teaching_certifications?.length) {
+    profile.teaching_certifications.forEach(c => credentials.push(c));
+  }
+  if (profile.experience_range) {
+    credentials.push(`${profile.experience_range} experience`);
+  }
+
   return (
     <div className="tp-page">
+      <div className="tp-card">
 
-      {/* ===== TOP CARD ===== */}
-      <div className="tp-top-card">
-        <div className="tp-top-left">
-          <div className="tp-avatar-wrap">
-            <div className="tp-avatar">
-              {(avatarPreview || profile.photo)
-                ? <img src={avatarPreview || profile.photo} alt={profile.name} />
-                : <span className="tp-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
-              }
+        {/* ===== HEADER (gradient top) ===== */}
+        <div className="tp-header">
+          <div className="tp-header-left">
+            <div className="tp-avatar-wrap">
+              <div className="tp-avatar">
+                {(avatarPreview || profile.photo)
+                  ? <img src={avatarPreview || profile.photo} alt={profile.name} />
+                  : <span className="tp-avatar-placeholder">{profile.name?.charAt(0) || "T"}</span>
+                }
+              </div>
+              {isEditing && (
+                <>
+                  <button
+                    type="button"
+                    className="tp-avatar-edit-btn"
+                    onClick={() => avatarInputRef.current?.click()}
+                    title="Change photo"
+                  >
+                    <FiCamera />
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleAvatarChange}
+                  />
+                </>
+              )}
             </div>
-            {isEditing && (
+
+            <div className="tp-info">
+              <h1 className="tp-name">{displayName || "Teacher"}</h1>
+              {credentials.length > 0 && (
+                <div className="tp-credentials">
+                  {credentials.map((c, i) => (
+                    <span key={i} className="tp-credential">{c}</span>
+                  ))}
+                </div>
+              )}
+              <div className="tp-pills">
+                {profile.is_approved && (
+                  <span className="tp-pill tp-pill--available">
+                    <span className="tp-pill-dot" />
+                    Available
+                  </span>
+                )}
+                {languages && (
+                  <span className="tp-pill tp-pill--lang">{languages}</span>
+                )}
+                {!languages && profile.employment_status && (
+                  <span className="tp-pill tp-pill--lang">{profile.employment_status}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="tp-header-actions">
+            {isEditing ? (
               <>
-                <button
-                  type="button"
-                  className="tp-avatar-edit-btn"
-                  onClick={() => avatarInputRef.current?.click()}
-                  title="Change photo"
-                >
-                  <FiCamera />
+                <button className="tp-btn tp-btn--outline" onClick={handleCancel} disabled={saving}>
+                  Cancel
                 </button>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleAvatarChange}
-                />
+                <button className="tp-btn tp-btn--outline" onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="tp-btn tp-btn--outline" onClick={handleEdit}>
+                  Edit Profile
+                </button>
+                <button
+                  className="tp-btn tp-btn--outline"
+                  onClick={() => navigate("/teacher/private-details")}
+                >
+                  Private Details
+                </button>
               </>
             )}
           </div>
-          <div className="tp-info">
-            <h1 className="tp-name">{displayName || "Teacher"}</h1>
-            <div className="tp-badges">
-              {profile.highest_degree && profile.field_of_study && (
-                <span className="tp-badge-item">
-                  {profile.highest_degree} in {profile.field_of_study}
-                </span>
-              )}
-              {profile.teaching_certifications?.map((cert, i) => (
-                <span key={i} className="tp-badge-item">{cert}</span>
-              ))}
-            </div>
-            {profile.experience_range && (
-              <p className="tp-experience">{profile.experience_range} experience</p>
-            )}
-            <div className="tp-tags">
-              {profile.is_approved && (
-                <span className="tp-tag tp-tag--available">Available</span>
-              )}
-              {languages && (
-                <span className="tp-tag tp-tag--lang">{languages}</span>
-              )}
-              {!languages && profile.employment_status && (
-                <span className="tp-tag tp-tag--lang">{profile.employment_status}</span>
-              )}
-            </div>
-          </div>
         </div>
 
-        <div className="tp-top-right">
+        {/* ===== RATINGS (view only) ===== */}
+        {!isEditing && (
+          <div className="tp-ratings-row">
+            <div className="tp-rating-card">
+              <h3 className="tp-rating-title">Overall Rating</h3>
+              <div className="tp-rating-value">
+                <span className="tp-star">&#9733;</span>
+                <span className="tp-rating-number">
+                  {profile.rating ? profile.rating.toFixed(1) : "N/A"}
+                </span>
+                {profile.rating && <span className="tp-rating-max">/5.0</span>}
+              </div>
+              {profile.review_count > 0 && (
+                <p className="tp-rating-count">{profile.review_count} Reviews</p>
+              )}
+              <p className="tp-rating-sub">Based on all student reviews</p>
+            </div>
+
+            <div className="tp-rating-card">
+              <h3 className="tp-rating-title">Private Session Rating</h3>
+              <div className="tp-rating-value">
+                <span className="tp-star">&#9733;</span>
+                <span className="tp-rating-number">
+                  {profile.private_rating ? profile.private_rating.toFixed(1) : "N/A"}
+                </span>
+                {profile.private_rating && <span className="tp-rating-max">/5.0</span>}
+              </div>
+              {profile.private_review_count > 0 && (
+                <p className="tp-rating-count">{profile.private_review_count} Reviews</p>
+              )}
+              <p className="tp-rating-sub">Based on private session reviews</p>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ABOUT ===== */}
+        <div className="tp-section">
+          <h2 className="tp-section-title">About</h2>
           {isEditing ? (
-            <>
-              <button className="tp-cancel-btn" onClick={handleCancel} disabled={saving}>
-                Cancel
-              </button>
-              <button className="tp-save-btn" onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </>
+            <textarea
+              className="tp-about-textarea"
+              placeholder="Add a short bio to introduce yourself"
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              rows={4}
+            />
           ) : (
-            <>
-              <button className="tp-edit-btn" onClick={handleEdit}>
-                Edit Profile
-              </button>
-              <button
-                className="tp-private-btn"
-                onClick={() => navigate("/teacher/private-details")}
-              >
-                Private Details
-              </button>
-            </>
+            profile.bio
+              ? <p className="tp-about-text">{profile.bio}</p>
+              : <p className="tp-about-placeholder">This user has not set their bio yet</p>
           )}
         </div>
-      </div>
 
-      {/* ===== RATINGS — view only ===== */}
-      {!isEditing && (
-        <div className="tp-ratings-row">
-          <div className="tp-rating-card">
-            <h3>Overall Rating</h3>
-            <div className="tp-rating-value">
-              <span className="tp-star">&#9733;</span>
-              <span className="tp-rating-number">
-                {profile.rating ? profile.rating.toFixed(1) : "N/A"}
-              </span>
-              {profile.rating && <span className="tp-rating-max">/5.0</span>}
+        {/* ===== ACTIVE COURSES + SUBJECTS (view only) ===== */}
+        {!isEditing && (
+          <div className="tp-two-col">
+            <div className="tp-section tp-section--col">
+              <h2 className="tp-section-title">Active Courses</h2>
+              {(() => {
+                const groups = {};
+                classes.forEach(cls => {
+                  const key = [cls.courseTitle, cls.board].filter(Boolean).join(" ");
+                  if (!groups[key]) groups[key] = { courseTitle: cls.courseTitle, board: cls.board, subjects: [] };
+                  if (cls.subjectName) groups[key].subjects.push(cls.subjectName);
+                });
+                const rows = Object.values(groups);
+                return rows.length > 0 ? (
+                  <ol className="tp-numbered-list">
+                    {rows.map((row, i) => (
+                      <li key={i} className="tp-numbered-item">
+                        <div className="tp-numbered-main">
+                          {[row.courseTitle, row.board && `(${row.board})`].filter(Boolean).join(" ")}
+                        </div>
+                        {row.subjects.length > 0 && (
+                          <ul className="tp-sub-list">
+                            {row.subjects.map((s, j) => <li key={j}>{s}</li>)}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="tp-empty">No active courses assigned.</p>
+                );
+              })()}
             </div>
-            {profile.review_count > 0 && (
-              <p className="tp-rating-count">{profile.review_count} Reviews</p>
-            )}
-            <p className="tp-rating-sub">Based on all student reviews</p>
-          </div>
 
-          <div className="tp-rating-card">
-            <h3>Private Session Rating</h3>
-            <div className="tp-rating-value">
-              <span className="tp-star">&#9733;</span>
-              <span className="tp-rating-number">
-                {profile.private_rating ? profile.private_rating.toFixed(1) : "N/A"}
-              </span>
-              {profile.private_rating && <span className="tp-rating-max">/5.0</span>}
-            </div>
-            {profile.private_review_count > 0 && (
-              <p className="tp-rating-count">{profile.private_review_count} Reviews</p>
-            )}
-            <p className="tp-rating-sub">Based on private session reviews</p>
-          </div>
-        </div>
-      )}
-
-      {/* ===== ABOUT ===== */}
-      <div className="tp-section">
-        <h2>About</h2>
-        {isEditing ? (
-          <textarea
-            className="tp-about-textarea"
-            placeholder="Add a short bio to introduce yourself"
-            value={editBio}
-            onChange={(e) => setEditBio(e.target.value)}
-            rows={4}
-          />
-        ) : (
-          profile.bio
-            ? <p className="tp-about-text">{profile.bio}</p>
-            : <p className="tp-about-placeholder">Add a short bio to introduce yourself</p>
-        )}
-      </div>
-
-      {/* ===== ACTIVE COURSES & SUBJECTS — view only ===== */}
-      {!isEditing && (
-        <div className="tp-two-col">
-          <div className="tp-section">
-            <h2>Active Courses</h2>
-            {(() => {
-              // Group assignments by "CourseTitle Board" to form one row per class
-              const groups = {};
-              classes.forEach(cls => {
-                const key = [cls.courseTitle, cls.board].filter(Boolean).join(" ");
-                if (!groups[key]) groups[key] = { courseTitle: cls.courseTitle, board: cls.board, subjects: [] };
-                if (cls.subjectName) groups[key].subjects.push(cls.subjectName);
-              });
-              const rows = Object.values(groups);
-              return rows.length > 0 ? (
-                <div className="tp-list">
-                  {rows.map((row, i) => (
-                    <div key={i} className="tp-list-item">
-                      <span className="tp-list-num">{i + 1})</span>
-                      <strong>
-                        {[row.courseTitle, row.board].filter(Boolean).join(" ")}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="tp-empty">No active courses assigned.</p>
-              );
-            })()}
-          </div>
-
-          <div className="tp-section">
-            <h2>Subjects</h2>
-            {classes.length > 0 ? (
-              <div className="tp-list">
-                {classes.map((cls, i) => {
-                  const meta = [cls.courseTitle, cls.board, cls.stream]
-                    .filter(Boolean)
-                    .join(" ");
-                  return (
-                    <div key={cls.subjectId ?? i} className="tp-list-item">
-                      <span className="tp-list-num">{i + 1})</span>
-                      <div>
-                        <strong>{cls.subjectName}</strong>
+            <div className="tp-section tp-section--col">
+              <h2 className="tp-section-title">Subjects</h2>
+              {classes.length > 0 ? (
+                <ol className="tp-numbered-list">
+                  {classes.map((cls, i) => {
+                    const meta = [cls.courseTitle, cls.board, cls.stream]
+                      .filter(Boolean).join(" ");
+                    return (
+                      <li key={cls.subjectId ?? i} className="tp-numbered-item">
+                        <div className="tp-numbered-main">
+                          {cls.subjectName}
+                          {cls.board && ` (${cls.board}${cls.stream ? `/${cls.stream}` : ""})`}
+                        </div>
                         {meta && (
                           <ul className="tp-sub-list">
                             <li>{meta}</li>
                           </ul>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="tp-empty">No subjects assigned.</p>
-            )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : (
+                <p className="tp-empty">No subjects assigned.</p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ===== PRIVATE SESSIONS ===== */}
-      <div className="tp-section">
-        <h2>Private Sessions</h2>
-        <p className="tp-private-count">
-          {sessionCount > 0
-            ? `${sessionCount} Private Session${sessionCount !== 1 ? "s" : ""} taken`
-            : "No Private Sessions yet"}
-        </p>
-
-        <div className="tp-priv-two-col">
-          {/* Session Type Preferences */}
-          <div className="tp-priv-col">
-            <p className="tp-priv-label">Session Type (Preferences)</p>
-            {isEditing ? (
-              <div className="tp-pref-list">
-                <div className="tp-pref-row">
-                  <span className="tp-pref-name">One-on-One</span>
-                  <button
-                    className={`tp-toggle ${sessionOneOnOne ? "tp-toggle--on" : ""}`}
-                    onClick={() => setSessionOneOnOne(v => !v)}
-                    role="switch"
-                    aria-checked={sessionOneOnOne}
-                  >
-                    <span className="tp-toggle-thumb" />
-                  </button>
-                </div>
-                <div className="tp-pref-row">
-                  <span className="tp-pref-name">Small Group (max)</span>
-                  <input
-                    type="number"
-                    className="tp-group-input"
-                    value={sessionGroupMax}
-                    min={1}
-                    max={99}
-                    onChange={(e) =>
-                      setSessionGroupMax(Math.max(1, parseInt(e.target.value) || 1))
-                    }
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="tp-pref-list">
-                {!hasSessionPrefs ? (
-                  <p className="tp-no-prefs">No Preferences set</p>
-                ) : (
-                  <>
-                    {profile.session_one_on_one && (
-                      <div className="tp-pref-row-view">
-                        <span className="tp-pref-dot" />
-                        <span className="tp-pref-name">One-on-One</span>
-                      </div>
-                    )}
-                    {profile.session_group_max && (
-                      <div className="tp-pref-row-view">
-                        <span className="tp-pref-dot" />
-                        <span className="tp-pref-name">Small Group (max)</span>
-                        <span className="tp-group-badge">{profile.session_group_max}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Session Availability */}
-          <div className="tp-priv-col">
-            <p className="tp-priv-label">Session Availability</p>
-            {isEditing ? (
-              <div className="tp-avail-edit">
-                <div className="tp-avail-row">
-                  <span className="tp-avail-day-label">Weekdays</span>
-                  <select
-                    className="tp-avail-select"
-                    value={weekdayStart}
-                    onChange={e => setWeekdayStart(e.target.value)}
-                  >
-                    <option value="">Start</option>
-                    {privateSessionService.TIME_SLOTS.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                  <span className="tp-avail-dash">–</span>
-                  <select
-                    className="tp-avail-select"
-                    value={weekdayEnd}
-                    onChange={e => setWeekdayEnd(e.target.value)}
-                  >
-                    <option value="">End</option>
-                    {privateSessionService.TIME_SLOTS.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="tp-avail-row">
-                  <span className="tp-avail-day-label">Weekends</span>
-                  <select
-                    className="tp-avail-select"
-                    value={weekendStart}
-                    onChange={e => setWeekendStart(e.target.value)}
-                  >
-                    <option value="">Start</option>
-                    {privateSessionService.TIME_SLOTS.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                  <span className="tp-avail-dash">–</span>
-                  <select
-                    className="tp-avail-select"
-                    value={weekendEnd}
-                    onChange={e => setWeekendEnd(e.target.value)}
-                  >
-                    <option value="">End</option>
-                    {privateSessionService.TIME_SLOTS.map(s => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            ) : (
-              <div className="tp-avail-view">
-                <div className="tp-avail-row-view">
-                  <span className="tp-pref-dot" />
-                  <span className="tp-avail-day-label">Weekdays:</span>
-                  <span className={hasWeekdayAvail ? "tp-avail-time" : "tp-avail-not-set"}>
-                    {hasWeekdayAvail
-                      ? `${fmtTime(profile.weekday_availability_start)} – ${fmtTime(profile.weekday_availability_end)}`
-                      : "Not yet set"}
-                  </span>
-                </div>
-                <div className="tp-avail-row-view">
-                  <span className="tp-pref-dot" />
-                  <span className="tp-avail-day-label">Weekends:</span>
-                  <span className={hasWeekendAvail ? "tp-avail-time" : "tp-avail-not-set"}>
-                    {hasWeekendAvail
-                      ? `${fmtTime(profile.weekend_availability_start)} – ${fmtTime(profile.weekend_availability_end)}`
-                      : "Not yet set"}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ===== SPECIALIZED SKILLS — view only ===== */}
-      {!isEditing && profile.skill_applications?.length > 0 && (
+        {/* ===== PRIVATE SESSIONS ===== */}
         <div className="tp-section">
-          <h2>Specialized Skill</h2>
-          <div className="tp-skills-list">
-            {profile.skill_applications.map((sk, i) => (
-              <div key={i} className="tp-skill-item">
-                <h4>{sk.skill_name}</h4>
-                <p>{sk.skill_description}</p>
-              </div>
-            ))}
+          <h2 className="tp-section-title">Private Sessions</h2>
+          <p className="tp-private-count">
+            {sessionCount > 0
+              ? `${sessionCount} Sessions`
+              : "No Private Sessions yet"}
+          </p>
+
+          <div className="tp-priv-two-col">
+            {/* Session Type Preferences */}
+            <div className="tp-priv-col">
+              <p className="tp-priv-label">Session Type (Preferences)</p>
+              {isEditing ? (
+                <div className="tp-pref-list">
+                  <div className="tp-pref-row-edit">
+                    <span className="tp-pref-name">One-on-One</span>
+                    <button
+                      type="button"
+                      className={`tp-toggle ${sessionOneOnOne ? "tp-toggle--on" : ""}`}
+                      onClick={() => setSessionOneOnOne(v => !v)}
+                      role="switch"
+                      aria-checked={sessionOneOnOne}
+                    >
+                      <span className="tp-toggle-thumb" />
+                    </button>
+                  </div>
+                  <div className="tp-pref-row-edit">
+                    <span className="tp-pref-name">Small Group (max)</span>
+                    <input
+                      type="number"
+                      className="tp-group-input"
+                      value={sessionGroupMax}
+                      min={1}
+                      max={99}
+                      onChange={(e) =>
+                        setSessionGroupMax(Math.max(1, parseInt(e.target.value) || 1))
+                      }
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="tp-pref-list">
+                  {!hasSessionPrefs ? (
+                    <p className="tp-no-prefs">No Preferences set</p>
+                  ) : (
+                    <>
+                      {profile.session_one_on_one && (
+                        <div className="tp-pref-row-view">
+                          <span className="tp-pref-dot" />
+                          <span>One-on-One</span>
+                        </div>
+                      )}
+                      {profile.session_group_max && (
+                        <div className="tp-pref-row-view">
+                          <span className="tp-pref-dot" />
+                          <span>Small Group (max {profile.session_group_max})</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Session Availability */}
+            <div className="tp-priv-col">
+              <p className="tp-priv-label">Session Availability</p>
+              {isEditing ? (
+                <div className="tp-avail-edit">
+                  <div className="tp-avail-row">
+                    <span className="tp-avail-day-label">Weekdays:</span>
+                    <select
+                      className="tp-avail-select"
+                      value={weekdayStart}
+                      onChange={e => setWeekdayStart(e.target.value)}
+                    >
+                      <option value="">Start</option>
+                      {privateSessionService.TIME_SLOTS.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                    <span className="tp-avail-dash">–</span>
+                    <select
+                      className="tp-avail-select"
+                      value={weekdayEnd}
+                      onChange={e => setWeekdayEnd(e.target.value)}
+                    >
+                      <option value="">End</option>
+                      {privateSessionService.TIME_SLOTS.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="tp-avail-row">
+                    <span className="tp-avail-day-label">Weekends:</span>
+                    <select
+                      className="tp-avail-select"
+                      value={weekendStart}
+                      onChange={e => setWeekendStart(e.target.value)}
+                    >
+                      <option value="">Start</option>
+                      {privateSessionService.TIME_SLOTS.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                    <span className="tp-avail-dash">–</span>
+                    <select
+                      className="tp-avail-select"
+                      value={weekendEnd}
+                      onChange={e => setWeekendEnd(e.target.value)}
+                    >
+                      <option value="">End</option>
+                      {privateSessionService.TIME_SLOTS.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="tp-avail-view">
+                  <div className="tp-pref-row-view">
+                    <span className="tp-pref-dot" />
+                    <span className="tp-avail-day-label">Weekdays:</span>
+                    <span className={hasWeekdayAvail ? "tp-avail-time" : "tp-avail-not-set"}>
+                      {hasWeekdayAvail
+                        ? `${fmtTime(profile.weekday_availability_start)} – ${fmtTime(profile.weekday_availability_end)}`
+                        : "Not yet set"}
+                    </span>
+                  </div>
+                  <div className="tp-pref-row-view">
+                    <span className="tp-pref-dot" />
+                    <span className="tp-avail-day-label">Weekends:</span>
+                    <span className={hasWeekendAvail ? "tp-avail-time" : "tp-avail-not-set"}>
+                      {hasWeekendAvail
+                        ? `${fmtTime(profile.weekend_availability_start)} – ${fmtTime(profile.weekend_availability_end)}`
+                        : "Not yet set"}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      )}
+
+        {/* ===== SPECIALIZED SKILL (view only) ===== */}
+        {!isEditing && profile.skill_applications?.length > 0 && (
+          <div className="tp-section">
+            <h2 className="tp-section-title">Specialized Skill</h2>
+            <div className="tp-skills-list">
+              {profile.skill_applications.map((sk, i) => (
+                <div key={i} className="tp-skill-item">
+                  <h4 className="tp-skill-title">{sk.skill_name}</h4>
+                  <p className="tp-skill-desc">{sk.skill_description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
